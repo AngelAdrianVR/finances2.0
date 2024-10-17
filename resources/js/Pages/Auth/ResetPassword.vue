@@ -36,7 +36,7 @@ const submit = () => {
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="email" value="Email" />
+                <InputLabel class="ml-3" for="email" value="Correo electrónico" />
                 <TextInput
                     id="email"
                     v-model="form.email"
@@ -44,13 +44,15 @@ const submit = () => {
                     class="mt-1 block w-full"
                     required
                     autofocus
+                    placeholder="Ingresa tu correo electrónico"
                     autocomplete="username"
+                    :errorMessage="form.errors.email"
                 />
-                <InputError class="mt-2" :message="form.errors.email" />
+                <!-- <InputError class="mt-2" :message="form.errors.email" /> -->
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+                <InputLabel class="ml-3" for="password" value="Contraseña" />
                 <TextInput
                     id="password"
                     v-model="form.password"
@@ -58,12 +60,14 @@ const submit = () => {
                     class="mt-1 block w-full"
                     required
                     autocomplete="new-password"
+                    placeholder="Ingresa tu contraseña"
+                    :errorMessage="form.errors.password"
                 />
-                <InputError class="mt-2" :message="form.errors.password" />
+                <!-- <InputError class="mt-2" :message="form.errors.password" /> -->
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password_confirmation" value="Confirm Password" />
+                <InputLabel class="ml-3" for="password_confirmation" value="Confirmar contraseña" />
                 <TextInput
                     id="password_confirmation"
                     v-model="form.password_confirmation"
@@ -71,13 +75,16 @@ const submit = () => {
                     class="mt-1 block w-full"
                     required
                     autocomplete="new-password"
+                    placeholder="Confirma tu contraseña"
+                    :errorMessage="form.errors.password_confirmation"
                 />
-                <InputError class="mt-2" :message="form.errors.password_confirmation" />
+                <!-- <InputError class="mt-2" :message="form.errors.password_confirmation" /> -->
             </div>
 
             <div class="flex items-center justify-end mt-4">
-                <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Reset Password
+                <PrimaryButton :disabled="form.processing">
+                    <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
+                    Reestablecer contraseña
                 </PrimaryButton>
             </div>
         </form>
