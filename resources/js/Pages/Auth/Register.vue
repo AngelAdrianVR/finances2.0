@@ -24,7 +24,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Register" />
+    <Head title="Registro" />
 
     <AuthenticationCard>
         <template #logo>
@@ -33,7 +33,7 @@ const submit = () => {
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="name" value="Name" />
+                <InputLabel for="name" value="Nombre" class="ml-3" />
                 <TextInput
                     id="name"
                     v-model="form.name"
@@ -42,12 +42,14 @@ const submit = () => {
                     required
                     autofocus
                     autocomplete="name"
+                    :errorMessage="form.errors.name"
+                    placeholder="Ingresa tu nombre"
                 />
-                <InputError class="mt-2" :message="form.errors.name" />
+                <!-- <InputError class="mt-2" :message="form.errors.name" /> -->
             </div>
 
             <div class="mt-4">
-                <InputLabel for="email" value="Email" />
+                <InputLabel for="email" value="Email" class="ml-3" />
                 <TextInput
                     id="email"
                     v-model="form.email"
@@ -55,12 +57,14 @@ const submit = () => {
                     class="mt-1 block w-full"
                     required
                     autocomplete="username"
+                    :errorMessage="form.errors.email"
+                    placeholder="Ingresa tu correo electrónico"
                 />
-                <InputError class="mt-2" :message="form.errors.email" />
+                <!-- <InputError class="mt-2" :message="form.errors.email" /> -->
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+                <InputLabel for="password" value="Password" class="ml-3" />
                 <TextInput
                     id="password"
                     v-model="form.password"
@@ -68,12 +72,14 @@ const submit = () => {
                     class="mt-1 block w-full"
                     required
                     autocomplete="new-password"
+                    placeholder="Ingresa una contraseña"
+                    :errorMessage="form.errors.password"
                 />
-                <InputError class="mt-2" :message="form.errors.password" />
+                <!-- <InputError class="mt-2" :message="form.errors.password" /> -->
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password_confirmation" value="Confirm Password" />
+                <InputLabel for="password_confirmation" value="Confirm Password" class="ml-3" />
                 <TextInput
                     id="password_confirmation"
                     v-model="form.password_confirmation"
@@ -81,32 +87,44 @@ const submit = () => {
                     class="mt-1 block w-full"
                     required
                     autocomplete="new-password"
+                    placeholder="Ingresa a misma contraseña"
+                    :errorMessage="form.errors.password_confirmation"
                 />
-                <InputError class="mt-2" :message="form.errors.password_confirmation" />
+                <!-- <InputError class="mt-2" :message="form.errors.password_confirmation" /> -->
             </div>
 
-            <div v-if="$page.props.jetstream.hasTermsAndPrivacyPolicyFeature" class="mt-4">
-                <InputLabel for="terms">
+            <!-- <div v-if="$page.props.jetstream.hasTermsAndPrivacyPolicyFeature" class="mt-4">
+                <InputLabel for="terms" class="ml-3">
                     <div class="flex items-center">
                         <Checkbox id="terms" v-model:checked="form.terms" name="terms" required />
 
                         <div class="ms-2">
-                            I agree to the <a target="_blank" :href="route('terms.show')" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Terms of Service</a> and <a target="_blank" :href="route('policy.show')" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Privacy Policy</a>
+                            Estoy de acuerdo con <a target="_blank" :href="route('dashboard')"
+                             class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                             Términos de servicio</a> y <a target="_blank" :href="route('dashboard')" 
+                             class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                             Política de privacidad</a>
                         </div>
                     </div>
                     <InputError class="mt-2" :message="form.errors.terms" />
                 </InputLabel>
-            </div>
+            </div> -->
 
             <div class="flex items-center justify-end mt-4">
-                <Link :href="route('login')" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Already registered?
+                <Link :href="route('login')" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md">
+                    ¿Ya tienes una cuenta?
                 </Link>
 
-                <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Register
+                <PrimaryButton class="ms-4" :disabled="form.processing">
+                    <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
+                    Resgistrarse
                 </PrimaryButton>
             </div>
         </form>
+
+        <div class="mt-32 text-sm lg:flex justify-between">
+            <p>copyright 2024 Finanzas. Todos los derechos reservados.</p>
+            <p><a class="text-primary hover:underline cursor-pointer" href="">Política de privacidad</a> • <a class="text-primary hover:underline cursor-pointer" href="">Términos y condiciones</a></p>
+        </div>
     </AuthenticationCard>
 </template>
