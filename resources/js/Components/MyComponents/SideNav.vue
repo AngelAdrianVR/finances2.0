@@ -20,8 +20,8 @@
             <div class="flex items-center justify-center text-center w-full px-2 mb-7">
                 <button v-if="$page.props.jetstream.managesProfilePhotos"
                     @click="showProfileCard = !showProfileCard"
-                    class="flex items-center space-x-2 text-sm border-2 rounded-full focus:outline-none transition"
-                    :class="{ 'border-primary': showProfileCard, 'border-[#999999]': !showProfileCard, 'size-12 justify-center': small, 'h-12 w-full px-2 justify-between': !small }">
+                    class="flex items-center space-x-2 text-sm border rounded-full focus:outline-none transition"
+                    :class="{ 'border-primary': showProfileCard, 'border-[#797878]': !showProfileCard, 'size-12 justify-center': small, 'h-12 w-full px-2 justify-between': !small }">
                     <div class="flex items-center">
                         <img class="size-9 rounded-full object-cover" :src="$page.props.auth.user.profile_photo_url"
                             :alt="$page.props.auth.user.name">
@@ -37,11 +37,24 @@
                 <!-- Con barra pequeña -->
                 <section v-if="small">
                     <div v-for="(menu, index) in menus" :key="index">
-                        <button v-if="menu.show" @click="handleClickInMenu(index)" :active="menu.active" :title="menu.label"
-                            class="w-full pl-3 rounded-ld my-2 size-10 transition ease-linear duration-200">
-                            <p :class="menu.active ? 'bg-[#272829] text-white' : 'hover:text-white hover:bg-[#272829] text-[#999999]'"
-                                class="rounded-lg size-10 flex items-center justify-center" v-html="menu.icon"></p>
-                        </button>
+                        <SideNavLink v-if="menu.show" :href="menu.route" :active="menu.active" :dropdown="menu.dropdown"
+                            class="mb-px">
+                            <template #trigger>
+                                <button v-if="menu.show" :active="menu.active" :title="menu.label"
+                                    class="w-full pl-2 rounded-lg my-[5px] size-10 transition ease-linear duration-200">
+                                    <p :class="menu.active ? 'bg-[#272829] text-white' : 'hover:text-white hover:bg-[#272829] text-[#999999]'"
+                                        class="rounded-lg size-10 flex items-center justify-center" v-html="menu.icon"></p>
+                                </button>
+                                <i v-if="menu.notifications" class="fa-solid fa-circle fa-flip text-primary text-[10px] absolute bottom-7 right-1"></i>
+                            </template>
+                            <template #content>
+                                <template v-for="option in menu.options" :key="option">
+                                    <DropdownNavLink v-if="option.show" :href="option.route" :notifications="option.notifications">
+                                        {{ option.label }}
+                                    </DropdownNavLink>
+                                </template>
+                            </template>
+                        </SideNavLink>
                     </div>
                 </section>
 
@@ -49,27 +62,35 @@
                 <section v-else v-for="(menu, index) in menus" :key="index">
                     <!-- Con submenues -->
                     <div v-if="menu.show">
-                        <Accordion v-if="menu.options.length" :icon="menu.icon" :active="menu.active"
-                            :title="menu.label" :id="index">
-                            <div v-for="(option, index2) in menu.options" :key="index2">
-                                <button @click="handleClickInMenu(index)" v-if="option.show" :active="option.active"
-                                    :title="option.label"
-                                    class="w-full pl-3 rounded-full my-2 size-10 transition ease-linear duration-200"
-                                    :class="option.active ? 'bg-[#393939] text-white' : 'hover:text-white hover:bg-gradient-to-r from-gray-800 to-black1 text-gray-700'">
-                                    <p class="w-full truncate"> {{ option.label }}</p>
-                                </button>
-                            </div>
+                        <Accordion v-if="menu.options.length" :icon="menu.icon" :active="menu.active" :title="menu.label" :id="index">
+                            <!-- Opciones del menu -->
+                            <template #content>
+                                <div class="relative" v-for="(option, index2) in menu.options" :key="index2">
+                                    <div class="flex items-center">
+                                        <button v-if="option.show" :active="option.active" :title="option.label"
+                                            class="w-full pl-2 ml-8 rounded-lg size-7 mb-1 transition ease-linear duration-200 text-left text-xs"
+                                            :class="option.active ? 'bg-[#272829] text-white' : 'hover:text-white hover:bg-[#272829] text-[#999999]'">
+                                            <p class="truncate">{{ option.label }}</p>
+                                        </button>
+                                    
+                                    <!-- Adorno lateral de subcategorias-->
+                                    <i v-if="option.active" class="absolute left-[13px] fa-solid fa-circle text-[7px] z-10 bg-[#17141D] p-1"></i>
+                                    <div class="border-l border-[#999999] absolute left-5 h-full"></div>
+                                    </div>
+
+                                </div>
+                            </template>
                         </Accordion>
                         <!-- Sin submenues -->
-                        <button v-else-if="menu.show" @click="handleClickInMenu(index)" :active="menu.active"
+                        <button v-else-if="menu.show" :active="menu.active"
                             :title="menu.label"
-                            class="w-full pl-3 rounded-full my-2 size-10 transition ease-linear duration-200">
-                            <div class="flex items-center rounded-lg"
+                            class="w-full pl-2 rounded-full my-1 size-10 transition ease-linear duration-200 relative">
+                            <Link :href="menu.route" class="flex items-center rounded-lg"
                                 :class="menu.active ? 'bg-[#272829] text-white' : 'hover:text-white hover:bg-[#272829] text-[#999999]'">
-                                <p class="rounded-lg size-10 flex items-center justify-center" v-html="menu.icon">
-                                </p>
+                                <p class="rounded-lg size-10 flex items-center justify-center" v-html="menu.icon"></p>
                                 <span class="font-bold text-sm mr-2">{{ menu.label }}</span>
-                            </div>
+                            </Link>
+                            <i v-if="menu.notifications" class="fa-solid fa-circle fa-flip text-primary text-[10px] absolute bottom-7 right-1"></i>
                         </button>
                     </div>
                 </section>
@@ -77,12 +98,12 @@
         </div>
 
         <!-- Abrir y cerrar sidenav -->
-        <button class="pl-3 rounded-ld my-2 size-10 transition ease-linear duration-200 absolute bottom-4 -left-1">
-            <svg @click="small = false" v-if="small" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" 
+        <button class="pl-2 rounded-ld my-1 size-10 transition ease-linear duration-200 absolute bottom-4 -left-1">
+            <svg @click="updateSideNavSize(false)" v-if="small" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" 
                 class="size-10 px-2 hover:bg-[#272829] hover:text-white text-[#999999] rounded-lg flex items-center justify-center">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
             </svg>
-            <svg @click="small = true" v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" 
+            <svg @click="updateSideNavSize(true)" v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" 
                 class="size-10 px-2 hover:bg-[#272829] hover:text-white text-[#999999] rounded-lg flex items-center justify-center">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
             </svg>
@@ -92,15 +113,11 @@
 </template>
 
 <script>
-import Accordion from './Accordion.vue';
-import { Link } from '@inertiajs/vue3';
-import ApplicationMark from '@/Components/ApplicationMark.vue';
-import Dropdown from '@/Components/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
-import ConfirmationModal from '@/Components/ConfirmationModal.vue';
-import DangerButton from "@/Components/DangerButton.vue";
-import CancelButton from "@/Components/MyComponents/CancelButton.vue";
+import Accordion from '@/Components/MyComponents/Accordion.vue';
 import ProfileCard from './ProfileCard.vue';
+import SideNavLink from "@/Components/MyComponents/SideNavLink.vue";
+import DropdownNavLink from "@/Components/MyComponents/DropdownNavLink.vue";
+import { Link } from '@inertiajs/vue3';
 
 export default {
     data() {
@@ -117,15 +134,45 @@ export default {
                     active: route().current('dashboard'),
                     options: [],
                     dropdown: false,
+                    notifications: false,
                     show: true
                 },
                 {
                     label: 'Transacciones',
                     icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" /></svg>',
-                    route: route('login'),
-                    active: route().current('login'),
-                    options: [],
-                    dropdown: false,
+                    // route: route('profile.show'),
+                    active: route().current('dashboard'),
+                    options: [
+                        {
+                            label: 'Ingresos',
+                            route: route('dashboard'),
+                            show: true,
+                            active: route().current('perfil.show'),
+                            notifications: false,
+                        },
+                        {
+                            label: 'Gastos',
+                            route: route('profile.show'),
+                            show: true,
+                            active: route().current('profile.show'),
+                            notifications: false,
+                        },
+                        {
+                            label: 'Gastos fijos',
+                            route: route('profile.show'),
+                            show: true,
+                            active: route().current('dashboard'),
+                            notifications: false,
+                        },
+                        {
+                            label: 'Inversiones',
+                            route: route('profile.show'),
+                            show: true,
+                            active: route().current('profile.show'),
+                            notifications: false,
+                        },
+                    ],
+                    dropdown: true,
                     show: true
                 },
                 {
@@ -135,6 +182,7 @@ export default {
                     active: route().current('login'),
                     options: [],
                     dropdown: false,
+                    notifications: false,
                     show: true
                 },
                 {
@@ -144,6 +192,7 @@ export default {
                     active: route().current('login'),
                     options: [],
                     dropdown: false,
+                    notifications: false,
                     show: true
                 },
                 {
@@ -153,11 +202,13 @@ export default {
                     active: route().current('login'),
                     options: [],
                     dropdown: false,
+                    notifications: false,
                     show: true
                 },
 
 
                 //ejemplo para usar submenues
+                // {
                 //     label: 'Comunidad',
                 //     icon: '<i class="fa-solid fa-people-roof text-sm mr-2"></i>',
                 //     // route: route('posts.index'),
@@ -186,19 +237,23 @@ export default {
         }
     },
     components: {
-        ApplicationMark,
-        ConfirmationModal,
-        DropdownLink,
-        DangerButton,
-        CancelButton,
+        DropdownNavLink,
+        SideNavLink,
         ProfileCard,
         Accordion,
-        Dropdown,
         Link,
     },
     methods: {
+        updateSideNavSize(is_small){
+            this.small = is_small;
+            localStorage.setItem('is_sidenav_small', is_small);
+        }
     },
     mounted() {
+        const is_small = localStorage.getItem('is_sidenav_small');
+        if (is_small !== null) {
+            this.small = JSON.parse(is_small); // Convertirlo a booleano si es necesario
+        }
     }
 }
 </script>
