@@ -4,17 +4,35 @@
         <div class="bg-[#17141D] h-full overflow-auto">
             <!-- Logo -->
             <div class="flex items-center justify-center mt-7">
-                <Link v-if="small" :href="route('dashboard')">
-                <figure>
-                    <img class="w-12 px-2 mb-[52px]" src="@/../../public/images/isologo.png" alt="logo">
-                </figure>
+                <Link class="h-24" v-if="small" :href="route('dashboard')">
+                    <figure>
+                        <img class="px-2 mb-[52px]" src="@/../../public/images/isologo.png" alt="logo">
+                    </figure>
                 </Link>
-                <Link v-else :href="route('dashboard')">
-                <figure>
-                    <img class="w-32 px-2 mb-[49px]" src="@/../../public/images/white_logo.png" alt="logo">
-                </figure>
+                <Link v-else class="h-24" :href="route('dashboard')">
+                    <figure>
+                        <img class="px-2 mb-[49px]" src="@/../../public/images/white_logo.png" alt="logo">
+                    </figure>
                 </Link>
             </div>
+
+            <!-- Avatar de usuario -->
+            <div class="flex items-center justify-center text-center w-full px-2 mb-7">
+                <button v-if="$page.props.jetstream.managesProfilePhotos"
+                    @click="showProfileCard = !showProfileCard"
+                    class="flex items-center space-x-2 text-sm border-2 rounded-full focus:outline-none transition"
+                    :class="{ 'border-primary': showProfileCard, 'border-[#999999]': !showProfileCard, 'size-12 justify-center': small, 'h-12 w-full px-2 justify-between': !small }">
+                    <div class="flex items-center">
+                        <img class="size-9 rounded-full object-cover" :src="$page.props.auth.user.profile_photo_url"
+                            :alt="$page.props.auth.user.name">
+                        <p v-if="!small" class="text-[11px] text-gray99 leading-snug text-start mt-1 ml-2">
+                            {{ $page.props.auth.user.name }}</p>
+                    </div>
+                    <i v-if="!small" class="fa-solid fa-angle-right text-center text-xs text-[#999999]"></i>
+                </button>
+                <ProfileCard v-if="showProfileCard" @close="showProfileCard = false" class="top-0 left-[calc(100%+0.3rem)]" />
+            </div>
+
             <nav class="pr-2 text-white">
                 <!-- Con barra pequeña -->
                 <section v-if="small">
@@ -36,7 +54,7 @@
                             <div v-for="(option, index2) in menu.options" :key="index2">
                                 <button @click="handleClickInMenu(index)" v-if="option.show" :active="option.active"
                                     :title="option.label"
-                                    class="w-full pl-3 rounded-full mt-2 size-10 transition ease-linear duration-200"
+                                    class="w-full pl-3 rounded-full my-2 size-10 transition ease-linear duration-200"
                                     :class="option.active ? 'bg-[#393939] text-white' : 'hover:text-white hover:bg-gradient-to-r from-gray-800 to-black1 text-gray-700'">
                                     <p class="w-full truncate"> {{ option.label }}</p>
                                 </button>
@@ -45,7 +63,7 @@
                         <!-- Sin submenues -->
                         <button v-else-if="menu.show" @click="handleClickInMenu(index)" :active="menu.active"
                             :title="menu.label"
-                            class="w-full pl-3 rounded-full mt-2 size-10 transition ease-linear duration-200">
+                            class="w-full pl-3 rounded-full my-2 size-10 transition ease-linear duration-200">
                             <div class="flex items-center rounded-lg"
                                 :class="menu.active ? 'bg-[#272829] text-white' : 'hover:text-white hover:bg-[#272829] text-[#999999]'">
                                 <p class="rounded-lg size-10 flex items-center justify-center" v-html="menu.icon">
@@ -71,24 +89,6 @@
 
         </button>
     </div>
-
-    <ConfirmationModal :show="showGoToRouteConfirmation" @close="showGoToRouteConfirmation = false">
-        <template #title>
-            <h1>Proceso pendiente</h1>
-        </template>
-        <template #content>
-            <p>
-                Tienes un proceso sin completar en esta vista. Si cambias de vista, se borrarán los cambios o
-                procesos que no has finalizado. ¿Continuar de todas formas?
-            </p>
-        </template>
-        <template #footer>
-            <div class="flex items-center space-x-1">
-                <CancelButton @click="showGoToRouteConfirmation = false">Cancelar</CancelButton>
-                <DangerButton @click="goToRoute()">Continuar</DangerButton>
-            </div>
-        </template>
-    </ConfirmationModal>
 </template>
 
 <script>
@@ -100,14 +100,15 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import ConfirmationModal from '@/Components/ConfirmationModal.vue';
 import DangerButton from "@/Components/DangerButton.vue";
 import CancelButton from "@/Components/MyComponents/CancelButton.vue";
+import ProfileCard from './ProfileCard.vue';
 
 export default {
     data() {
         return {
             small: true,
+            showProfileCard: false,
             collapsedMenu: null,
             routeToGo: null,
-            showGoToRouteConfirmation: false,
             menus: [
                 {
                     label: 'Inicio',
@@ -137,7 +138,7 @@ export default {
                     show: true
                 },
                 {
-                    label: 'Deudas y pagos pendientes',
+                    label: 'Deudas y pagos',
                     icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg>',
                     route: route('login'),
                     active: route().current('login'),
@@ -190,43 +191,12 @@ export default {
         DropdownLink,
         DangerButton,
         CancelButton,
+        ProfileCard,
         Accordion,
         Dropdown,
         Link,
     },
     methods: {
-        handleClickInMenu(index) {
-            if (this.menus[index].options.length) {
-                if (this.collapsedMenu === index) {
-                    this.collapsedMenu = null;
-                } else {
-                    this.collapsedMenu = index;
-                }
-            } else {
-                // revisar si hay proceso pendiente para no cambiar de vista sin preguntar
-                const pendentProcess = JSON.parse(localStorage.getItem('pendentProcess'));
-                if (pendentProcess) {
-                    this.routeToGo = this.menus[index].route;
-                    this.showGoToRouteConfirmation = true;
-                } else {
-                    this.goToRoute(this.menus[index].route)
-                }
-            }
-        },
-        goToRoute(route = null) {
-            // resetear variable de local storage a false
-            localStorage.setItem('pendentProcess', false);
-
-            // ir a la ruta solicitada
-            if (route) {
-                this.$inertia.get(route);
-            } else {
-                this.$inertia.get(this.routeToGo);
-            }
-        },
-        logout() {
-            this.$inertia.post(route('logout'));
-        }
     },
     mounted() {
     }

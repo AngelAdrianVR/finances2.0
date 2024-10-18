@@ -54,62 +54,6 @@ const logout = () => {
                                     </Link>
                                 </div>
                             </div>
-                            <div class="hidden sm:flex sm:items-center sm:ms-6">
-
-                                <!-- Settings Dropdown -->
-                                <div class="ms-3 relative">
-                                    <Dropdown align="right" width="48">
-                                        <template #trigger>
-                                            <button v-if="$page.props.jetstream.managesProfilePhotos"
-                                                class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition">
-                                                <img class="h-8 w-8 rounded-full object-cover"
-                                                    :src="$page.props.auth.user.profile_photo_url"
-                                                    :alt="$page.props.auth.user.name">
-                                            </button>
-
-                                            <span v-else class="inline-flex items-center rounded-md">
-                                                <button type="button"
-                                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none focus:bg-gray-50 active:bg-gray-50 transition ease-in-out duration-150">
-                                                    <svg width="10" height="13" viewBox="0 0 12 15" fill="none"
-                                                        class="mr-2" xmlns="http://www.w3.org/2000/svg">
-                                                        <path
-                                                            d="M8.50033 3.50033C8.50033 4.16346 8.23691 4.79943 7.768 5.26834C7.2991 5.73724 6.66313 6.00067 6 6.00067C5.33687 6.00067 4.7009 5.73724 4.232 5.26834C3.76309 4.79943 3.49967 4.16346 3.49967 3.50033C3.49967 2.8372 3.76309 2.20123 4.232 1.73233C4.7009 1.26343 5.33687 1 6 1C6.66313 1 7.2991 1.26343 7.768 1.73233C8.23691 2.20123 8.50033 2.8372 8.50033 3.50033ZM1 12.9136C1.02143 11.6016 1.55763 10.3507 2.49298 9.43049C3.42833 8.51029 4.68788 7.99458 6 7.99458C7.31212 7.99458 8.57166 8.51029 9.50702 9.43049C10.4424 10.3507 10.9786 11.6016 11 12.9136C9.43138 13.6329 7.72566 14.0041 6 14.0017C4.21576 14.0017 2.5222 13.6123 1 12.9136Z"
-                                                            stroke="#6D6E72" stroke-width="1.5" stroke-linecap="round"
-                                                            stroke-linejoin="round" />
-                                                    </svg>
-                                                    {{ $page.props.auth.user.name }}
-                                                    <svg class="ms-2 -me-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                                        stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                                                    </svg>
-                                                </button>
-                                            </span>
-                                        </template>
-
-                                        <template #content>
-                                            <!-- Account Management -->
-                                            <div class="block px-4 py-2 text-xs text-gray-400">
-                                                Cuenta
-                                            </div>
-
-                                            <DropdownLink :href="route('profile.show')">
-                                                Perfil
-                                            </DropdownLink>
-
-                                            <div class="border-t border-gray-200" />
-
-                                            <!-- Authentication -->
-                                            <form @submit.prevent="logout">
-                                                <DropdownLink as="button">
-                                                    Cerrar sesión
-                                                </DropdownLink>
-                                            </form>
-                                        </template>
-                                    </Dropdown>
-                                </div>
-                            </div>
 
                             <!-- Hamburger -->
                             <div class="-me-2 flex items-center sm:hidden">

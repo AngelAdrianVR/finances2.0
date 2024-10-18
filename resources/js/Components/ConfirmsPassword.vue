@@ -15,11 +15,11 @@ defineProps({
     },
     content: {
         type: String,
-        default: 'For your security, please confirm your password to continue.',
+        default: 'Para su seguridad, por favor confirme su contraseña para continuar.',
     },
     button: {
         type: String,
-        default: 'Confirm',
+        default: 'Confirmar',
     },
 });
 
@@ -90,26 +90,27 @@ const closeModal = () => {
                         v-model="form.password"
                         type="password"
                         class="mt-1 block w-3/4"
-                        placeholder="Password"
+                        placeholder="Contraseña"
                         autocomplete="current-password"
                         @keyup.enter="confirmPassword"
+                        :errorMessage="form.error"
                     />
 
-                    <InputError :message="form.error" class="mt-2" />
+                    <!-- <InputError :message="form.error" class="mt-2" /> -->
                 </div>
             </template>
 
             <template #footer>
                 <SecondaryButton @click="closeModal">
-                    Cancel
+                    Cancelar
                 </SecondaryButton>
 
                 <PrimaryButton
-                    class="ms-3"
-                    :class="{ 'opacity-25': form.processing }"
+                    class="ms-3 flex items-center space-x-2"
                     :disabled="form.processing"
                     @click="confirmPassword"
                 >
+                <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
                     {{ button }}
                 </PrimaryButton>
             </template>
