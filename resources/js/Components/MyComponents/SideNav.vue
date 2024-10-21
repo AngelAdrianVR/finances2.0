@@ -66,17 +66,17 @@
                             <!-- Opciones del menu -->
                             <template #content>
                                 <div class="relative" v-for="(option, index2) in menu.options" :key="index2">
-                                    <div class="flex items-center">
+                                    <Link :href="option.route" class="flex items-center">
                                         <button v-if="option.show" :active="option.active" :title="option.label"
                                             class="w-full pl-2 ml-8 rounded-lg size-7 mb-1 transition ease-linear duration-200 text-left text-xs"
                                             :class="option.active ? 'bg-[#272829] text-white' : 'hover:text-white hover:bg-[#272829] text-[#999999]'">
                                             <p class="truncate">{{ option.label }}</p>
                                         </button>
                                     
-                                    <!-- Adorno lateral de subcategorias-->
-                                    <i v-if="option.active" class="absolute left-[13px] fa-solid fa-circle text-[7px] z-10 bg-[#17141D] p-1"></i>
-                                    <div class="border-l border-[#999999] absolute left-5 h-full"></div>
-                                    </div>
+                                        <!-- Adorno lateral de subcategorias-->
+                                        <i v-if="option.active" class="absolute left-[13px] fa-solid fa-circle text-[7px] z-10 bg-[#17141D] p-1"></i>
+                                        <div class="border-l border-[#999999] absolute left-5 h-full"></div>
+                                    </Link>
 
                                 </div>
                             </template>
