@@ -30,7 +30,7 @@
                 </el-table-column>
                 <el-table-column prop="periodicity" label="Recurrencia del ingreso" width="150" />
                 <el-table-column prop="category" label="Categoría" width="150" />
-                <el-table-column label="Método de pago">
+                <el-table-column label="Método de pago" width="150">
                     <template #default="scope">
                         <p>{{ scope.row.payment_method ?? '-' }}</p>
                     </template>
