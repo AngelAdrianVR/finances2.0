@@ -49,7 +49,7 @@
                             </template>
                             <template #content>
                                 <template v-for="option in menu.options" :key="option">
-                                    <DropdownNavLink v-if="option.show" :href="option.route" :notifications="option.notifications">
+                                    <DropdownNavLink v-if="option.show" :href="option.route" :notifications="option.notifications" :active="option.active">
                                         {{ option.label }}
                                     </DropdownNavLink>
                                 </template>
@@ -66,17 +66,17 @@
                             <!-- Opciones del menu -->
                             <template #content>
                                 <div class="relative" v-for="(option, index2) in menu.options" :key="index2">
-                                    <div class="flex items-center">
+                                    <Link :href="option.route" class="flex items-center">
                                         <button v-if="option.show" :active="option.active" :title="option.label"
                                             class="w-full pl-2 ml-8 rounded-lg size-7 mb-1 transition ease-linear duration-200 text-left text-xs"
                                             :class="option.active ? 'bg-[#272829] text-white' : 'hover:text-white hover:bg-[#272829] text-[#999999]'">
                                             <p class="truncate">{{ option.label }}</p>
                                         </button>
                                     
-                                    <!-- Adorno lateral de subcategorias-->
-                                    <i v-if="option.active" class="absolute left-[13px] fa-solid fa-circle text-[7px] z-10 bg-[#17141D] p-1"></i>
-                                    <div class="border-l border-[#999999] absolute left-5 h-full"></div>
-                                    </div>
+                                        <!-- Adorno lateral de subcategorias-->
+                                        <i v-if="option.active" class="absolute left-[13px] fa-solid fa-circle text-[7px] z-10 bg-[#17141D] p-1"></i>
+                                        <div class="border-l border-[#999999] absolute left-5 h-full"></div>
+                                    </Link>
 
                                 </div>
                             </template>
@@ -141,20 +141,20 @@ export default {
                     label: 'Transacciones',
                     icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" /></svg>',
                     // route: route('profile.show'),
-                    active: route().current('dashboard'),
+                    active: route().current('incomes.*') || route().current('outcomes.*'),
                     options: [
                         {
                             label: 'Ingresos',
-                            route: route('dashboard'),
+                            route: route('incomes.index'),
                             show: true,
-                            active: route().current('perfil.show'),
+                            active: route().current('incomes.*'),
                             notifications: false,
                         },
                         {
                             label: 'Gastos',
-                            route: route('profile.show'),
+                            route: route('outcomes.index'),
                             show: true,
-                            active: route().current('profile.show'),
+                            active: route().current('outcomes.*'),
                             notifications: false,
                         },
                         {
