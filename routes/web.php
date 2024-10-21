@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\OutcomeController;
@@ -57,3 +58,8 @@ Route::resource('loans', LoanController::class)->middleware('auth');
 // Payment routes -------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
 Route::resource('payments', PaymentController::class)->middleware('auth');
+
+
+// calendar routes -------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
+Route::resource('calendars', CalendarController::class)->middleware('auth');
