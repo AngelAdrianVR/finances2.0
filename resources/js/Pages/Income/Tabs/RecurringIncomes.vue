@@ -55,7 +55,7 @@
                                     <el-dropdown-item :command="'edit-' + scope.row.id">
                                         Editar
                                     </el-dropdown-item>
-                                    <el-dropdown-item :command="'edit-' + scope.row.id">
+                                    <el-dropdown-item :command="'status-' + scope.row.id">
                                         {{ scope.row.is_active ? 'Deshabilitar ingreso recurrente' : 'Habilitar ingreso recurrente'}}
                                     </el-dropdown-item>
                                 </el-dropdown-menu>
@@ -73,6 +73,7 @@
 import PaginationWithNoMeta from "@/Components/MyComponents/PaginationWithNoMeta.vue";
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import axios from 'axios';
 
 export default {
 data() {
@@ -101,7 +102,36 @@ methods:{
         const commandName = command.split('-')[0];
         const rowId = command.split('-')[1];
 
-        this.$inertia.get(route('recurring-incomes.' + commandName, rowId));
+        if ( commandName === 'status' ) {
+            this.toggleStatus(rowId);
+        } else {
+            this.$inertia.get(route('recurring-incomes.' + commandName, rowId));
+        }
+    },
+    async toggleStatus(rowId) {
+        try {
+            const response = await axios.post(route('recurring-incomes.toggle-status', rowId));
+
+            if ( response.status === 200 ) {
+
+                const incomeIndex = this.recurring_incomes.data.findIndex(item => item.id == rowId);
+
+                if ( incomeIndex !== -1 ) {
+                    this.recurring_incomes.data[incomeIndex].is_active = response.data.is_active;
+                }
+
+                this.$message({
+                    type: 'success',
+                    message: 'Estatus cambiado'
+                });
+            }
+        } catch (error) {
+            console.log(error);
+            this.$message({
+                type: 'error',
+                message: error
+            });
+        }
     },
     async deleteSelections() {
         this.$confirm('¿Estás seguro que deseas continuar con la eliminación?', 'Confirmar', {
@@ -158,13 +188,15 @@ methods:{
     },
     handleRowClick(row) {
         this.$inertia.get(route('recurring-incomes.show', row.id))
-
         //en otra pestaña
         // const url = this.route('recurring-incomes.show', row.id);
         // window.open(url, '_blank');
     },
-    tableRowClassName({ row, rowIndex }) {
-        return 'cursor-pointer text-xs';
+    tableRowClassName(row) {
+        if ( !row.row.is_active ) {
+            return 'cursor-pointer text-xs !bg-red-50';
+        } 
+            return 'cursor-pointer text-xs';
     },
     formatDate(date) {
         if ( date ) {

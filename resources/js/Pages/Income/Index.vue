@@ -18,7 +18,9 @@
 
                 <!-- buttons -->
                 <div class="flex items-center space-x-2">
-                    <PrimaryButton @click="handleCreate()"><i class="fa-solid fa-plus mr-2"></i>Nuevo Ingreso</PrimaryButton>
+                    <PrimaryButton @click="handleCreate()"><i class="fa-solid fa-plus mr-2"></i>
+                        {{ this.activeTab === '1' ? 'Nuevo Ingreso' : 'Nuevo ingreso recurrente'}}
+                    </PrimaryButton>
                 </div>
             </section>
 
@@ -93,17 +95,30 @@ methods:{
         this.searchedWord = this.searchQuery;
         this.searchQuery = null;
         try {
-            if (!this.search) {
-                this.filteredQuotes = this.quotes.data;
+            if (!this.searchedWord) {
+                this.filteredIncomes = this.incomes.data;
+                this.filteredRecurringIncomes = this.recurring_incomes.data;
             } else {
-                const response = await axios.post(route('quotes.get-matches', { query: this.search }));
-
-                if (response.status === 200) {
-                    this.filteredQuotes = response.data.items;
+                //si esta en la pestaña 1 de ingresos
+                if ( this.activeTab === '1' ) {
+                    const response = await axios.post(route('incomes.get-matches', { query: this.searchedWord }));
+                    if (response.status === 200) {
+                        this.filteredIncomes = response.data.items;
+                    }
+                } else {
+                    const response = await axios.post(route('recurring-incomes.get-matches', { query: this.searchedWord }));
+                    if (response.status === 200) {
+                        this.filteredRecurringIncomes = response.data.items;
+                    }
                 }
             }
         } catch (error) {
             console.log(error);
+            this.$message({
+                type: 'error',
+                message: error
+            });
+
         } finally {
             this.loading = false;
         }
@@ -117,15 +132,33 @@ methods:{
     },
     closedTag() {
         this.searchedWord = null;
-        // this.totalPagination = this.products.length / 3;
+        this.filteredIncomes = this.incomes;
+        this.filteredRecurringIncomes = this.recurring_incomes;
     },
     handleClick(tab) {
-      // Agrega la variable currentTab=tab.props.name a la URL para mejorar la navegacion al actalizar o cambiar de pagina
-      const currentURL = new URL(window.location.href);
-      currentURL.searchParams.set('currentTab', tab.props.name);
-      // Actualiza la URL
-      window.history.replaceState({}, document.title, currentURL.href);
-    },
+        // Obtén la URL actual
+        const currentURL = new URL(window.location.href);
+
+        // Agrega la variable currentTab=tab.props.name a la URL
+        currentURL.searchParams.set('currentTab', tab.props.name);
+
+        //revisa si existe una variable de paginacion
+        const paginationURL = currentURL.searchParams.get('page');
+
+        // Elimina el parámetro de paginación "page"
+        currentURL.searchParams.delete('page');
+
+        // Actualiza la URL sin recargar la página
+        window.history.replaceState({}, document.title, currentURL.href);
+
+        //actualiza la pagina si se cambio paginacion en alguna pestaña para no afectar la otra
+        if ( paginationURL ) {
+            location.reload();
+        }
+
+        // Cierra las búsquedas de la otra pestaña
+        this.closedTag();
+    }
 },
 mounted() {
     // Obtener la URL actual
