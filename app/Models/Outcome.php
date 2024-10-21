@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Outcome extends Model
 {
     protected $fillable = [
-        'amount',
-        'payment_method',
-        'category',
         'is_recurring_outcome',
+        'payment_method',
         'periodicity',
         'description',
+        'category',
+        'concept',
         'user_id',
+        'amount',
     ];
 
     //relationships

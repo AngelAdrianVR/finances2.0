@@ -4,6 +4,7 @@ use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\OutcomeController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\RecurringIncomeController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -31,6 +32,16 @@ Route::middleware([
 // Income routes -------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
 Route::resource('incomes', IncomeController::class)->middleware('auth');
+Route::post('incomes/massive-delete', [IncomeController::class, 'massiveDelete'])->name('incomes.massive-delete');
+Route::post('incomes/get-matches', [IncomeController::class, 'getMatches'])->name('incomes.get-matches');
+
+
+// Recurring Income routes -------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------
+Route::resource('recurring-incomes', RecurringIncomeController::class)->middleware('auth');
+Route::post('recurring-incomes/massive-delete', [RecurringIncomeController::class, 'massiveDelete'])->name('recurring-incomes.massive-delete');
+Route::post('recurring-incomes/get-matches', [RecurringIncomeController::class, 'getMatches'])->name('recurring-incomes.get-matches');
+Route::post('recurring-incomes/toggle-status/{recurring_income}', [RecurringIncomeController::class, 'toggleStatus'])->name('recurring-incomes.toggle-status');
 
 
 // Outcome routes -------------------------------------------------------------------------------------

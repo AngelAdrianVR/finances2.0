@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('outcomes', function (Blueprint $table) {
+        Schema::create('recurring_incomes', function (Blueprint $table) {
             $table->id();
             $table->string('concept');
+            $table->boolean('is_active')->default(true); //activo ingreso recurrente
+            $table->string('periodicity')->nullable(); //periodo de recurrencia: semanal, mensual...
             $table->float('amount')->unsigned();
             $table->string('payment_method')->nullable();
-            $table->string('category')->nullable();
-            $table->boolean('is_recurring_outcome')->default(false);
-            $table->string('periodicity')->nullable();
             $table->string('description')->nullable();
+            $table->string('category')->nullable();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('outcomes');
+        Schema::dropIfExists('recurring_incomes');
     }
 };
