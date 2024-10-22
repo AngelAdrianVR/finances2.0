@@ -55,7 +55,7 @@
                             </button>
                             <template #dropdown>
                                 <el-dropdown-menu>
-                                    <el-dropdown-item :command="'show-' + scope.row.id">
+                                    <el-dropdown-item @click="itemToShow = scope.row" :command="'show-' + scope.row.id + '-' + scope.row">
                                         Ver
                                     </el-dropdown-item>
                                     <el-dropdown-item :command="'edit-' + scope.row.id">
@@ -70,10 +70,72 @@
         </div>
         <!-- tabla ends -->
     </main>
+
+    <!-- -------------- Show Modal starts----------------------- -->
+    <DialogModal :show="showDetailsModal" @close="showDetailsModal = false">
+        <template #title>
+            <div class="flex items-center justify-between">
+                <p class="font-bold text-left mb-5">Detalles de ingreso</p>
+                <el-tooltip v-if="itemToShow.automatically_created" effect="dark" content="El registro se ha realizado automáticamente" placement="right">
+                    <div class="inline-flex items-center rounded-full px-3 py-1 bg-[#DDFEC0] text-[#47B61E] text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        </svg>
+                        Ingreso recurrente
+                    </div>
+                </el-tooltip>
+            </div>
+        </template>
+
+        <template #content>
+            <section class="space-y-2">
+                <div class="flex">
+                    <p class="text-[#7a7a7a] w-44">ID</p>
+                    <p>{{ itemToShow.id }}</p>
+                </div>
+                <div class="flex">
+                    <p class="text-[#7a7a7a] w-44">Concepto del ingreso</p>
+                    <p>{{ itemToShow.concept }}</p>
+                </div>
+                <div class="flex">
+                    <p class="text-[#7a7a7a] w-44">Fecha</p>
+                    <p>{{ formatDate(itemToShow.created_at) }}</p>
+                </div>
+                <div class="flex">
+                    <p class="text-[#7a7a7a] w-44">Monto</p>
+                    <p>${{ itemToShow.amount?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
+                </div>
+                <div class="flex">
+                    <p class="text-[#7a7a7a] w-44">Categoría del ingreso</p>
+                    <p>{{ itemToShow.category }}</p>
+                </div>
+                <div class="flex">
+                    <p class="text-[#7a7a7a] w-44">Método de pago</p>
+                    <p>{{ itemToShow.payment_method }}</p>
+                </div>
+                <div class="flex">
+                    <p class="text-[#7a7a7a] w-44">Descripción</p>
+                    <p>{{ itemToShow.description }}</p>
+                </div>
+            </section>
+        </template>
+
+        <template #footer>
+            <button @click="$inertia.get(route('incomes.edit', itemToShow.id))" class="size-9 border border-primary text-primary rounded-full flex justify-center items-center mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                </svg>
+            </button>
+            <PrimaryButton @click="showDetailsModal = false">Cerrar</PrimaryButton>
+        </template>
+    </DialogModal>
+    <!-- --------------------------- Modal ends ------------------------------------ -->
 </template>
 
 <script>
 import PaginationWithNoMeta from "@/Components/MyComponents/PaginationWithNoMeta.vue";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
+import DialogModal from "@/Components/DialogModal.vue";
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -82,10 +144,14 @@ data() {
     return {
         //tabla
         disableMassiveActions: true,
+        showDetailsModal: false,
+        itemToShow: null,
     }
 },
 components:{
     PaginationWithNoMeta,
+    PrimaryButton,
+    DialogModal
 },
 props:{
     incomes: Object
@@ -104,7 +170,11 @@ methods:{
         const commandName = command.split('-')[0];
         const rowId = command.split('-')[1];
 
-        this.$inertia.get(route('incomes.' + commandName, rowId));
+        if ( commandName === 'show' ) {
+            this.showDetailsModal = true;
+        } else {
+            this.$inertia.get(route('incomes.' + commandName, rowId));
+        }
     },
     async deleteSelections() {
         this.$confirm('¿Estás seguro que deseas continuar con la eliminación?', 'Confirmar', {
@@ -160,7 +230,9 @@ methods:{
             
     },
     handleRowClick(row) {
-        this.$inertia.get(route('incomes.show', row.id))
+        this.itemToShow = row;
+        this.showDetailsModal = true;
+        // this.$inertia.get(route('incomes.show', row.id));
 
         //en otra pestaña
         // const url = this.route('recurring-incomes.show', row.id);

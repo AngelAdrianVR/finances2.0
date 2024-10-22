@@ -3,63 +3,108 @@
 namespace App\Http\Controllers;
 
 use App\Models\Outcome;
+use App\Models\RecurringOutcome;
 use Illuminate\Http\Request;
 
 class OutcomeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $outcomes = Outcome::paginate(50);
+        $recurring_outcomes = RecurringOutcome::paginate(50);
+
+        return inertia('Outcome/Index', compact('outcomes', 'recurring_outcomes'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return inertia('Outcome/Create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'amount' => 'required|numeric|min:0|max:999999',
+            'category' => 'nullable|string',
+            'payment_method' => 'nullable|string',
+            'concept' => 'required|string|max:50',
+            'created_at' => 'required',
+            'periodicity' => $request->is_recurring_outcome ? 'required' : 'nullable',
+            'description' => 'nullable',
+        ]);
+
+        Outcome::create($request->all() + ['user_id' => auth()->id()]);
+
+        //se crea un registro de gasto recurrente si se señala que lo es
+        if ( $request->is_recurring_outcome ) {
+            RecurringOutcome::create($request->all() + ['user_id' => auth()->id()]);
+        }
+
+        return to_route('outcomes.index');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Outcome $outcome)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Outcome $outcome)
     {
-        //
+        return inertia('Outcome/Edit', compact('outcome'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Outcome $outcome)
     {
-        //
+        $request->validate([
+            'amount' => 'required|numeric|min:0|max:999999',
+            'category' => 'nullable|string',
+            'payment_method' => 'nullable|string',
+            'concept' => 'required|string|max:50',
+            'created_at' => 'required',
+            'periodicity' => $request->is_recurring_outcome ? 'required' : 'nullable',
+            'description' => 'nullable',
+        ]);
+
+        $outcome->update($request->all());
+
+        //se crea un registro de gasto recurrente si se señala que lo es
+        if ( $request->is_recurring_outcome ) {
+            RecurringOutcome::create($request->all() + ['user_id' => auth()->id()]);
+        }
+
+        return to_route('outcomes.index');
+
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Outcome $outcome)
     {
         //
+    }
+
+    public function massiveDelete(Request $request)
+    {
+        foreach ($request->outcomes as $outcome) {
+            $outcome = Outcome::find($outcome['id']);
+            $outcome?->delete();            
+        }
+
+        // return response()->json(['message' => 'Producto(s) eliminado(s)']);
+    }
+
+    public function getMatches(Request $request)
+    {
+        $query = $request->input('query');
+
+        // Realiza la búsqueda
+        $outcomes = Outcome::where('id', 'like', "%{$query}%")
+            ->orWhere('concept', 'like', "%{$query}%")
+            ->orWhere('amount', 'like', "%{$query}%")
+            ->orWhere('category', 'like', "%{$query}%")
+            ->orWhere('created_at', 'like', "%{$query}%")
+            ->orWhere('payment_method', 'like', "%{$query}%")
+            ->paginate(200);
+
+        // Devuelve las cotizaciones encontradas
+        return response()->json(['items' => $outcomes], 200);
     }
 }

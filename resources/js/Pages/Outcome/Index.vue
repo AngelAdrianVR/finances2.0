@@ -1,7 +1,7 @@
 <template>
-    <AppLayout title="Ingresos">
+    <AppLayout title="Gastos">
         <main class="px-2 md:px-10 pt-1 pb-16">
-            <h1 class="font-bold my-3 ml-4 text-lg">Ingresos</h1>
+            <h1 class="font-bold my-3 ml-4 text-lg">Gastos</h1>
 
             <section class="md:flex justify-between items-center">
                 <article class="flex items-center space-x-5 lg:w-1/3 mb-3 md:mb-0">
@@ -19,7 +19,7 @@
                 <!-- buttons -->
                 <div class="flex items-center space-x-2">
                     <PrimaryButton @click="handleCreate()"><i class="fa-solid fa-plus mr-2"></i>
-                        {{ this.activeTab === '1' ? 'Nuevo Ingreso' : 'Nuevo ingreso recurrente'}}
+                        {{ this.activeTab === '1' ? 'Nuevo gasto' : 'Nuevo gasto recurrente'}}
                     </PrimaryButton>
                 </div>
             </section>
@@ -28,27 +28,28 @@
 
             <!-- Tabs -->
             <el-tabs v-else v-model="activeTab" class="mx-5 mt-3" @tab-click="handleClick">
-                <el-tab-pane label="Ingresos" name="1">
+                <el-tab-pane label="Gastos" name="1">
                     <template #label>
                         <div class="flex items-center space-x-2">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 18.75 7.5-7.5 7.5 7.5" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 7.5-7.5 7.5 7.5" />
                             </svg>
-                            <p>Ingresos</p>
+                            <p>Gastos</p>
                         </div>
                     </template>
-                    <Incomes :incomes="filteredIncomes" />
+                    <Outcomes :outcomes="filteredOutcomes" />
                 </el-tab-pane>
-                <el-tab-pane label="Ingresos recurrentes" name="2">
+                <el-tab-pane label="Gastos recurrentes" name="2">
                     <template #label>
                         <div class="flex items-center space-x-2">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
                             </svg>
-                            <p>Ingresos recurrentes</p>
+                            <p>Gastos recurrentes</p>
                         </div>
                     </template>
-                    <RecurringIncomes :recurring_incomes="filteredRecurringIncomes" />
+                    <RecurringOutcomes :recurring_outcomes="filteredRecurringOutcomes" />
                 </el-tab-pane>
             </el-tabs>
         </main>
@@ -56,9 +57,9 @@
 </template>
 
 <script>
-import Incomes from './Tabs/Incomes.vue';
+import Outcomes from './Tabs/Outcomes.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import RecurringIncomes from './Tabs/RecurringIncomes.vue';
+import RecurringOutcomes from './Tabs/RecurringOutcomes.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import LoadingLogo from "@/Components/MyComponents/LoadingLogo.vue";
 
@@ -73,21 +74,21 @@ data() {
         //tabs
         activeTab: '1',
         //tablas
-        filteredIncomes: this.incomes,
-        filteredRecurringIncomes: this.recurring_incomes,
+        filteredOutcomes: this.outcomes,
+        filteredRecurringOutcomes: this.recurring_outcomes,
     }
 },
 components:{
-    RecurringIncomes,
+    RecurringOutcomes,
     PrimaryButton,
     LoadingLogo,
     AppLayout,
     AppLayout,
-    Incomes
+    Outcomes
 },
 props:{
-    incomes: Object,
-    recurring_incomes: Object
+    outcomes: Object,
+    recurring_outcomes: Object
 },
 methods:{
     async handleSearch() {
@@ -96,19 +97,19 @@ methods:{
         this.searchQuery = null;
         try {
             if (!this.searchedWord) {
-                this.filteredIncomes = this.incomes.data;
-                this.filteredRecurringIncomes = this.recurring_incomes.data;
+                this.filteredOutcomes = this.outcomes.data;
+                this.filteredRecurringOutcomes = this.recurring_outcomes.data;
             } else {
                 //si esta en la pestaña 1 de ingresos
                 if ( this.activeTab === '1' ) {
-                    const response = await axios.post(route('incomes.get-matches', { query: this.searchedWord }));
+                    const response = await axios.post(route('outcomes.get-matches', { query: this.searchedWord }));
                     if (response.status === 200) {
-                        this.filteredIncomes = response.data.items;
+                        this.filteredOutcomes = response.data.items;
                     }
                 } else {
-                    const response = await axios.post(route('recurring-incomes.get-matches', { query: this.searchedWord }));
+                    const response = await axios.post(route('recurring-outcomes.get-matches', { query: this.searchedWord }));
                     if (response.status === 200) {
-                        this.filteredRecurringIncomes = response.data.items;
+                        this.filteredRecurringOutcomes = response.data.items;
                     }
                 }
             }
@@ -125,15 +126,15 @@ methods:{
     },
     handleCreate() {
         if ( this.activeTab === '1' ) {
-            this.$inertia.get(route('incomes.create'));
+            this.$inertia.get(route('outcomes.create'));
         } else {
-            this.$inertia.get(route('recurring-incomes.create'));
+            this.$inertia.get(route('recurring-outcomes.create'));
         }
     },
     closedTag() {
         this.searchedWord = null;
-        this.filteredIncomes = this.incomes;
-        this.filteredRecurringIncomes = this.recurring_incomes;
+        this.filteredOutcomes = this.outcomes;
+        this.filteredRecurringOutcomes = this.recurring_outcomes;
     },
     handleClick(tab) {
         // Obtén la URL actual
