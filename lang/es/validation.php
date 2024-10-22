@@ -141,5 +141,8 @@ return [
         'created_at' => 'fecha',
         'amount' => 'monto',
         'periodicity' => 'recurrencia',
+        'type' => 'tipo',
+        'profitability_type' => 'tipo de interés',
+        'status ' => 'estatus',
     ],
 ];
