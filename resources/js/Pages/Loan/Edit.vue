@@ -1,9 +1,9 @@
 <template>
-    <AppLayout title="Registrar préstamo">
+    <AppLayout title="Editar préstamo">
         <main class="px-3 md:px-16 py-8">
             <Back />
-            <form @submit.prevent="store" class="rounded-xl border border-grayD9 lg:p-5 p-3 lg:w-2/3 xl:w-1/2 mx-auto mt-2 lg:grid lg:grid-cols-2 gap-3">
-                <h1 class="font-bold ml-2 col-span-full mb-4">Registrar préstamo</h1>
+            <form @submit.prevent="update" class="rounded-xl border border-grayD9 lg:p-5 p-3 lg:w-2/3 xl:w-1/2 mx-auto mt-2 lg:grid lg:grid-cols-2 gap-3">
+                <h1 class="font-bold ml-2 col-span-full mb-4">Editar préstamo</h1>
                 
                 <div>
                     <InputLabel value="Tipo de préstamo" class="ml-3 mb-1" />
@@ -238,20 +238,20 @@ import { useForm } from "@inertiajs/vue3";
 export default {
 data() {
     const form = useForm({
-        type: null,
-        beneficiary_name: null,
-        payment_periodicity: null,
-        lender_name: null,
-        profitability: null,
-        profitability_mode: 'Porcentaje',
-        profitability_type: null,
-        profiability_period: null,
-        expired_date: null,
-        amount: null,
-        status: null,
-        loan_date: null,
-        description: null,
-        no_interest: false,
+        type: this.loan.type,
+        beneficiary_name: this.loan.beneficiary_name,
+        payment_periodicity: this.loan.payment_periodicity,
+        lender_name: this.loan.lender_name,
+        profitability: this.loan.profitability,
+        profitability_mode: this.loan.profitability_mode,
+        profitability_type: this.loan.profitability_type,
+        profiability_period: this.loan.profiability_period,
+        expired_date: this.loan.expired_date,
+        amount: this.loan.amount,
+        status: this.loan.status,
+        loan_date: this.loan.loan_date,
+        description: this.loan.description,
+        no_interest: this.loan.profitability ? false : true,
     });
 
     return {
@@ -303,14 +303,17 @@ components:{
     AppLayout,
     Back
 },
+props:{
+    loan: Object
+},
 methods:{
-    store() {
-        this.form.post(route("loans.store"), {
+    update() {
+        this.form.put(route("loans.update", this.loan.id), {
             onSuccess: () => {
                 // message
                 this.$message({
                     type: 'success',
-                    message: 'Préstamo registrado'
+                    message: 'Préstamo editado'
                 });
             },
         });

@@ -23,10 +23,10 @@
                 <el-table-column type="selection" width="30" />
                 <el-table-column label="Folio" width="80">
                     <template #default="scope">
-                        <p>R-{{ scope.row.id?.toString().padStart(3, '0') }}</p>
+                        <p>O-{{ scope.row.id?.toString().padStart(3, '0') }}</p>
                     </template>
                 </el-table-column>
-                <el-table-column prop="lender_name" label="Prestamista" width="200" />
+                <el-table-column prop="beneficiary_name" label="Beneficiario" width="200" />
                 <el-table-column label="Fecha del préstamo" width="150">
                     <template #default="scope">
                         <p>{{ formatDate(scope.row.loan_date) }}</p>
@@ -68,7 +68,7 @@
                             </button>
                             <template #dropdown>
                                 <el-dropdown-menu>
-                                    <el-dropdown-item @click="itemToShow = scope.row" :command="'show-' + scope.row.id + '-' + scope.row">
+                                    <el-dropdown-item :command="'show-' + scope.row.id">
                                         Ver
                                     </el-dropdown-item>
                                     <el-dropdown-item :command="'edit-' + scope.row.id">
@@ -119,11 +119,7 @@ methods:{
         const commandName = command.split('-')[0];
         const rowId = command.split('-')[1];
 
-        if ( commandName === 'show' ) {
-            this.showDetailsModal = true;
-        } else {
-            this.$inertia.get(route('loans.' + commandName, rowId));
-        }
+        this.$inertia.get(route('loans.' + commandName, rowId));
     },
     async deleteSelections() {
         this.$confirm('¿Estás seguro que deseas continuar con la eliminación?', 'Confirmar', {

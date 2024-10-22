@@ -87,7 +87,7 @@ class RecurringOutcomeController extends Controller
             ->orWhere('payment_method', 'like', "%{$query}%")
             ->paginate(200);
 
-        // Devuelve las cotizaciones encontradas
+        // Devuelve los items encontrados
         return response()->json(['items' => $recurring_outcomes], 200);
     }
 

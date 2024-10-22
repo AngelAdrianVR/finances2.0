@@ -35,7 +35,7 @@
                             <p>Otorgados</p>
                         </div>
                     </template>
-                    <LoansForMe :loans="filteredLoansForMe" />
+                    <LoansGiven :loans="filteredLoansGiven" />
                 </el-tab-pane>
                 <el-tab-pane label="Recibidos" name="2">
                     <template #label>
@@ -46,7 +46,7 @@
                             <p>Recibidos</p>
                         </div>
                     </template>
-                    <!-- <LoansGiven :loans="filteredLoansGiven" /> -->
+                    <LoansForMe :loans="filteredLoansForMe" />
                 </el-tab-pane>
             </el-tabs>
         </main>
@@ -56,7 +56,7 @@
 <script>
 import LoansForMe from './Tabs/LoansForMe.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-// import LoansGiven from './Tabs/LoansGiven.vue';
+import LoansGiven from './Tabs/LoansGiven.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import LoadingLogo from "@/Components/MyComponents/LoadingLogo.vue";
 
@@ -78,7 +78,7 @@ data() {
 components:{
     PrimaryButton,
     LoadingLogo,
-    // LoansGiven,
+    LoansGiven,
     LoansForMe,
     AppLayout,
     AppLayout,
@@ -98,7 +98,7 @@ methods:{
                 this.filteredLoansGiven = this.loans_given.data;
             } else {
                 //si esta en la pestaña 1 de ingresos
-                if ( this.activeTab === '1' ) {
+                if ( this.activeTab === '2' ) {
                     const response = await axios.post(route('loans.get-matches', { query: this.searchedWord }));
                     if (response.status === 200) {
                         this.filteredLoansForMe = response.data.items;
