@@ -9,8 +9,11 @@ class LoanController extends Controller
 {
     public function index()
     {
-        $loans_for_me = Loan::paginate(50);
-        $loans_given = Loan::paginate(50);
+        $loans_for_me = Loan::where('type', 'Recibido')
+            ->paginate(50);
+
+        $loans_given = Loan::where('type', 'Otorgado')
+            ->paginate(50);
 
         return inertia('Loan/Index', compact('loans_for_me', 'loans_given'));
     }
@@ -28,7 +31,7 @@ class LoanController extends Controller
             'lender_name' => $request->type == 'Recibido' ? 'required|string' : 'nullable|string',
             'payment_periodicity' =>  'nullable|string',
             'profitability' => $request->no_interest ? 'nullable|numeric|min:0|max:999999' : 'required|numeric|min:0|max:999999',
-            'profitability_type' => 'required|string',
+            'profitability_type' => $request->no_interest ? 'nullable|string' : 'required|string',
             'expired_date' => 'nullable|date|after:today',
             'amount' => 'required|numeric|min:0|max:999999',
             'status' => 'required|string',
@@ -41,22 +44,67 @@ class LoanController extends Controller
     }
 
     public function show(Loan $loan)
-    {
-        //
+    {   
+        $loans = Loan::latest()->get(['id', 'type', 'beneficiary_name', 'lender_name', 'amount']);
+
+        // return $loans;
+        return inertia('Loan/Show', compact('loan', 'loans'));
     }
 
     public function edit(Loan $loan)
     {
-        //
+        return inertia('Loan/Edit', compact('loan'));
     }
 
     public function update(Request $request, Loan $loan)
     {
-        //
+        $request->validate([
+            'type' => 'required|string',
+            'beneficiary_name' => $request->type == 'Otorgado' ? 'required|string' : 'nullable|string',
+            'lender_name' => $request->type == 'Recibido' ? 'required|string' : 'nullable|string',
+            'payment_periodicity' =>  'nullable|string',
+            'profitability' => $request->no_interest ? 'nullable|numeric|min:0|max:999999' : 'required|numeric|min:0|max:999999',
+            'profitability_type' => $request->no_interest ? 'nullable|string' : 'required|string',
+            'expired_date' => 'nullable|date|after:today',
+            'amount' => 'required|numeric|min:0|max:999999',
+            'status' => 'required|string',
+            'loan_date' => 'nullable|date',
+        ]);
+
+        $loan->update($request->all());
+
+        return to_route('loans.index');
     }
 
     public function destroy(Loan $loan)
     {
         //
+    }
+
+    public function massiveDelete(Request $request)
+    {
+        foreach ($request->loans as $loan) {
+            $loan = Loan::find($loan['id']);
+            $loan?->delete();            
+        }
+
+        // return response()->json(['message' => 'Producto(s) eliminado(s)']);
+    }
+
+    public function getMatches(Request $request)
+    {
+        $query = $request->input('query');
+
+        // Realiza la búsqueda
+        $loans = Loan::where('id', 'like', "%{$query}%")
+            ->orWhere('beneficiary_name', 'like', "%{$query}%")
+            ->orWhere('lender_name', 'like', "%{$query}%")
+            ->orWhere('amount', 'like', "%{$query}%")
+            ->orWhere('loan_date', 'like', "%{$query}%")
+            ->orWhere('profitability_type', 'like', "%{$query}%")
+            ->paginate(200);
+
+        // Devuelve los items encontrados
+        return response()->json(['items' => $loans], 200);
     }
 }
