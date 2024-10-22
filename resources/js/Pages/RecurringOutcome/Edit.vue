@@ -21,10 +21,14 @@
                     <InputLabel value="Monto*" class="ml-3 mb-1" />
                     <el-input
                         v-model="form.amount"
-                        placeholder="Ej. 500"
-                        :formatter="(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+                        placeholder="Ej. $500"
+                        :formatter="(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
                         :parser="(value) => value.replace(/\$\s?|(,*)/g, '')"
-                    />
+                    >
+                        <template #prepend>
+                            <span>$</span>
+                        </template>   
+                    </el-input>
                     <InputError :message="form.errors.amount" />
                 </div>
 

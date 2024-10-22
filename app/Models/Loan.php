@@ -9,19 +9,26 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Loan extends Model
 {
     protected $fillable = [
-        'type',
-        'beneficiary_name',
-        'amount',
-        'profitability',
         'profiability_period',
+        'payment_periodicity',
+        'profitability_type',
+        'profitability_mode',
+        'beneficiary_name',
+        'profitability',
         'expired_date',
-        'status',
         'description',
+        'lender_name',
+        'is_for_me',
+        'loan_date',
         'user_id',
+        'amount',
+        'status',
+        'type',
     ];
     
     protected $casts = [
         'expired_date' => 'date',
+        'loan_date' => 'date',
     ];
 
     //relationships

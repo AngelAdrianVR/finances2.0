@@ -14,10 +14,16 @@ return new class extends Migration
         Schema::create('loans', function (Blueprint $table) {
             $table->id();
             $table->string('type');
-            $table->string('beneficiary_name');
+            $table->string('payment_periodicity')->nullable(); //cada cuanto va a pagar al que le prestaste o tu a quien te prestó
+            $table->string('profitability_type'); //tipo de interes: simple, compuesto, fijo, amortizable
+            $table->string('profitability_mode'); //porcentaje o monto plano
+            $table->string('beneficiary_name')->nullable(); //nombre de a quién prestaste
+            $table->string('lender_name')->nullable(); //nombre del prestamista que te prestó
+            $table->timestamp('loan_date')->nullable(); //fecha del préstamo
             $table->float('amount')->unsigned();
+            $table->boolean('is_for_me')->default(false); //bandera que indica si el prestamo es para mi (yo lo recibí)
             $table->float('profitability')->unsigned();
-            $table->string('profiability_period');
+            $table->string('profiability_period')->nullable();
             $table->timestamp('expired_date')->nullable();
             $table->string('status');
             $table->string('description')->nullable();
