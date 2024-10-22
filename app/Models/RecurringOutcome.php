@@ -5,17 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Outcome extends Model
+class RecurringOutcome extends Model
 {
     protected $fillable = [
-        'automatically_created',
+        'concept',
+        'is_active',
+        'periodicity',
+        'amount',
         'payment_method',
         'description',
-        'created_at',
         'category',
-        'concept',
         'user_id',
-        'amount',
     ];
 
     //relationships

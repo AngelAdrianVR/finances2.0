@@ -6,6 +6,7 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\OutcomeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RecurringIncomeController;
+use App\Http\Controllers\RecurringOutcomeController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -42,12 +43,22 @@ Route::post('incomes/get-matches', [IncomeController::class, 'getMatches'])->nam
 Route::resource('recurring-incomes', RecurringIncomeController::class)->middleware('auth');
 Route::post('recurring-incomes/massive-delete', [RecurringIncomeController::class, 'massiveDelete'])->name('recurring-incomes.massive-delete');
 Route::post('recurring-incomes/get-matches', [RecurringIncomeController::class, 'getMatches'])->name('recurring-incomes.get-matches');
-Route::post('recurring-incomes/toggle-status/{recurring_income}', [RecurringIncomeController::class, 'toggleStatus'])->name('recurring-incomes.toggle-status');
+Route::get('recurring-incomes/toggle-status/{recurring_income}', [RecurringIncomeController::class, 'toggleStatus'])->name('recurring-incomes.toggle-status');
 
 
 // Outcome routes -------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
 Route::resource('outcomes', OutcomeController::class)->middleware('auth');
+Route::post('outcomes/massive-delete', [OutcomeController::class, 'massiveDelete'])->name('outcomes.massive-delete');
+Route::post('outcomes/get-matches', [OutcomeController::class, 'getMatches'])->name('outcomes.get-matches');
+
+
+// Recurring Outcome routes -------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------
+Route::resource('recurring-outcomes', RecurringOutcomeController::class)->middleware('auth');
+Route::post('recurring-outcomes/massive-delete', [RecurringOutcomeController::class, 'massiveDelete'])->name('recurring-outcomes.massive-delete');
+Route::post('recurring-outcomes/get-matches', [RecurringOutcomeController::class, 'getMatches'])->name('recurring-outcomes.get-matches');
+Route::get('recurring-outcomes/toggle-status/{recurring_outcome}', [RecurringOutcomeController::class, 'toggleStatus'])->name('recurring-outcomes.toggle-status');
 
 
 // Loan routes ---------------------------------------------------------------------------------------

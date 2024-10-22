@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RecurringIncome;
+use App\Models\RecurringOutcome;
 use Illuminate\Http\Request;
 
-class RecurringIncomeController extends Controller
+class RecurringOutcomeController extends Controller
 {
     public function index()
     {
@@ -14,7 +14,7 @@ class RecurringIncomeController extends Controller
 
     public function create()
     {
-        return inertia('RecurringIncome/Create');
+        return inertia('RecurringOutcome/Create');
     }
 
     public function store(Request $request)
@@ -28,22 +28,22 @@ class RecurringIncomeController extends Controller
             'description' => 'nullable',
         ]);
 
-        RecurringIncome::create($request->all() + ['user_id' => auth()->id()]);
+        RecurringOutcome::create($request->all() + ['user_id' => auth()->id()]);
 
-        return to_route('incomes.index', ['currentTab' => 2]);
+        return to_route('outcomes.index', ['currentTab' => 2]);
     }
 
-    public function show(RecurringIncome $recurring_income)
+    public function show(RecurringOutcome $recurring_outcome)
     {
         //
     }
 
-    public function edit(RecurringIncome $recurring_income)
+    public function edit(RecurringOutcome $recurring_outcome)
     {
-        return inertia('RecurringIncome/Edit', compact('recurring_income'));
+        return inertia('RecurringOutcome/Edit', compact('recurring_outcome'));
     }
 
-    public function update(Request $request, RecurringIncome $recurring_income)
+    public function update(Request $request, RecurringOutcome $recurring_outcome)
     {
         $request->validate([
             'amount' => 'required|numeric|min:0|max:999999',
@@ -54,21 +54,21 @@ class RecurringIncomeController extends Controller
             'description' => 'nullable',
         ]);
 
-        $recurring_income->update($request->all());
+        $recurring_outcome->update($request->all());
 
-        return to_route('incomes.index', ['currentTab' => 2]);
+        return to_route('outcomes.index', ['currentTab' => 2]);
     }
 
-    public function destroy(RecurringIncome $recurring_income)
+    public function destroy(RecurringOutcome $recurring_outcome)
     {
         //
     }
 
     public function massiveDelete(Request $request)
     {
-        foreach ($request->recurring_incomes as $income) {
-            $income = RecurringIncome::find($income['id']);
-            $income?->delete();            
+        foreach ($request->recurring_outcomes as $outcome) {
+            $outcome = RecurringOutcome::find($outcome['id']);
+            $outcome?->delete();            
         }
 
         // return response()->json(['message' => 'Producto(s) eliminado(s)']);
@@ -79,7 +79,7 @@ class RecurringIncomeController extends Controller
         $query = $request->input('query');
 
         // Realiza la búsqueda
-        $recurring_incomes = RecurringIncome::where('id', 'like', "%{$query}%")
+        $recurring_outcomes = RecurringOutcome::where('id', 'like', "%{$query}%")
             ->orWhere('concept', 'like', "%{$query}%")
             ->orWhere('amount', 'like', "%{$query}%")
             ->orWhere('category', 'like', "%{$query}%")
@@ -88,21 +88,21 @@ class RecurringIncomeController extends Controller
             ->paginate(200);
 
         // Devuelve las cotizaciones encontradas
-        return response()->json(['items' => $recurring_incomes], 200);
+        return response()->json(['items' => $recurring_outcomes], 200);
     }
 
-    public function toggleStatus(RecurringIncome $recurring_income)
+    public function toggleStatus(RecurringOutcome $recurring_outcome)
     {
-        if ( $recurring_income->is_active ) {
-            $recurring_income->update([
+        if ( $recurring_outcome->is_active ) {
+            $recurring_outcome->update([
                 'is_active' => false,
             ]);
         } else {
-            $recurring_income->update([
+            $recurring_outcome->update([
                 'is_active' => true,
             ]);
         }
 
-        return response()->json(['is_active' => $recurring_income->is_active]);
+        return response()->json(['is_active' => $recurring_outcome->is_active]);
     }
 }
