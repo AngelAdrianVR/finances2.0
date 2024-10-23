@@ -172,7 +172,6 @@ methods:{
                 message: 'Eliminación cancelada'
             });
         });
-            
     },
     handleRowClick(row) {
         this.$inertia.get(route('loans.show', row.id));
