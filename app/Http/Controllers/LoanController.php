@@ -78,7 +78,9 @@ class LoanController extends Controller
 
     public function destroy(Loan $loan)
     {
-        //
+        $loan->delete();
+
+        return to_route('loans.index');
     }
 
     public function massiveDelete(Request $request)
