@@ -6,7 +6,7 @@
                 <h1 class="font-bold ml-2 col-span-full mb-4">Editar préstamo</h1>
                 
                 <div>
-                    <InputLabel value="Tipo de préstamo" class="ml-3 mb-1" />
+                    <InputLabel value="Tipo de préstamo"/>
                     <el-select class="!w-full" filterable v-model="form.type"
                         placeholder="Seleccione" no-data-text="No hay opciones registradas"
                         no-match-text="No se encontraron coincidencias">
@@ -21,7 +21,7 @@
                 </div>
 
                 <div v-if="form.type === 'Otorgado'">
-                    <InputLabel value="Nombre del beneficiario*" class="ml-3 mb-1" />
+                    <InputLabel value="Nombre del beneficiario*"/>
                     <el-input
                         v-model="form.beneficiary_name"
                         maxlength="50"
@@ -33,7 +33,7 @@
                 </div>
 
                 <div v-else>
-                    <InputLabel value="Prestamista*" class="ml-3 mb-1" />
+                    <InputLabel value="Prestamista*"/>
                     <el-input
                         v-model="form.lender_name"
                         maxlength="50"
@@ -45,7 +45,7 @@
                 </div>
 
                 <div>
-                    <InputLabel value="Monto del préstamo*" class="ml-3 mb-1" />
+                    <InputLabel value="Monto del préstamo*"/>
                     <el-input
                         v-model="form.amount"
                         placeholder="Ej. $500"
@@ -60,7 +60,7 @@
                 </div>
 
                 <div>
-                    <InputLabel value="Fecha de préstamo*" class="ml-3 mb-1" />
+                    <InputLabel value="Fecha de préstamo*"/>
                     <el-date-picker
                         class="!w-full"
                         v-model="form.loan_date"
@@ -81,7 +81,7 @@
                 </div>
 
                 <div v-if="!form.no_interest">
-                    <InputLabel value="Porcentaje de interés*" class="ml-3 mb-1" />
+                    <InputLabel value="Porcentaje de interés*"/>
                     <el-input
                         v-model="form.profitability"
                         :formatter="(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
@@ -117,7 +117,7 @@
                 </div>
 
                 <div v-if="!form.no_interest" class="col-span-full">
-                    <InputLabel value="Periodo de interés" class="ml-3 mb-1" />
+                    <InputLabel value="Periodo de interés"/>
                     <el-select class="!w-1/2" filterable v-model="form.profiability_period"
                         placeholder="Seleccione" no-data-text="No hay opciones registradas"
                         no-match-text="No se encontraron coincidencias">
@@ -127,7 +127,7 @@
                 </div>
 
                 <div>
-                    <InputLabel value="Frecuencia de pago" class="ml-3 mb-1" />
+                    <InputLabel value="Frecuencia de pago"/>
                     <el-select class="!w-full" filterable v-model="form.payment_periodicity"
                         placeholder="Seleccione" no-data-text="No hay opciones registradas"
                         no-match-text="No se encontraron coincidencias">
@@ -137,7 +137,7 @@
                 </div>
                 
                 <div>
-                    <InputLabel value="Fecha de Vencimiento" class="ml-3 mb-1" />
+                    <InputLabel value="Fecha de Vencimiento"/>
                     <el-date-picker
                         class="!w-full"
                         v-model="form.expired_date"
@@ -168,7 +168,7 @@
                 </div>
 
                 <div class="col-span-full">
-                    <InputLabel value="Descripción" class="ml-3 mb-1" />
+                    <InputLabel value="Descripción"/>
                     <el-input
                         v-model="form.description"
                         maxlength="255"
@@ -182,7 +182,7 @@
                 <div class="col-span-full space-x-4 text-right mt-7">
                     <PrimaryButton :disabled="form.processing">
                         <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
-                        Crear ingreso
+                        Editar préstamo
                     </PrimaryButton>
                 </div>
             </form>
