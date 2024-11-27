@@ -50,7 +50,7 @@
 
                     <p class="text-[#575757]">Tipo de préstamo:</p>
                     <p>{{ loan.type }}</p>
-
+                    
                     <p class="text-[#575757]">
                         {{ loan.type === 'Otorgado'
                             ? 'Nombre del beneficiario:'
@@ -73,10 +73,13 @@
                     <p class="text-[#575757]">Interés:</p>
                     <p v-if="loan.profitability">{{ loan.profitability }} {{ loan.profitability_mode === 'Porcentaje' ?
                         '%' : '$' }}</p>
-                    <p v-else>- Sin interés -</p>
+                    <p v-else>0.0</p>
 
                     <p class="text-[#575757]">Tipo de interés:</p>
                     <p>{{ loan.profitability_type ?? '-' }}</p>
+
+                    <p class="text-[#575757]">Periodo de interés:</p>
+                    <p>{{ loan.profitability_period }}</p>
 
                     <p class="text-[#575757]">Fecha de vencimiento:</p>
                     <p>{{ formatDate(loan.expired_date) ?? '-' }}</p>
@@ -109,21 +112,21 @@
                 <article class="w-2/3 rounded-xl border border-grayD9 py-5 px-8">
                     <div class="flex items-center justify-between">
                         <h2 class="font-bold">Desgloce del préstamo</h2>
-                        <PrimaryButton @click="showPaymentModal = true" class="!rounded-full">
+                        <PrimaryButton v-if="getRemainingAmount" @click="showPaymentModal = true" class="!rounded-full">
                             Registrar abono
                         </PrimaryButton>
                     </div>
                     <el-table :data="loan.payments" max-height="500" ref="multipleTableRef"
-                        :row-class-name="tableRowClassName" :default-sort="{ prop: 'date', order: 'descending' }"
+                        :row-class-name="tableRowClassName" 
                         class="mt-5">
-                        <el-table-column label="Monto" width="100">
+                        <el-table-column label="Restante" width="100">
                             <template #default="scope">
-                                <p>${{ getRemainingAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
+                                <p>${{ scope.row.remaining.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                             </template>
                         </el-table-column>
                         <el-table-column label="Intereses" width="100">
                             <template #default="scope">
-                                <p>${{ 'Calcular' }}</p>
+                                <p>${{ scope.row.interest.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                             </template>
                         </el-table-column>
                         <el-table-column prop="amount" label="Abono" width="100">
@@ -131,14 +134,14 @@
                                 <p>${{ scope.row.amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="date" label="Fecha del préstamo" width="180">
-                            <template #default="scope">
-                                <p>{{ formatShortDate(scope.row.date) }}</p>
-                            </template>
-                        </el-table-column>
                         <el-table-column label="Pago a capital" width="140">
                             <template #default="scope">
-                                <p>${{ 'Calcular' }}</p>
+                                <p>${{ scope.row.capital.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="date" label="Fecha" width="120">
+                            <template #default="scope">
+                                <p>{{ formatShortDate(scope.row.date) }}</p>
                             </template>
                         </el-table-column>
                         <el-table-column prop="notes" label="Comentarios" width="120">
@@ -174,7 +177,7 @@
 
         <DialogModal :show="showPaymentModal" @close="showPaymentModal = false">
             <template #title>
-                <p class="font-bold text-left">Registrar abono</p>
+                <p class="font-bold text-left">Registrar abono (Saldo pendiente ${{ getRemainingAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }})</p>
             </template>
             <template #content>
                 <form @submit.prevent="storePayment" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">

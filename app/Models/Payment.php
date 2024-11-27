@@ -12,7 +12,7 @@ class Payment extends Model
         'payment_method',
         'notes',
         'date',
-        'remainig',
+        'remaining',
         'interest',
         'capital',
         'loan_id',

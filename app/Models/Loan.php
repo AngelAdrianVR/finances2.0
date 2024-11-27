@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Loan extends Model
 {
     protected $fillable = [
-        'profiability_period',
+        'profitability_period',
         'payment_periodicity',
         'profitability_type',
         'profitability_mode',

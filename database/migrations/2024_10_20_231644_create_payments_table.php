@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->float('amount', 10,2)->unsigned();
-            $table->float('interest', 10,2)->unsigned();
-            $table->float('capital', 10,2)->unsigned();
-            $table->float('remainig', 10,2)->unsigned();
+            $table->float('interest', 10,2);
+            $table->float('capital', 10,2);
+            $table->float('remaining', 10,2);
             $table->string('payment_method');
             $table->date('date');
             $table->text('notes')->nullable();
