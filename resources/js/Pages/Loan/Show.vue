@@ -84,12 +84,9 @@
                     <p>{{ loan.Description ?? '-' }}</p>
                 </article>
 
+                <!-- tabla de abonos -->
                 <article class="w-2/3 rounded-xl border border-grayD9 py-5 px-8">
-                    <div class="flex items-center justify-between">
-                        <h2 class="font-bold col-span-full mb-4">Desgloce del préstamo</h2>
-                        <PrimaryButton>Registrar abono</PrimaryButton>
-                    </div>
-
+                    <PaymentsTable />
                 </article>
             </section>
         </main>
@@ -98,6 +95,7 @@
 
 <script>
 import AppLayout from '@/Layouts/AppLayout.vue';
+import PaymentsTable from '@/Components/MyComponents/Loan/PaymentsTable.vue';
 import Back from "@/Components/MyComponents/Back.vue";
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import ThirthButton from '@/Components/MyComponents/ThirthButton.vue';
@@ -111,6 +109,7 @@ data() {
     }
 },
 components:{
+    PaymentsTable,
     PrimaryButton,
     ThirthButton,
     AppLayout,
@@ -134,6 +133,7 @@ methods:{
             type: 'warning'
         }).then(() => {
             this.$inertia.delete(route('loans.destroy', this.loan.id));
+            location.reload();
         }).catch(() => {
             this.$message({
                 type: 'info',

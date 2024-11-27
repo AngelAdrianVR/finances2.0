@@ -1,195 +1,139 @@
 <template>
-  <AppLayout title="Agendar tarea">
-    <template #header>
-      <div class="flex justify-between">
-        <Back />
-        <div class="flex items-center space-x-2">
-          <h2 class="font-semibold text-xl leading-tight">Agendar nueva tarea/evento</h2>
-        </div>
-      </div>
-    </template>
-
-    <!-- Form -->
-    <form @submit.prevent="store">
-      <div class="md:w-1/2 md:mx-auto my-5 bg-[#D9D9D9] rounded-lg lg:p-9 p-4 shadow-md space-y-4">
-        <div class="flex justify-center items-center space-x-12">
-          <div class="flex items-center">
-            <input v-model="form.type" value="Evento"
-              class="checked:bg-primary focus:text-primary focus:ring-[#D90537] border-black bg-transparent" type="radio"
-              name="task_type" />
-            <p class="ml-3">Evento</p>
-          </div>
-          <div class="flex items-center">
-            <input v-model="form.type" value="Tarea"
-              class="checked:bg-primary focus:text-primary focus:ring-[#D90537] border-black bg-transparent" type="radio"
-              name="task_type" />
-            <p class="ml-3">Tarea</p>
-          </div>
-          <InputError :message="form.errors.type" />
-        </div>
-
-        <!-- --------------- Evento -------------- -->
-        <section class="space-y-3" v-if="form.type == 'Evento'">
+  <AppLayout title="Crear recordatorio">
+    <main class="px-3 md:px-16 py-8">
+      <Back />
+  
+      <form @submit.prevent="store" class="rounded-xl border border-grayD9 lg:p-5 p-3 lg:w-2/3 xl:w-1/2 mx-auto mt-2 lg:grid lg:grid-cols-2 gap-3 shadow-lg">
+        <div class="flex items-center justify-between col-span-full">
+          <el-collapse accordion>
+            <el-collapse-item v-if="remainType === 'Ingreso recurrente'" title="Ingreso recurrente" name="1">
+              <template #title>
+                <h1 class="text-primary font-bold text-base">{{ remainType }}</h1>
+              </template>
+              <div>
+                Los ingresos recurrentes se registran automáticamente en el sistema.
+                Estos corresponden a entradas periódicas, como sueldos, rentas u otros pagos regulares.
+              </div>
+            </el-collapse-item>
+            <el-collapse-item v-else title="Gasto fijo" name="2">
+              <template #title>
+                <h1 class="text-primary font-bold text-base">{{ remainType }}</h1>
+              </template>
+              <div>
+                Los gastos fijos se registran automáticamente en el sistema. 
+                Estos corresponden a salidas periódicas, pago de servicios, alimentos y otros pagos regulares.
+              </div>
+            </el-collapse-item>
+          </el-collapse>
           <div>
-            <label class="block" for="">Título del evento *</label>
-            <input v-model="form.title" class="input" type="text" placeholder="Agregar título" />
+            <el-segmented @change="changeType" v-model="remainType" :options="options" block />
+          </div>
+        </div>
+
+        <!-- form body -->
+        <div class="col-span-full mb-3 lg:mb-0">
+            <InputLabel v-if="remainType === 'Ingreso recurrente'" value="Nombre del ingreso*" class="ml-3 mb-1" />
+            <InputLabel v-else value="Nombre del gasto*" class="ml-3 mb-1" />
+            <el-input
+                v-model="form.title"
+                maxlength="80"
+                :placeholder="remainType === 'Ingreso recurrente' ? 'Ej. Pago de nómina' : 'Ej. Compra de despensa'"
+                show-word-limit
+                type="text"
+            />
             <InputError :message="form.errors.title" />
-          </div>
-          <div>
-            <label class="block" for="">Participante(s) *</label>
-            <el-select class="w-full mt-2" v-model="form.participants" clearable filterable multiple
-              placeholder="Seleccionar participantes" no-data-text="No hay usuarios registrados"
-              no-match-text="No se encontraron coincidencias">
-              <el-option v-for="user in users" :key="user.id" :label="user.name" :value="user.id">
-                <div v-if="$page.props.jetstream.managesProfilePhotos"
-                  class="flex text-sm rounded-full items-center mt-[3px]">
-                  <img class="h-7 w-7 rounded-full object-cover mr-4" :src="user.profile_photo_url" :alt="user.name" />
-                  <p>{{ user.name }}</p>
-                </div>
-              </el-option>
-            </el-select>
-            <InputError :message="form.errors.participants" />
-          </div>
-          <div class="flex items-center">
-            <div class="mt-2 lg:mt-0">
-              <label class="block">Fecha *</label>
-              <el-date-picker v-model="form.start_date" type="date" placeholder="Fecha *" :disabled-date="disabledDate" />
-              <InputError :message="form.errors.start_date" />
-            </div>
-            <label class="flex items-center mt-5">
-              <Checkbox v-model:checked="form.is_full_day" class="bg-transparent disabled:border-gray-400" />
-              <span class="ml-2 text-xs">Todo el día</span>
-            </label>
-          </div>
-          <div v-if="!form.is_full_day" class="grid grid-cols-2 gap-x-4">
-            <label class="col-span-full">Horario</label>
-            <el-time-select v-model="form.start_time" start="08:00" step="00:30" end="20:30"
-              placeholder="Hora de inicio" :max-time="form.end_time" format="hh:mm A" />
-            <el-time-select v-model="form.end_time" start="08:00" step="00:30" end="20:30"
-              placeholder="Hora de término" :min-time="form.start_time" format="hh:mm A" />
-            <!-- <InputError :message="form.errors.time" /> -->
-          </div>
-          <!-- <div>
-            <label class="block">Repetir</label>
-            <el-select
-              class="w-full mt-2"
-              v-model="form.repeater"
-              clearable
-              placeholder="Seleccionar"
-              no-data-text="No hay opciones registradas"
-              no-match-text="No se encontraron coincidencias"
+        </div>
+
+        <div class="mb-3 lg:mb-0">
+            <InputLabel value="Fecha de inicio*" class="ml-3 mb-1" />
+            <el-date-picker
+                class="!w-full"
+                v-model="form.date"
+                type="date"
+                placeholder="Selecciona la fecha de inicio"
+                :disabled-date="disabledDate"
+            />
+            <InputError :message="form.errors.date" />
+        </div>
+
+        <div class="mb-3 lg:mb-0">
+            <InputLabel value="Monto*" class="ml-3 mb-1" />
+            <el-input
+              v-model="form.amount"
+              placeholder="Ej. $2,000"
+              :formatter="(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+              :parser="(value) => value.replace(/\$\s?|(,*)/g, '')"
             >
-              <el-option
-                v-for="repeater in repeaters"
-                :key="repeater"
-                :label="repeater"
-                :value="repeater"
-              />
-            </el-select>
-            <InputError :message="form.errors.repeater" />
-          </div> -->
-          <div>
-            <label class="block">Ubicación</label>
-            <input v-model="form.location" class="input" type="text" placeholder="Agregar ubicación" />
-            <InputError :message="form.errors.location" />
-          </div>
-          <div>
-            <label>Descripción</label>
-            <textarea v-model="form.description" class="textarea"> </textarea>
-            <InputError :message="form.errors.description" />
-          </div>
-          <!-- <div>
-            <label class="block">Recordatorio</label>
-            <div class="flex items-center">
-              <el-select
-                class="w-1/2 mt-2"
-                v-model="form.reminder"
-                clearable
-                placeholder="Seleccionar"
-                no-data-text="No hay opciones registradas"
-                no-match-text="No se encontraron coincidencias"
-              >
-                <el-option
-                  v-for="reminder in reminders"
-                  :key="reminder"
-                  :label="reminder"
-                  :value="reminder"
-                />
-              </el-select>
-              <p class="text-sm text-primary ml-7 cursor-pointer w-1/2">
-                + Agregar recordatorio
-              </p>
-            </div>
-            <InputError :message="form.errors.reminder" />
-          </div> -->
-        </section>
-
-        <!-- ------------- Tarea .............. -->
-        <section class="space-y-3" v-else>
-          <div>
-            <label class="block" for="">Título de la tarea *</label>
-            <input v-model="form.title" class="input" type="text" placeholder="Agregar título" />
-            <InputError :message="form.errors.title" />
-          </div>
-          <div class="flex items-center mt-2">
-            <div class="mt-2 lg:mt-0">
-              <label class="block">Fecha *</label>
-              <el-date-picker v-model="form.start_date" type="date" placeholder="Fecha *" :disabled-date="disabledDate" />
-              <InputError :message="form.errors.start_date" />
-            </div>
-            <label class="flex items-center mt-5">
-              <Checkbox v-model:checked="form.is_full_day" class="bg-transparent disabled:border-gray-400" />
-              <span class="ml-2 text-xs">Todo el día</span>
-            </label>
-          </div>
-          <div v-if="!form.is_full_day" class="grid grid-cols-2 gap-x-4">
-            <label class="col-span-full">Horario</label>
-            <el-time-select v-model="form.start_time" start="08:00" step="00:30" end="20:30"
-              placeholder="Hora de inicio" :max-time="form.end_time" format="hh:mm A" />
-            <el-time-select v-model="form.end_time" start="08:00" step="00:30" end="20:30"
-              placeholder="Hora de término" :min-time="form.start_time" format="hh:mm A" />
-            <!-- <div class="demo-range">
-              <el-time-picker v-model="form.time" is-range range-separator="-" start-placeholder="Hora inicio"
-                end-placeholder="Hora final" />
-            </div>
-            <InputError :message="form.errors.time" /> -->
-          </div>
-          <!-- <div>
-            <label class="block">Repetir</label>
-            <el-select class="w-full mt-2" v-model="form.repeater" clearable placeholder="Seleccionar"
-              no-data-text="No hay opciones registradas" no-match-text="No se encontraron coincidencias">
-              <el-option v-for="repeater in repeaters" :key="repeater" :label="repeater" :value="repeater" />
-            </el-select>
-            <InputError :message="form.errors.repeater" />
-          </div> -->
-          <div>
-            <label>Descripción</label>
-            <textarea v-model="form.description" class="textarea"> </textarea>
-            <InputError :message="form.errors.description" />
-          </div>
-          <!-- <div>
-            <label class="block">Recordatorio</label>
-            <div class="flex items-center">
-              <el-select class="w-1/2 mt-2" v-model="form.reminder" clearable placeholder="Seleccionar"
-                no-data-text="No hay opciones registradas" no-match-text="No se encontraron coincidencias">
-                <el-option v-for="reminder in reminders" :key="reminder" :label="reminder" :value="reminder" />
-              </el-select>
-              <p class="text-sm text-primary ml-7 cursor-pointer w-1/2">
-                + Agregar recordatorio
-              </p>
-            </div>
-            <InputError :message="form.errors.reminder" />
-          </div> -->
-        </section>
-
-        <div class="flex md:text-left items-center">
-          <PrimaryButton :disabled="form.processing">
-            <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
-            Guardar
-          </PrimaryButton>
+              <template #prepend>
+                $
+              </template>
+            </el-input>
+            <InputError :message="form.errors.amount" />
         </div>
-      </div>
-    </form>
+
+        <div class="mb-3 lg:mb-0">
+            <InputLabel value="Categoría" class="ml-3 mb-1" />
+            <el-select class="!w-full" filterable v-model="form.category"
+                placeholder="Seleccione" no-data-text="No hay opciones registradas"
+                no-match-text="No se encontraron coincidencias">
+                <el-option class="md:!w-[500px]" v-for="category in categories" :key="category" :label="category.label" :value="category.label">
+                    <p class="flex items-center justify-between">
+                        <span>{{ category.label }}</span>
+                        <span class="text-xs text-gray-400">{{ category.description }}</span>
+                    </p>
+                </el-option>
+            </el-select>
+            <InputError :message="form.errors.category" />
+        </div>
+
+        <div class="mb-3 lg:mb-0">
+            <InputLabel value="Método de pago" class="ml-3 mb-1" />
+            <el-select class="!w-full" filterable v-model="form.payment_method"
+                placeholder="Seleccione" no-data-text="No hay opciones registradas"
+                no-match-text="No se encontraron coincidencias">
+                <el-option v-for="item in paymentMethods" :key="item" :label="item" :value="item">
+                    <p class="flex items-center justify-between">
+                        <span>{{ item }}</span>
+                    </p>
+                </el-option>
+            </el-select>
+            <InputError :message="form.errors.payment_method" />
+        </div>
+
+        <div class="mb-3 lg:mb-0">
+            <InputLabel value="Frecuencia*" class="ml-3 mb-1" />
+            <el-select class="!w-full" filterable v-model="form.periodicity"
+                placeholder="Seleccione" no-data-text="No hay opciones registradas"
+                no-match-text="No se encontraron coincidencias">
+                <el-option v-for="item in periodicities" :key="item" :label="item" :value="item">
+                    <p class="flex items-center justify-between">
+                        <span>{{ item }}</span>
+                    </p>
+                </el-option>
+            </el-select>
+            <InputError :message="form.errors.periodicity" />
+        </div>
+
+        <div class="col-span-full">
+            <InputLabel value="Descripción" class="ml-3 mb-1" />
+            <el-input
+                v-model="form.description"
+                maxlength="255"
+                placeholder="Agrega una breve descripción (opcional)"
+                show-word-limit
+                type="textarea"
+            />
+            <InputError :message="form.errors.description" />
+        </div>
+
+        <div class="col-span-full space-x-4 text-right mt-7">
+            <PrimaryButton :disabled="form.processing">
+                <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
+                Crear
+            </PrimaryButton>
+        </div>
+      </form>      
+    </main>
   </AppLayout>
 </template>
 
@@ -199,60 +143,107 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import InputError from "@/Components/InputError.vue";
 import Checkbox from "@/Components/Checkbox.vue";
 import Back from "@/Components/MyComponents/Back.vue";
-import { Link, useForm } from "@inertiajs/vue3";
+import InputLabel from "@/Components/InputLabel.vue";
+import { useForm } from "@inertiajs/vue3";
 
 export default {
   data() {
     const form = useForm({
-      type: "Evento",
+      type: this.type,
       title: null,
-      participants: [],
-      repeater: "No se repite",
-      location: null,
+      date: null,
+      amount: null,
+      category: null,
       description: null,
-      reminder: null,
-      is_full_day: false,
-      // time: null,
-      start_time: null,
-      end_time: null,
-      start_date: null,
+      periodicity: null,
+      payment_method: null,
+      
     });
 
     return {
       form,
-      repeaters: [
-        "No se repite",
-        "Todos los días",
-        "Cada semana, el lunes",
-        "Personalizado",
+      remainType: this.type,
+      options: [
+        'Ingreso recurrente',
+        'Gasto fijo'
       ],
-      reminders: [
-        "5 minutos antes",
-        "10 minutos antes",
-        "1 hora antes",
-        "1 día antes",
-        "Personalizado",
+      paymentMethods: [
+        'Transferencia',
+        'Depósito',
+        'Cheque',
+        'Efectivo'
       ],
+      periodicities: [
+        'Diario',
+        'Cada 2 días',
+        'Cada 3 días',
+        'Semanal',
+        'Quincenal',
+        'Mensual',
+        'Bimestral',
+        'Trimestral',
+        'Cuatrimestral',
+        'Semestral',
+        'Anual',
+      ],
+      categories: [
+        {
+          label: 'Nómina',
+          description: '(Salarios o sueldos fijos)'
+        },
+        {
+          label: 'Renta de propiedad',
+          description: '(Ingresos por alquiler de propiedades)'
+        },
+        {
+          label: 'Regalías',
+          description: '(Pagos por derechos de autor, música, libros, etc.)'
+        },
+        {
+          label: 'Dividendos',
+          description: '(Ganancias por acciones o inversiones)'
+        },
+        {
+          label: 'Pensión',
+          description: '(Ingresos por jubilación o retiro)'
+        },
+        {
+          label: 'Contratos de servicios',
+          description: '(Mantenimiento o soporte técnico)'
+        },
+        {
+          label: 'Arrendamientos de equipos',
+          description: '(Maquinaria, vehículos, etc.)'
+        },
+        {
+          label: 'Ingresos por franquicias',
+          description: '(Pagos regulares de franquiciados)'
+        },
+        {
+          label: 'Rendimientos financieros',
+          description: '(Intereses por inversiones)'
+        },
+      ]
     };
   },
   components: {
-    AppLayout,
     PrimaryButton,
     InputError,
+    InputLabel,
+    AppLayout,
     Checkbox,
-    Back,
-    Link
+    Back
   },
   props: {
-    users: Array,
+    type: String
   },
   methods: {
     store() {
       this.form.post(route("calendars.store"), {
         onSuccess: () => {
           this.$notify({
-            title: "Éxito",
-            message: "Se ha agendado correctamente!",
+            title: "Correcto",
+            message: "",
             type: "success",
           });
         },
@@ -263,17 +254,11 @@ export default {
       today.setHours(0, 0, 0, 0);
       return time.getTime() < today.getTime();
     },
+    changeType(newVal) {
+      this.remainType = newVal;
+      this.form.type = newVal;
+    }
   },
 };
 </script>
 
-<style scoped>
-/* Estilo para el hover de las opciones */
-.el-select-dropdown .el-select-dropdown__item:hover {
-  background-color: #d90537;
-  /* Color de fondo al hacer hover */
-  color: white;
-  /* Color del texto al hacer hover */
-  border-radius: 20px;
-  /* Redondeo */
-}</style>

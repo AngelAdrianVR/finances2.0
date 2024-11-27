@@ -2,7 +2,7 @@
     <AppLayout title="Crear ingreso">
         <main class="px-3 md:px-16 py-8">
             <Back />
-            <form @submit.prevent="store" class="rounded-xl border border-grayD9 lg:p-5 p-3 lg:w-2/3 xl:w-1/2 mx-auto mt-2 lg:grid lg:grid-cols-2 gap-3">
+            <form @submit.prevent="store" class="rounded-xl border border-grayD9 lg:p-5 p-3 lg:w-2/3 xl:w-1/2 mx-auto mt-2 lg:grid lg:grid-cols-2 gap-3 shadow-lg">
                 <h1 class="font-bold ml-2 col-span-full mb-4">Registrar ingreso</h1>
                 
                 <div>

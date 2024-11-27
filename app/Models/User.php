@@ -87,4 +87,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Loan::class);
     }
+
+    public function calendars() :HasMany
+    {
+        return $this->hasMany(Calendar::class);
+    }
 }
