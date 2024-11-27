@@ -202,7 +202,6 @@ import DeleteConfirmationModal from "@/Components/DeleteConfirmationModal.vue";
 import ThirthButton from "@/Components/MyComponents/ThirthButton.vue";
 import LoadingLogo from "@/Components/MyComponents/LoadingLogo.vue";
 import axios from 'axios';
-import moment from 'moment';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Link } from "@inertiajs/vue3";
