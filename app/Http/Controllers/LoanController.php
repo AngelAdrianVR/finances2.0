@@ -45,6 +45,7 @@ class LoanController extends Controller
 
     public function show(Loan $loan)
     {   
+        $loan->load(['payments']);
         $loans = Loan::latest()->get(['id', 'type', 'beneficiary_name', 'lender_name', 'amount']);
 
         // return $loans;

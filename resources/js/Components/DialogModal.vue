@@ -27,7 +27,7 @@ const close = () => {
     <Modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
         <div class="px-6 py-4">
             <div class="flex justify-end">
-                <button class="flex items-center justify-center size-5 rounded-full hover:bg-gray-400/50 hover:text-red-500 cursor-default">
+                <button class="flex items-center justify-center size-5 rounded-full hover:bg-gray-400/50 hover:text-red-500 cursor-pointer">
                     <i @click="close"
                         class="fa-solid fa-xmark text-xs"></i>
                 </button>

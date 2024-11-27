@@ -42,7 +42,6 @@
 
                 </div>
             </div>
-
             <section class="flex space-x-5 mt-9 text-[15px]">
                 <article class="w-1/3 grid grid-cols-2 gap-2 rounded-xl bg-[#F2F2F2] border border-grayD9 p-5">
                     <h2 class="font-bold col-span-full mb-4">Información del préstamo</h2>
@@ -63,10 +62,10 @@
                     <p>${{ loan.amount?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
 
                     <p class="text-[#575757]">Total abonado:</p>
-                    <p>${{ loan.amount?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
+                    <p>${{ (loan.amount - getRemainingAmount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
 
                     <p class="text-[#575757]">Saldo pendiente:</p>
-                    <p class="font-bold">${{ loan.amount?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
+                    <p class="font-bold">${{ getRemainingAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
 
                     <p class="text-[#575757]">Fecha del préstamo:</p>
                     <p>{{ formatDate(loan.loan_date) }}</p>
@@ -107,23 +106,78 @@
                     <p class="text-[#575757]">Descripción:</p>
                     <p>{{ loan.Description ?? '-' }}</p>
                 </article>
-
                 <article class="w-2/3 rounded-xl border border-grayD9 py-5 px-8">
                     <div class="flex items-center justify-between">
                         <h2 class="font-bold">Desgloce del préstamo</h2>
-                        <PrimaryButton @click="showInstalmentModal = true" class="!rounded-full">Registrar abono
+                        <PrimaryButton @click="showPaymentModal = true" class="!rounded-full">
+                            Registrar abono
                         </PrimaryButton>
                     </div>
+                    <el-table :data="loan.payments" max-height="500" ref="multipleTableRef"
+                        :row-class-name="tableRowClassName" :default-sort="{ prop: 'date', order: 'descending' }"
+                        class="mt-5">
+                        <el-table-column label="Monto" width="100">
+                            <template #default="scope">
+                                <p>${{ getRemainingAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="Intereses" width="100">
+                            <template #default="scope">
+                                <p>${{ 'Calcular' }}</p>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="amount" label="Abono" width="100">
+                            <template #default="scope">
+                                <p>${{ scope.row.amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="date" label="Fecha del préstamo" width="180">
+                            <template #default="scope">
+                                <p>{{ formatShortDate(scope.row.date) }}</p>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="Pago a capital" width="140">
+                            <template #default="scope">
+                                <p>${{ 'Calcular' }}</p>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="notes" label="Comentarios" width="120">
+                            <template #default="scope">
+                                <p class="w-full truncate" :title="scope.row.notes">{{ scope.row.notes ?? '-' }}</p>
+                            </template>
+                        </el-table-column>
+                        <el-table-column align="right">
+                            <template #default="scope">
+                                <el-dropdown trigger="click" @command="handleCommand">
+                                    <button @click.stop
+                                        class="mr-3 justify-center items-center size-8 rounded-full text-primary hover:bg-grayD9 transition-all duration-200 ease-in-out">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+                                    <template #dropdown>
+                                        <el-dropdown-menu>
+                                            <el-dropdown-item :command="'edit-' + scope.row.id">
+                                                Editar
+                                            </el-dropdown-item>
+                                            <el-dropdown-item @click="itemToShow = scope.row"
+                                                :command="'delete-' + scope.row.id + '-' + scope.row">
+                                                Eliminar
+                                            </el-dropdown-item>
+                                        </el-dropdown-menu>
+                                    </template>
+                                </el-dropdown>
+                            </template>
+                        </el-table-column>
+                    </el-table>
                 </article>
             </section>
         </main>
 
-        <DialogModal :show="showInstalmentModal" @close="showInstalmentModal = false">
+        <DialogModal :show="showPaymentModal" @close="showPaymentModal = false">
             <template #title>
                 <p class="font-bold text-left">Registrar abono</p>
             </template>
             <template #content>
-                <form @submit.prevent="storeInstallment" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <form @submit.prevent="storePayment" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <InputLabel value="Monto abonado*" />
                         <el-input v-model="form.amount" placeholder="Ej. $500"
@@ -138,7 +192,7 @@
                     <div>
                         <InputLabel value="Fecha del abono*" />
                         <el-date-picker class="!w-full" v-model="form.date" type="date"
-                            placeholder="Selecciona la fecha" :shortcuts="shortcuts" :teleported="false" />
+                            placeholder="Selecciona la fecha" :teleported="false" />
                         <InputError :message="form.errors.date" />
                     </div>
                     <div>
@@ -158,7 +212,10 @@
                 </form>
             </template>
             <template #footer>
-                <PrimaryButton @click="">Registrar</PrimaryButton>
+                <PrimaryButton @click="storePayment" :disabled="form.processing">
+                    <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
+                    Registrar
+                </PrimaryButton>
             </template>
         </DialogModal>
     </AppLayout>
@@ -189,7 +246,7 @@ export default {
         return {
             form,
             loanSelected: this.loan.id,
-            showInstalmentModal: false,
+            showPaymentModal: false,
             paymentTypes: ['Efectivo', 'Transferencia', 'Depósito'],
         }
     },
@@ -206,22 +263,57 @@ export default {
         loan: Object,
         loans: Array,
     },
+    computed: {
+        getRemainingAmount() {
+            const totalPaid = this.loan.payments.reduce((accum, item) => {
+                return accum + item.amount;
+            }, 0);
+
+            return this.loan.amount - totalPaid;
+        },
+    },
     methods: {
-        storeInstallment() {
+        storePayment() {
             this.form.post(route('payments.store'), {
                 onSuccess: () => {
-                    // this.
+                    this.showPaymentModal = false;
                 },
                 onError: (error) => {
                     console.log(error);
                 }
             });
         },
+        handleCommand(command) {
+            const commandName = command.split('-')[0];
+            const rowId = command.split('-')[1];
+
+            if (commandName === 'edit') {
+                const selectedPayment = this.loan.payments.find(item => item.id == rowId);
+                // llenar formulario con datos de abono seleccionado
+                this.form.amount = selectedPayment.amount,
+                    this.form.date = selectedPayment.date,
+                    this.form.payment_method = selectedPayment.payment_method,
+                    this.form.notes = selectedPayment.notes,
+                    // abrir modal
+                    this.showPaymentModal = true;
+            } else if (commandName === 'delete') {
+                this.deletePayment(rowId);
+            }
+        },
+        formatShortDate(date) {
+            if (date) {
+                const parsedDate = new Date(date);
+                return format(parsedDate, 'dd MMM yyyy', { locale: es }); // Formato personalizado
+            }
+        },
         formatDate(date) {
             if (date) {
                 const parsedDate = new Date(date);
                 return format(parsedDate, 'dd MMMM yyyy', { locale: es }); // Formato personalizado
             }
+        },
+        tableRowClassName({ row, rowIndex }) {
+            return 'cursor-pointer text-xs';
         },
         deleteItem() {
             this.$confirm('¿Estás seguro que deseas continuar con la eliminación?', 'Confirmar', {
@@ -230,6 +322,27 @@ export default {
                 type: 'warning'
             }).then(() => {
                 this.$inertia.delete(route('loans.destroy', this.loan.id));
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: 'Eliminación cancelada'
+                });
+            });
+        },
+        deletePayment(paymentId) {
+            this.$confirm('¿Estás seguro que deseas continuar con la eliminación?', 'Confirmar', {
+                confirmButtonText: 'Sí',
+                cancelButtonText: 'No',
+                type: 'warning'
+            }).then(() => {
+                this.form.delete(route('payments.destroy', paymentId, {
+                    onSuccess: () => {
+
+                    },
+                    onError: (error) => {
+                        console.log(error)
+                    },
+                }));
             }).catch(() => {
                 this.$message({
                     type: 'info',

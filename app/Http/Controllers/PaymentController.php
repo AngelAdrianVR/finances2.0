@@ -19,7 +19,15 @@ class PaymentController extends Controller
 
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:1',
+            'payment_method' => 'required|string|max:255',
+            'date' => 'required|date',
+            'notes' => 'nullable|string|max:500',
+            'loan_id' => 'required|numeric|min:1',
+        ]);
+
+        Payment::create($validated);
     }
 
     public function show(Payment $payment)
@@ -39,6 +47,6 @@ class PaymentController extends Controller
 
     public function destroy(Payment $payment)
     {
-        //
+        $payment->delete();
     }
 }
