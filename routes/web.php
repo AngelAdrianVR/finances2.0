@@ -77,3 +77,4 @@ Route::resource('payments', PaymentController::class)->middleware('auth');
 // ----------------------------------------------------------------------------------------------------
 Route::resource('calendars', CalendarController::class)->middleware('auth');
 Route::post('calendars-fetch-month-reminders', [CalendarController::class, 'fetchMonthReminders'])->middleware('auth')->name('calendars.fetch-month-reminders');
+// Route::post('calendars-destroy/{calendar}', [CalendarController::class, 'destroy'])->middleware('auth')->name('calendars.destroy');

@@ -47,7 +47,7 @@ const logout = () => {
                 <nav class="bg-white border-b border-grayD9">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div class="flex justify-between h-12">
-                            <div class="flex">
+                            <div class="flex space-x-3">
                                 <!-- Logo -->
                                 <div class="md:hidden shrink-0 flex items-center">
                                     <Link :href="route('dashboard')">
@@ -103,7 +103,7 @@ const logout = () => {
                     </div>
                     <!-- Responsive Navigation Menu -->
                     <div :class="{ 'block': showingNavigationDropdown, 'hidden': !showingNavigationDropdown }"
-                        class="sm:hidden bg-gradient-to-r from-gray-600 to-secondary">
+                        class="sm:hidden">
                         <div class="pt-2 pb-3 space-y-px">
                             <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                 <div class="flex items-center space-x-2">
