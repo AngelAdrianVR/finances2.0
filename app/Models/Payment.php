@@ -11,7 +11,15 @@ class Payment extends Model
         'amount',
         'payment_method',
         'notes',
+        'date',
+        'remaining',
+        'interest',
+        'capital',
         'loan_id',
+    ];
+
+    protected $casts = [
+        'date' => 'date',
     ];
 
     //relationships

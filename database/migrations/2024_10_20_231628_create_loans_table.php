@@ -23,7 +23,7 @@ return new class extends Migration
             $table->float('amount')->unsigned();
             $table->boolean('is_for_me')->default(false); //bandera que indica si el prestamo es para mi (yo lo recibí)
             $table->float('profitability')->unsigned()->nullable();
-            $table->string('profiability_period')->nullable();
+            $table->string('profitability_period')->nullable();
             $table->timestamp('expired_date')->nullable();
             $table->string('status');
             $table->string('description')->nullable();

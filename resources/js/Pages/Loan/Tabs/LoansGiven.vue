@@ -51,7 +51,10 @@
                 </el-table-column>
                 <el-table-column label="Saldo pendiente" width="140">
                     <template #default="scope">
-                        <p>{{ scope.row.payment_method ?? '-' }}</p>
+                        <p>
+                            <!-- <i v-if="condition" class="fa-solid fa-check"></i> -->
+                            <span>{{ scope.row.payment_method ?? '-' }}</span>
+                        </p>
                     </template>
                 </el-table-column>
                 <el-table-column label="Vence" width="150">

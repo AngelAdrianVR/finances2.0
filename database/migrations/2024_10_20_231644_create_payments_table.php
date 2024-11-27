@@ -13,9 +13,13 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->float('amount')->unsigned();
+            $table->float('amount', 10,2)->unsigned();
+            $table->float('interest', 10,2);
+            $table->float('capital', 10,2);
+            $table->float('remaining', 10,2);
             $table->string('payment_method');
-            $table->string('notes');
+            $table->date('date');
+            $table->text('notes')->nullable();
             $table->foreignId('loan_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
