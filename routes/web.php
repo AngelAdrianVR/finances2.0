@@ -7,6 +7,7 @@ use App\Http\Controllers\OutcomeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RecurringIncomeController;
 use App\Http\Controllers\RecurringOutcomeController;
+use App\Http\Controllers\SettingController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -80,3 +81,8 @@ Route::resource('payments', PaymentController::class)->middleware('auth');
 Route::resource('calendars', CalendarController::class)->middleware('auth');
 Route::post('calendars-fetch-month-reminders', [CalendarController::class, 'fetchMonthReminders'])->middleware('auth')->name('calendars.fetch-month-reminders');
 // Route::post('calendars-destroy/{calendar}', [CalendarController::class, 'destroy'])->middleware('auth')->name('calendars.destroy');
+
+
+// setting routes -------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
+Route::resource('settings', SettingController::class)->middleware('auth');

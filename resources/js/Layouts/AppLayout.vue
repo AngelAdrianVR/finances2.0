@@ -8,6 +8,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import SideNav from '@/Components/MyComponents/SideNav.vue';
+import ResponsiveNavMobil from '@/Components/MyComponents/ResponsiveNavMobil.vue';
 import NotificationsCenter from '@/Components/MyComponents/NotificationsCenter.vue';
 
 defineProps({
@@ -83,7 +84,7 @@ const logout = () => {
 
 
                             <!-- Hamburger -->
-                            <div class="-me-2 flex items-center sm:hidden">
+                            <!-- <div class="-me-2 flex items-center sm:hidden">
                                 <button
                                     class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
                                     @click="showingNavigationDropdown = !showingNavigationDropdown">
@@ -98,11 +99,11 @@ const logout = () => {
                                             d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                     <!-- Responsive Navigation Menu -->
-                    <div :class="{ 'block': showingNavigationDropdown, 'hidden': !showingNavigationDropdown }"
+                    <!-- <div :class="{ 'block': showingNavigationDropdown, 'hidden': !showingNavigationDropdown }"
                         class="sm:hidden">
                         <div class="pt-2 pb-3 space-y-px">
                             <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
@@ -117,7 +118,7 @@ const logout = () => {
                                     <span>Panel de inicio</span>
                                 </div>
                             </ResponsiveNavLink>
-                            <!-- <ResponsiveNavLink :href="route('products.index')" :active="route().current('products.*')">
+                            <ResponsiveNavLink :href="route('products.index')" :active="route().current('products.*')">
                                 <div class="flex items-center space-x-2">
                                     <svg width="20" height="20" viewBox="0 0 17 17" fill="none"
                                         xmlns="http://www.w3.org/2000/svg">
@@ -128,10 +129,10 @@ const logout = () => {
                                     </svg>
                                     <span>Productos</span>
                                 </div>
-                            </ResponsiveNavLink> -->
+                            </ResponsiveNavLink>
                         </div>
 
-                        <!-- Responsive Settings Options -->
+                        Responsive Settings Options
                         <div class="pt-4 pb-1 border-t border-gray-200">
                             <div class="flex items-center px-4">
                                 <div v-if="$page.props.jetstream.managesProfilePhotos" class="shrink-0 me-3">
@@ -156,7 +157,7 @@ const logout = () => {
                                     Perfil
                                 </ResponsiveNavLink>
 
-                                <!-- Authentication -->
+                                Authentication
                                 <form method="POST" @submit.prevent="logout">
                                     <ResponsiveNavLink as="button">
                                         <i
@@ -167,12 +168,17 @@ const logout = () => {
 
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </nav>
 
-                <div class="overflow-y-auto h-[calc(100vh-3rem)] bg-white">
+                <div class="overflow-y-auto h-[calc(100vh-7.2rem)] md:h-[calc(100vh-3rem)] bg-white">
                     <slot />
                 </div>
+
+                <!-- ---------------- footer nave mobile view --------------- -->
+                <nav class="md:hidden fixed bottom-0 w-full z-10">
+                    <ResponsiveNavMobil />
+                </nav>
             </main>
         </div>
     </div>

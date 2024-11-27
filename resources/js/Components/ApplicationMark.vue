@@ -3,3 +3,18 @@
         <img class="w-2/3 object-contain" src="@/../../public/images/isologo.png" alt="">
     </Link>
 </template>
+
+<script>
+import { Link } from '@inertiajs/vue3';
+
+export default {
+    data() {
+        return {
+
+        }
+    },
+    components: {
+        Link
+    }
+}
+</script>
