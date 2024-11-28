@@ -34,23 +34,34 @@ class PaymentController extends Controller
             ? $lastPayment->remaining
             : $loan->amount;
 
+        // Calcular los días transcurridos desde el último pago o la fecha del préstamo
+        $lastDate = $lastPayment ? $lastPayment->date : $loan->loan_date;
+        $daysElapsed = $lastDate->diffInDays($request->date);
+
+        // Determinar el interés diario según el período de rentabilidad
+        $daysInPeriod = match ($profitabilityPeriod) {
+            'Todos los días' => 1,
+            'Semanal' => 7,
+            'Quincenal' => 15,
+            'Mensual' => 30,
+            'Anual' => 365,
+            default => 1,
+        };
+
+        $dailyProfitability = $profitabilityMode === 'Porcentaje'
+            ? ($remaining * $profitability) / 100 / $daysInPeriod
+            : $profitability / $daysInPeriod;
+
+        // Calcular el interés total basado en los días transcurridos
+        $interest = round($dailyProfitability * $daysElapsed, 2);
+
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:1|max:' . $remaining,
+            'amount' => 'required|numeric|min:1|max:' . ($remaining + $interest),
             'payment_method' => 'required|string|max:255',
             'date' => 'required|date',
             'notes' => 'nullable|string|max:500',
             'loan_id' => 'required|numeric|exists:loans,id',
         ]);
-
-        // convertir a dias el periodo de interés
-
-
-        // Calcular interés según el tipo de interés
-        $interest = 0;
-        $interest = $profitabilityMode === 'Porcentaje'
-            ? ($remaining * $profitability) / 100
-            : $profitability; // Cantidad fija
-        $interest = round($interest, 2);
 
         // Calcular pago a capital
         $capital = round($validated['amount'] - $interest, 2);
@@ -69,8 +80,12 @@ class PaymentController extends Controller
             'capital' => $capital,
             'remaining' => $newRemaining,
         ]);
-    }
 
+        // si no queda restante por pagar, marcar prestamo como pagado
+        if ($newRemaining == 0) {
+            $loan->update(['status' => 'Pagado']);
+        }
+    }
 
     public function show(Payment $payment)
     {
