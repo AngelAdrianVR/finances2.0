@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Calendar;
 use App\Models\RecurringOutcome;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class RecurringOutcomeController extends Controller
@@ -30,6 +32,56 @@ class RecurringOutcomeController extends Controller
 
         RecurringOutcome::create($request->all() + ['user_id' => auth()->id()]);
 
+        //agregar a calendario el gasto fijo con la frecuencia indicada ---------------------
+        $startDate = Carbon::parse($request->created_at);
+        $endDate = Carbon::now()->endOfYear(); // Limitar a este año
+        $dates = [];
+
+        switch ($request->periodicity) {
+            case 'Todos los días':
+                while ($startDate->lte($endDate)) {
+                    $dates[] = $startDate->copy();
+                    $startDate->addDay();
+                }
+                break;
+
+            case 'Semanal':
+                while ($startDate->lte($endDate)) {
+                    $dates[] = $startDate->copy();
+                    $startDate->addWeek();
+                }
+                break;
+
+            case 'Mensual':
+                while ($startDate->lte($endDate)) {
+                    $dates[] = $startDate->copy();
+                    $startDate->addMonth();
+                }
+                break;
+
+                case 'Anual':
+                    $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addYear();
+                    }
+                    break;
+        }
+
+        foreach ($dates as $date) {
+            Calendar::create([
+                'type' => 'Gasto fijo',
+                'title' => $request->concept,
+                'date' => $date->toDateString(),
+                'amount' => $request->amount,
+                'category' => $request->category,
+                'description' => $request->description,
+                'periodicity' => $request->periodicity,
+                'payment_method' => $request->payment_method,
+                'user_id' => auth()->id(),
+            ]);
+        }
+
         return to_route('outcomes.index', ['currentTab' => 2]);
     }
 
@@ -54,7 +106,60 @@ class RecurringOutcomeController extends Controller
             'description' => 'nullable',
         ]);
 
+        //eliminar todos los registros del calendario con el nombre del gasto fijo editado.
+        Calendar::where('title', $recurring_outcome->concept)->delete();
+                
         $recurring_outcome->update($request->all());
+
+        //agregar a calendario el gasto fijo con la frecuencia indicada ---------------------
+        $startDate = Carbon::parse($request->created_at);
+        $endDate = Carbon::now()->endOfYear(); // Limitar a este año
+        $dates = [];
+
+        switch ($request->periodicity) {
+            case 'Todos los días':
+                while ($startDate->lte($endDate)) {
+                    $dates[] = $startDate->copy();
+                    $startDate->addDay();
+                }
+                break;
+
+            case 'Semanal':
+                while ($startDate->lte($endDate)) {
+                    $dates[] = $startDate->copy();
+                    $startDate->addWeek();
+                }
+                break;
+
+            case 'Mensual':
+                while ($startDate->lte($endDate)) {
+                    $dates[] = $startDate->copy();
+                    $startDate->addMonth();
+                }
+                break;
+
+                case 'Anual':
+                    $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addYear();
+                    }
+                    break;
+        }
+
+        foreach ($dates as $date) {
+            Calendar::create([
+                'type' => 'Gasto fijo',
+                'title' => $request->concept,
+                'date' => $date->toDateString(),
+                'amount' => $request->amount,
+                'category' => $request->category,
+                'description' => $request->description,
+                'periodicity' => $request->periodicity,
+                'payment_method' => $request->payment_method,
+                'user_id' => auth()->id(),
+            ]);
+        }
 
         return to_route('outcomes.index', ['currentTab' => 2]);
     }
@@ -68,7 +173,8 @@ class RecurringOutcomeController extends Controller
     {
         foreach ($request->recurring_outcomes as $outcome) {
             $outcome = RecurringOutcome::find($outcome['id']);
-            $outcome?->delete();            
+            $outcome?->delete();  
+            Calendar::where('title', $outcome->concept)->where('date', '>=', $outcome->created_at)->delete();           
         }
 
         // return response()->json(['message' => 'Producto(s) eliminado(s)']);

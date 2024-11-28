@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Calendar;
 use App\Models\Income;
 use App\Models\RecurringIncome;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class IncomeController extends Controller
@@ -35,8 +37,59 @@ class IncomeController extends Controller
 
         Income::create($request->all() + ['user_id' => auth()->id()]);
 
+        // Registrar en ingresos recurrentes si se seleccionó el check.
         if ( $request->is_recurring_income ) {
             RecurringIncome::create($request->all() + ['user_id' => auth()->id()]);
+
+            //agregar a calendario el ingreso recurrente con la frecuencia indicada ---------------------
+            $startDate = Carbon::parse($request->created_at);
+            $endDate = Carbon::now()->endOfYear(); // Limitar a este año
+            $dates = [];
+
+            switch ($request->periodicity) {
+                case 'Todos los días':
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addDay();
+                    }
+                    break;
+
+                case 'Semanal':
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addWeek();
+                    }
+                    break;
+
+                case 'Mensual':
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addMonth();
+                    }
+                    break;
+
+                    case 'Anual':
+                        $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
+                        while ($startDate->lte($endDate)) {
+                            $dates[] = $startDate->copy();
+                            $startDate->addYear();
+                        }
+                        break;
+            }
+
+            foreach ($dates as $date) {
+                Calendar::create([
+                    'type' => 'Ingreso recurrente',
+                    'title' => $request->concept,
+                    'date' => $date->toDateString(),
+                    'amount' => $request->amount,
+                    'category' => $request->category,
+                    'description' => $request->description,
+                    'periodicity' => $request->periodicity,
+                    'payment_method' => $request->payment_method,
+                    'user_id' => auth()->id(),
+                ]);
+            }
         }
 
         return to_route('incomes.index');
@@ -64,10 +117,71 @@ class IncomeController extends Controller
             'description' => 'nullable',
         ]);
 
+        if ( $request->is_recurring_income ) {
+            //eliminar todos los registros del calendario con el nombre del ingreso recurrente editado.
+            Calendar::where('title', $income->concept)->delete();
+
+            //elimina el ingreso recurrente de la tabla de recurring incomes
+            RecurringIncome::where('concept', $income->concept)->delete();
+        }
+
+        //actualizar el ingreso
         $income->update($request->all());
 
+        // Registrar en ingresos recurrentes si se seleccionó el check.
         if ( $request->is_recurring_income ) {
+            //vuelve a crear el ingreso recurrente nuevo
             RecurringIncome::create($request->all() + ['user_id' => auth()->id()]);
+
+            //agregar a calendario el ingreso recurrente con la frecuencia indicada ---------------------
+            $startDate = Carbon::parse($request->created_at);
+            $endDate = Carbon::now()->endOfYear(); // Limitar a este año
+            $dates = [];
+
+            switch ($request->periodicity) {
+                case 'Todos los días':
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addDay();
+                    }
+                    break;
+
+                case 'Semanal':
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addWeek();
+                    }
+                    break;
+
+                case 'Mensual':
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addMonth();
+                    }
+                    break;
+
+                    case 'Anual':
+                        $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
+                        while ($startDate->lte($endDate)) {
+                            $dates[] = $startDate->copy();
+                            $startDate->addYear();
+                        }
+                        break;
+            }
+
+            foreach ($dates as $date) {
+                Calendar::create([
+                    'type' => 'Ingreso recurrente',
+                    'title' => $request->concept,
+                    'date' => $date->toDateString(),
+                    'amount' => $request->amount,
+                    'category' => $request->category,
+                    'description' => $request->description,
+                    'periodicity' => $request->periodicity,
+                    'payment_method' => $request->payment_method,
+                    'user_id' => auth()->id(),
+                ]);
+            }
         }
 
         return to_route('incomes.index');

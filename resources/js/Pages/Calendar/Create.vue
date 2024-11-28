@@ -51,7 +51,6 @@
                 v-model="form.date"
                 type="date"
                 placeholder="Selecciona la fecha de inicio"
-                :disabled-date="disabledDate"
             />
             <InputError :message="form.errors.date" />
         </div>
@@ -173,19 +172,7 @@ export default {
         'Cheque',
         'Efectivo'
       ],
-      periodicities: [
-        'Diario',
-        'Cada 2 días',
-        'Cada 3 días',
-        'Semanal',
-        'Quincenal',
-        'Mensual',
-        'Bimestral',
-        'Trimestral',
-        'Cuatrimestral',
-        'Semestral',
-        'Anual',
-      ],
+      periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
       categories: [
         {
           label: 'Nómina',

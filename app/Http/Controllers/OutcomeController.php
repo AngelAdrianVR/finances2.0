@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Calendar;
 use App\Models\Outcome;
 use App\Models\RecurringOutcome;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class OutcomeController extends Controller
@@ -35,9 +37,59 @@ class OutcomeController extends Controller
 
         Outcome::create($request->all() + ['user_id' => auth()->id()]);
 
-        //se crea un registro de gasto recurrente si se señala que lo es
+        // Registrar en gasto fijo si se seleccionó el check.
         if ( $request->is_recurring_outcome ) {
             RecurringOutcome::create($request->all() + ['user_id' => auth()->id()]);
+
+            //agregar a calendario el gasto fijo con la frecuencia indicada ---------------------
+            $startDate = Carbon::parse($request->created_at);
+            $endDate = Carbon::now()->endOfYear(); // Limitar a este año
+            $dates = [];
+
+            switch ($request->periodicity) {
+                case 'Todos los días':
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addDay();
+                    }
+                    break;
+
+                case 'Semanal':
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addWeek();
+                    }
+                    break;
+
+                case 'Mensual':
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addMonth();
+                    }
+                    break;
+
+                    case 'Anual':
+                        $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
+                        while ($startDate->lte($endDate)) {
+                            $dates[] = $startDate->copy();
+                            $startDate->addYear();
+                        }
+                        break;
+            }
+
+            foreach ($dates as $date) {
+                Calendar::create([
+                    'type' => 'Gasto fijo',
+                    'title' => $request->concept,
+                    'date' => $date->toDateString(),
+                    'amount' => $request->amount,
+                    'category' => $request->category,
+                    'description' => $request->description,
+                    'periodicity' => $request->periodicity,
+                    'payment_method' => $request->payment_method,
+                    'user_id' => auth()->id(),
+                ]);
+            }
         }
 
         return to_route('outcomes.index');
@@ -65,11 +117,71 @@ class OutcomeController extends Controller
             'description' => 'nullable',
         ]);
 
+        if ( $request->is_recurring_outcome ) {
+            //eliminar todos los registros del calendario con el nombre del gasto fijo editado.
+            Calendar::where('title', $outcome->concept)->delete();
+
+            //elimina el gasto fijo de la tabla de recurring outcomes
+            RecurringOutcome::where('concept', $outcome->concept)->delete();
+        }
+        
         $outcome->update($request->all());
 
-        //se crea un registro de gasto recurrente si se señala que lo es
+        // Registrar en gasto fijo si se seleccionó el check.
         if ( $request->is_recurring_outcome ) {
+
+            //vuelve a crear el gasto fijo nuevo
             RecurringOutcome::create($request->all() + ['user_id' => auth()->id()]);
+
+            //agregar a calendario el gasto fijo con la frecuencia indicada ---------------------
+            $startDate = Carbon::parse($request->created_at);
+            $endDate = Carbon::now()->endOfYear(); // Limitar a este año
+            $dates = [];
+
+            switch ($request->periodicity) {
+                case 'Todos los días':
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addDay();
+                    }
+                    break;
+
+                case 'Semanal':
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addWeek();
+                    }
+                    break;
+
+                case 'Mensual':
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addMonth();
+                    }
+                    break;
+
+                    case 'Anual':
+                        $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
+                        while ($startDate->lte($endDate)) {
+                            $dates[] = $startDate->copy();
+                            $startDate->addYear();
+                        }
+                        break;
+            }
+
+            foreach ($dates as $date) {
+                Calendar::create([
+                    'type' => 'Gasto fijo',
+                    'title' => $request->concept,
+                    'date' => $date->toDateString(),
+                    'amount' => $request->amount,
+                    'category' => $request->category,
+                    'description' => $request->description,
+                    'periodicity' => $request->periodicity,
+                    'payment_method' => $request->payment_method,
+                    'user_id' => auth()->id(),
+                ]);
+            }
         }
 
         return to_route('outcomes.index');

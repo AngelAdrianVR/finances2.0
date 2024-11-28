@@ -100,7 +100,7 @@ const submit = () => {
             </div>
 
             <div class="flex items-center justify-end mt-4">
-                <PrimaryButton class="mx-auto px-28 md:px-48 lg:px-52 mt-3 flex space-x-2 items-center" :disabled="form.processing">
+                <PrimaryButton class="mx-auto px-28 md:px-48 mt-3 flex space-x-2 items-center" :disabled="form.processing">
                     <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
                     Ingresar
                 </PrimaryButton>
