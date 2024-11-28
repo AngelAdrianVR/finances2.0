@@ -25,7 +25,7 @@
               </div>
             </el-collapse-item>
           </el-collapse>
-          <div>
+          <div class="custom-style">
             <el-segmented @change="changeType" v-model="remainType" :options="options" block />
           </div>
         </div>
@@ -248,4 +248,14 @@ export default {
   },
 };
 </script>
+
+<style>
+.custom-style .el-segmented {
+  --el-segmented-item-selected-color: #000;
+  --el-segmented-bg-color: #F2F2F2;
+  --el-segmented-item-selected-bg-color: #fff;
+  --el-border-radius-base: 10px;
+  --el-segmented-item-selected-border-color: #D9D9D9;
+}
+</style>
 

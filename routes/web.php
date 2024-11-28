@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\OutcomeController;
@@ -32,6 +33,11 @@ Route::middleware([
         return Inertia::render('Dashboard');
     })->name('dashboard');
 });
+
+
+// Dashboard routes -------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------
+Route::resource('dashboard', DashboardController::class)->middleware('auth');
 
 
 // Income routes -------------------------------------------------------------------------------------
