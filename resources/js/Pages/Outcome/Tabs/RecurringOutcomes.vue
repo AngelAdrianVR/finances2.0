@@ -22,13 +22,13 @@
                 :row-class-name="tableRowClassName">
                 <el-table-column type="selection" width="30" />
                 <el-table-column prop="id" label="ID" width="80" />
-                <el-table-column prop="concept" label="Concepto del ingreso" width="200" />
+                <el-table-column prop="concept" label="Concepto del gasto" width="200" />
                 <el-table-column prop="amount" label="Monto" width="150">
                     <template #default="scope">
                         <p>${{ scope.row.amount?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                     </template>
                 </el-table-column>
-                <el-table-column prop="periodicity" label="Recurrencia del ingreso" width="150" />
+                <el-table-column prop="periodicity" label="Recurrencia del gasto" width="150" />
                 <el-table-column prop="category" label="Categoría" width="150" />
                 <el-table-column label="Método de pago" width="150">
                     <template #default="scope">
@@ -56,7 +56,7 @@
                                         Editar
                                     </el-dropdown-item>
                                     <el-dropdown-item :command="'status-' + scope.row.id">
-                                        {{ scope.row.is_active ? 'Deshabilitar ingreso recurrente' : 'Habilitar ingreso recurrente'}}
+                                        {{ scope.row.is_active ? 'Deshabilitar gasto recurrente' : 'Habilitar gasto recurrente'}}
                                     </el-dropdown-item>
                                 </el-dropdown-menu>
                             </template>

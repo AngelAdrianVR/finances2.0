@@ -18,6 +18,18 @@
                 </div>
 
                 <div>
+                    <InputLabel value="Fecha*" class="ml-3 mb-1" />
+                    <el-date-picker
+                        class="!w-full"
+                        v-model="form.created_at"
+                        type="date"
+                        placeholder="Selecciona la fecha"
+                        :shortcuts="shortcuts"
+                    />
+                    <InputError :message="form.errors.created_at" />
+                </div>
+
+                <div>
                     <InputLabel value="Monto*" class="ml-3 mb-1" />
                     <el-input
                         v-model="form.amount"
@@ -106,6 +118,7 @@ data() {
         payment_method: this.recurring_outcome.payment_method,
         periodicity: this.recurring_outcome.periodicity,
         description: this.recurring_outcome.description,
+        created_at: this.recurring_outcome.created_at,
     });
 
     return {
@@ -137,6 +150,28 @@ methods:{
             },
         });
     },
+    shortcuts: [
+        {
+            text: 'Hoy',
+            value: new Date(),
+        },
+        {
+            text: 'Ayer',
+            value: () => {
+                const date = new Date();
+                date.setTime(date.getTime() - 3600 * 1000 * 24);
+                return date;
+            },
+        },
+        {
+            text: 'Hace una semana',
+            value: () => {
+                const date = new Date();
+                date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+                return date;
+            },
+        },
+    ],
 }
 }
 </script>

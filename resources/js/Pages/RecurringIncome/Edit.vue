@@ -10,11 +10,23 @@
                     <el-input
                         v-model="form.concept"
                         maxlength="50"
-                        placeholder="Ej. Venta de ropa"
+                        placeholder="Ej. Renta de propiedad"
                         show-word-limit
                         type="text"
                     />
                     <InputError :message="form.errors.concept" />
+                </div>
+
+                <div>
+                    <InputLabel value="Fecha*" class="ml-3 mb-1" />
+                    <el-date-picker
+                        class="!w-full"
+                        v-model="form.created_at"
+                        type="date"
+                        placeholder="Selecciona la fecha"
+                        :shortcuts="shortcuts"
+                    />
+                    <InputError :message="form.errors.created_at" />
                 </div>
 
                 <div>
@@ -106,12 +118,13 @@ data() {
         payment_method: this.recurring_income.payment_method,
         periodicity: this.recurring_income.periodicity,
         description: this.recurring_income.description,
+        created_at: this.recurring_income.created_at,
     });
 
     return {
         form,
         categories: ['Ventas', 'Intereses', 'Nómina', 'Prestación de servicios', 'Comision', 'Renta', 'Otro'],
-        payment_methods: ['Efectivo', 'Transferencia', 'Depósito'],
+        payment_methods: ['Efectivo', 'Transferencia', 'Depósito', 'Cheque'],
         periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
     }
 },
@@ -137,6 +150,28 @@ methods:{
             },
         });
     },
+    shortcuts: [
+        {
+            text: 'Hoy',
+            value: new Date(),
+        },
+        {
+            text: 'Ayer',
+            value: () => {
+                const date = new Date();
+                date.setTime(date.getTime() - 3600 * 1000 * 24);
+                return date;
+            },
+        },
+        {
+            text: 'Hace una semana',
+            value: () => {
+                const date = new Date();
+                date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+                return date;
+            },
+        },
+    ],
 }
 }
 </script>

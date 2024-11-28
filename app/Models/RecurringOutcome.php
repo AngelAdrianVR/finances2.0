@@ -15,6 +15,7 @@ class RecurringOutcome extends Model
         'payment_method',
         'description',
         'category',
+        'created_at',
         'user_id',
     ];
 
