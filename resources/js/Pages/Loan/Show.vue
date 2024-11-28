@@ -61,8 +61,12 @@
                     <p class="text-[#575757]">Monto del préstamo:</p>
                     <p>${{ loan.amount?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
 
+                    <p class="text-[#575757]">Total a capital:</p>
+                    <p>${{ getTotalCapital.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
+                    <p class="text-[#575757]">Total de interés:</p>
+                    <p>${{ getTotalInterest.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                     <p class="text-[#575757]">Total abonado:</p>
-                    <p>${{ (loan.amount - getRemainingAmount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
+                    <p>${{ getTotalPaid.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
 
                     <p class="text-[#575757]">Saldo pendiente:</p>
                     <p class="font-bold">${{ getRemainingAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
@@ -99,7 +103,7 @@
                             </g>
                         </svg>
                         <svg v-if="loan.status === 'Pagado'" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-green-600">
+                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-[#0CBE3B]">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                         </svg>
@@ -226,6 +230,7 @@
 
 <script>
 import AppLayout from '@/Layouts/AppLayout.vue';
+import PaymentsTable from '@/Components/MyComponents/Loan/PaymentsTable.vue';
 import Back from "@/Components/MyComponents/Back.vue";
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import ThirthButton from '@/Components/MyComponents/ThirthButton.vue';
@@ -268,18 +273,28 @@ export default {
     },
     computed: {
         getRemainingAmount() {
-            const totalPaid = this.loan.payments.reduce((accum, item) => {
-                return accum + item.amount;
-            }, 0);
-
-            return this.loan.amount - totalPaid;
+            return this.loan.amount - this.getTotalCapital;
         },
+        getTotalCapital() {
+            return this.loan.payments.reduce((accum, item) => {
+                return accum + item.capital;
+            }, 0);
+        },
+        getTotalInterest() {
+            return this.loan.payments.reduce((accum, item) => {
+                return accum + item.interest;
+            }, 0);
+        },
+        getTotalPaid() {
+            return this.getTotalCapital + this.getTotalInterest;
+        }
     },
     methods: {
         storePayment() {
             this.form.post(route('payments.store'), {
                 onSuccess: () => {
                     this.showPaymentModal = false;
+                    this.form.reset();
                 },
                 onError: (error) => {
                     console.log(error);

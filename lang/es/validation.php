@@ -143,6 +143,8 @@ return [
         'periodicity' => 'recurrencia',
         'type' => 'tipo',
         'profitability_type' => 'tipo de interés',
-        'status ' => 'estatus',
+        'status' => 'estatus',
+        'title' => 'nombre',
+        'date' => 'fecha',
     ],
 ];

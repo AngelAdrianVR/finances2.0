@@ -9,10 +9,10 @@ class LoanController extends Controller
 {
     public function index()
     {
-        $loans_for_me = Loan::where('type', 'Recibido')
+        $loans_for_me = Loan::with(['payments'])->where('type', 'Recibido')
             ->paginate(50);
 
-        $loans_given = Loan::where('type', 'Otorgado')
+        $loans_given = Loan::with(['payments'])->where('type', 'Otorgado')
             ->paginate(50);
 
         return inertia('Loan/Index', compact('loans_for_me', 'loans_given'));

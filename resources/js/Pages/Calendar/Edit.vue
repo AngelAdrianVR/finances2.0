@@ -1,9 +1,9 @@
 <template>
-  <AppLayout title="Crear recordatorio">
+  <AppLayout title="Editar recordatorio">
     <main class="px-3 md:px-16 py-8">
       <Back />
   
-      <form @submit.prevent="store" class="rounded-xl border border-grayD9 lg:p-5 p-3 lg:w-2/3 xl:w-1/2 mx-auto mt-2 lg:grid lg:grid-cols-2 gap-3 shadow-lg">
+      <form @submit.prevent="update" class="rounded-xl border border-grayD9 lg:p-5 p-3 lg:w-2/3 xl:w-1/2 mx-auto mt-2 lg:grid lg:grid-cols-2 gap-3 shadow-lg">
         <div class="flex items-center justify-between col-span-full">
           <el-collapse accordion>
             <el-collapse-item v-if="remainType === 'Ingreso recurrente'" title="Ingreso recurrente" name="1">
@@ -129,7 +129,7 @@
         <div class="col-span-full space-x-4 text-right mt-7">
             <PrimaryButton :disabled="form.processing">
                 <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
-                Crear
+                Guardar cambios
             </PrimaryButton>
         </div>
       </form>      
@@ -149,20 +149,20 @@ import { useForm } from "@inertiajs/vue3";
 export default {
   data() {
     const form = useForm({
-      type: this.type,
-      title: null,
-      date: null,
-      amount: null,
-      category: null,
-      description: null,
-      periodicity: null,
-      payment_method: null,
+      type: this.calendar.type,
+      title: this.calendar.title,
+      date: this.calendar.date,
+      amount: this.calendar.amount,
+      category: this.calendar.category,
+      description: this.calendar.description,
+      periodicity: this.calendar.periodicity,
+      payment_method: this.calendar.payment_method,
       
     });
 
     return {
       form,
-      remainType: this.type,
+      remainType: this.calendar.type,
       options: [
         'Ingreso recurrente',
         'Gasto fijo'
@@ -235,11 +235,11 @@ export default {
     Back
   },
   props: {
-    type: String
+    calendar: Object
   },
   methods: {
-    store() {
-      this.form.post(route("calendars.store"), {
+    update() {
+      this.form.put(route("calendars.update", this.calendar.id), {
         onSuccess: () => {
           this.$notify({
             title: "Correcto",

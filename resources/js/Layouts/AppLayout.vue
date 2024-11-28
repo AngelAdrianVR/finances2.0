@@ -8,6 +8,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import SideNav from '@/Components/MyComponents/SideNav.vue';
+import ResponsiveNavMobil from '@/Components/MyComponents/ResponsiveNavMobil.vue';
 import NotificationsCenter from '@/Components/MyComponents/NotificationsCenter.vue';
 
 defineProps({
@@ -47,7 +48,7 @@ const logout = () => {
                 <nav class="bg-white border-b border-grayD9">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div class="flex justify-between h-12">
-                            <div class="flex">
+                            <div class="flex space-x-3">
                                 <!-- Logo -->
                                 <div class="md:hidden shrink-0 flex items-center">
                                     <Link :href="route('dashboard')">
@@ -59,8 +60,9 @@ const logout = () => {
                                 <div class="mr-3 mt-2 relative">
                                     <el-tooltip content="Calendario">
                                         <Link :href="route('calendars.index')">
-                                            <button class="flex justify-center items-center rounded-full bg-[#D9D9D9] size-8">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 text-[#7a7a7a]">
+                                            <button class="flex justify-center items-center rounded-full size-8"
+                                                    :class="route().current('calendars.*') ? 'bg-[#D3F6E6] text-primary' : 'bg-[#D9D9D9] text-[#7a7a7a]'">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z" />
                                                 </svg>
                                             </button>
@@ -82,7 +84,7 @@ const logout = () => {
 
 
                             <!-- Hamburger -->
-                            <div class="-me-2 flex items-center sm:hidden">
+                            <!-- <div class="-me-2 flex items-center sm:hidden">
                                 <button
                                     class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
                                     @click="showingNavigationDropdown = !showingNavigationDropdown">
@@ -97,12 +99,12 @@ const logout = () => {
                                             d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                     <!-- Responsive Navigation Menu -->
-                    <div :class="{ 'block': showingNavigationDropdown, 'hidden': !showingNavigationDropdown }"
-                        class="sm:hidden bg-gradient-to-r from-gray-600 to-secondary">
+                    <!-- <div :class="{ 'block': showingNavigationDropdown, 'hidden': !showingNavigationDropdown }"
+                        class="sm:hidden">
                         <div class="pt-2 pb-3 space-y-px">
                             <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                 <div class="flex items-center space-x-2">
@@ -116,7 +118,7 @@ const logout = () => {
                                     <span>Panel de inicio</span>
                                 </div>
                             </ResponsiveNavLink>
-                            <!-- <ResponsiveNavLink :href="route('products.index')" :active="route().current('products.*')">
+                            <ResponsiveNavLink :href="route('products.index')" :active="route().current('products.*')">
                                 <div class="flex items-center space-x-2">
                                     <svg width="20" height="20" viewBox="0 0 17 17" fill="none"
                                         xmlns="http://www.w3.org/2000/svg">
@@ -127,10 +129,10 @@ const logout = () => {
                                     </svg>
                                     <span>Productos</span>
                                 </div>
-                            </ResponsiveNavLink> -->
+                            </ResponsiveNavLink>
                         </div>
 
-                        <!-- Responsive Settings Options -->
+                        Responsive Settings Options
                         <div class="pt-4 pb-1 border-t border-gray-200">
                             <div class="flex items-center px-4">
                                 <div v-if="$page.props.jetstream.managesProfilePhotos" class="shrink-0 me-3">
@@ -155,7 +157,7 @@ const logout = () => {
                                     Perfil
                                 </ResponsiveNavLink>
 
-                                <!-- Authentication -->
+                                Authentication
                                 <form method="POST" @submit.prevent="logout">
                                     <ResponsiveNavLink as="button">
                                         <i
@@ -166,12 +168,17 @@ const logout = () => {
 
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </nav>
 
-                <div class="overflow-y-auto h-[calc(100vh-3rem)] bg-white">
+                <div class="overflow-y-auto h-[calc(100vh-7.2rem)] md:h-[calc(100vh-3rem)] bg-white">
                     <slot />
                 </div>
+
+                <!-- ---------------- footer nave mobile view --------------- -->
+                <nav class="md:hidden fixed bottom-0 w-full z-10">
+                    <ResponsiveNavMobil />
+                </nav>
             </main>
         </div>
     </div>
