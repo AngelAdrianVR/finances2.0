@@ -36,7 +36,7 @@ const logout = () => {
 
         <Banner />
 
-        <div class="overflow-hidden h-screen md:flex bg-white">
+        <div class="overflow-hidden h-screen md:flex bg-white selection:bg-[#D4F3C9]">
 
             <!-- sidenav -->
             <aside class="col-span-2 w-auto">
