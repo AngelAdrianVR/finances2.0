@@ -123,7 +123,7 @@ data() {
         amount: null,
         category: null,
         concept: null,
-        created_at: null,
+        created_at: new Date().toISOString().split('T')[0], // Fecha en formato YYYY-MM-DD
         payment_method: null,
         is_recurring_income: false,
         periodicity: null,

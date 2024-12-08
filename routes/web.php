@@ -29,15 +29,11 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
-
-// Dashboard routes -------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------
-Route::resource('dashboard', DashboardController::class)->middleware('auth');
+//Dashboard routes
+Route::post('/dashboard-fetch-data-for-period',[DashboardController::class, 'fetchDataForPeriod'])->middleware('auth')->name('dashboard.fetch-data-for-period');
 
 
 // Income routes -------------------------------------------------------------------------------------
