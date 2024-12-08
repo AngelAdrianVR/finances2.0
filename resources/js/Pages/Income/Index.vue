@@ -82,7 +82,6 @@ components:{
     PrimaryButton,
     LoadingLogo,
     AppLayout,
-    AppLayout,
     Incomes
 },
 props:{

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BankCardController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IncomeController;
@@ -88,3 +89,10 @@ Route::post('calendars-fetch-month-reminders', [CalendarController::class, 'fetc
 // setting routes -------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
 Route::resource('settings', SettingController::class)->middleware('auth');
+
+
+// bankcards routes -------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
+Route::resource('bank-cards', BankCardController::class)->middleware('auth');
+Route::post('users/massive-delete', [BankCardController::class, 'massiveDelete'])->name('bank-cards.massive-delete');
+Route::get('bank-cards-toogle-status/{bank_card}', [BankCardController::class, 'toogleStatus'])->name('bank-cards.toogle-status')->middleware('auth');
