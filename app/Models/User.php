@@ -31,6 +31,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'total_money',
     ];
 
     /**
@@ -91,5 +92,10 @@ class User extends Authenticatable
     public function calendars() :HasMany
     {
         return $this->hasMany(Calendar::class);
+    }
+
+    public function bankCards() :HasMany
+    {
+        return $this->hasMany(BankCard::class);
     }
 }

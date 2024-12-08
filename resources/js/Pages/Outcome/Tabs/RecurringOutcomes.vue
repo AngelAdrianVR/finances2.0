@@ -116,7 +116,7 @@
                 </div>
                 <div class="flex">
                     <p class="text-[#7a7a7a] w-44">Descripción</p>
-                    <p>{{ itemToShow.description }}</p>
+                    <p>{{ itemToShow.description ?? '-' }}</p>
                 </div>
             </section>
         </template>

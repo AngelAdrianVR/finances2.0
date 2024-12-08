@@ -146,5 +146,7 @@ return [
         'status' => 'estatus',
         'title' => 'nombre',
         'date' => 'fecha',
+        'name' => 'nombre',
+        'bank_name' => 'institución financiera',
     ],
 ];

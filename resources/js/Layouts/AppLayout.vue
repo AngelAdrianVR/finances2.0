@@ -58,23 +58,43 @@ const logout = () => {
 
                                 <!-- calendario -->
                                 <div class="mr-3 mt-2 relative">
-                                    <el-tooltip content="Calendario">
+                                    <div class="group relative ml-3">
                                         <Link :href="route('calendars.index')">
-                                            <button class="flex justify-center items-center rounded-full size-8"
-                                                    :class="route().current('calendars.*') ? 'bg-[#D3F6E6] text-primary' : 'bg-[#D9D9D9] text-[#7a7a7a]'">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z" />
+                                            <button class="rounded-full size-9 flex items-center justify-center" 
+                                                :class="route().current('calendars.*') ? 'bg-[#D3F6E6] text-primary' : 'text-gray-600'">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 md:size-6 lg:size-7">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z" />
                                                 </svg>
                                             </button>
                                         </Link>
-                                    </el-tooltip>
-                                    <!-- <div v-if="$page.props.auth.user?.notifications?.some(notification => {
-                                        return notification.data.module === 'calendar';
-                                    })" class="bg-primary w-[10px] h-[10px] border border-white rounded-full absolute -top-1 -right-2">
-                                    </div> -->
+                                        <span class="absolute -bottom-10 left-[50%] -translate-x-[50%] 
+                                            z-20 origin-left scale-0 px-3 rounded-lg border 
+                                            border-gray-300 bg-white py-2 text-sm font-bold
+                                            shadow-md transition-all duration-300 ease-in-out 
+                                            group-hover:scale-100">Calendario<span>
+                                        </span></span>
+                                    </div>
                                 </div>
 
                                 <!-- notificaciones -->
+                                <div class="mr-3 mt-2 relative">
+                                    <div class="group relative ml-3">
+                                        <Link :href="route('calendars.index')">
+                                            <button class="rounded-full size-9 flex items-center justify-center" 
+                                                :class="route().current('login.*') ? 'bg-[#D3F6E6] text-primary' : 'text-gray-600'">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 md:size-6 lg:size-7">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0M3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5" />
+                                                </svg>
+                                            </button>
+                                        </Link>
+                                        <span class="absolute -bottom-10 left-[50%] -translate-x-[50%] 
+                                            z-20 origin-left scale-0 px-3 rounded-lg border 
+                                            border-gray-300 bg-white py-2 text-sm font-bold
+                                            shadow-md transition-all duration-300 ease-in-out 
+                                            group-hover:scale-100">Notificaciones<span>
+                                        </span></span>
+                                    </div>
+                                </div>
                                 <!-- <div class="mr-3 mt-2 relative">
                                     <el-tooltip content="Notificaciones">
                                         <NotificationsCenter />
