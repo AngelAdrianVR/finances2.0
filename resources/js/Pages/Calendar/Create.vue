@@ -25,7 +25,7 @@
               </div>
             </el-collapse-item>
           </el-collapse>
-          <div>
+          <div class="custom-style">
             <el-segmented @change="changeType" v-model="remainType" :options="options" block />
           </div>
         </div>
@@ -51,7 +51,6 @@
                 v-model="form.date"
                 type="date"
                 placeholder="Selecciona la fecha de inicio"
-                :disabled-date="disabledDate"
             />
             <InputError :message="form.errors.date" />
         </div>
@@ -173,19 +172,7 @@ export default {
         'Cheque',
         'Efectivo'
       ],
-      periodicities: [
-        'Diario',
-        'Cada 2 días',
-        'Cada 3 días',
-        'Semanal',
-        'Quincenal',
-        'Mensual',
-        'Bimestral',
-        'Trimestral',
-        'Cuatrimestral',
-        'Semestral',
-        'Anual',
-      ],
+      periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
       categories: [
         {
           label: 'Nómina',
@@ -261,4 +248,14 @@ export default {
   },
 };
 </script>
+
+<style>
+.custom-style .el-segmented {
+  --el-segmented-item-selected-color: #000;
+  --el-segmented-bg-color: #F2F2F2;
+  --el-segmented-item-selected-bg-color: #fff;
+  --el-border-radius-base: 10px;
+  --el-segmented-item-selected-border-color: #D9D9D9;
+}
+</style>
 

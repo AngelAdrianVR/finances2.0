@@ -82,7 +82,9 @@
             <img class="size-9 p-1 rounded-full object-cover" :src="$page.props.auth.user.profile_photo_url"
                 :alt="$page.props.auth.user.name">
         </button>
-        <ProfileCard @close="showProfileCard = false" v-if="showProfileCard" />
+        <div class="absolute -top-[260px] right-56">
+            <ProfileCard @close="showProfileCard = false" v-if="showProfileCard" />
+        </div>
     </div>
 </template>
 

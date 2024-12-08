@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "date-fns": "^4.1.0",
-        "element-plus": "^2.8.5"
+        "element-plus": "^2.8.5",
+        "vue3-apexcharts": "^1.8.0"
     }
 }

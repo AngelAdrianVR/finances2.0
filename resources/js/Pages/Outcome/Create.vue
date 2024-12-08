@@ -123,7 +123,7 @@ data() {
         amount: null,
         category: null,
         concept: null,
-        created_at: null,
+        created_at: new Date().toISOString().split('T')[0], // Fecha en formato YYYY-MM-DD
         payment_method: null,
         is_recurring_outcome: false,
         periodicity: null,
@@ -154,7 +154,7 @@ data() {
                 },
             },
         ],
-        categories: ['Servicios', 'Comida', 'Transporte', 'Deuda', 'Renta', 'Otro'],
+        categories: ['Servicios', 'Transporte', 'Compras', 'Salud y bienestar', 'Educación y desarrollo personal', 'Entretenimiento', 'Alimentos y bebidas', 'Otro'],
         payment_methods: ['Efectivo', 'Transferencia', 'Depósito', 'Pago con tarjeta'],
         periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
     }

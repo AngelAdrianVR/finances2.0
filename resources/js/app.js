@@ -5,6 +5,7 @@ import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
+import VueApexCharts from "vue3-apexcharts";
 
 //element plus
 import ElementPlus from 'element-plus'
@@ -21,6 +22,7 @@ createInertiaApp({
             .use(plugin)
             .use(ZiggyVue)
             .use(ElementPlus, { locale })
+            .use(VueApexCharts)
             .mount(el);
     },
     progress: {
