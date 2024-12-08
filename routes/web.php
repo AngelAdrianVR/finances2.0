@@ -32,6 +32,9 @@ Route::middleware([
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
+//Dashboard routes
+Route::post('/dashboard-fetch-data-for-period',[DashboardController::class, 'fetchDataForPeriod'])->middleware('auth')->name('dashboard.fetch-data-for-period');
+
 
 // Income routes -------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
