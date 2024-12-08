@@ -50,7 +50,7 @@
 
                     <p class="text-[#575757]">Tipo de préstamo:</p>
                     <p>{{ loan.type }}</p>
-                    
+
                     <p class="text-[#575757]">
                         {{ loan.type === 'Otorgado'
                             ? 'Nombre del beneficiario:'
@@ -116,13 +116,12 @@
                 <article class="w-2/3 rounded-xl border border-grayD9 py-5 px-8">
                     <div class="flex items-center justify-between">
                         <h2 class="font-bold">Desgloce del préstamo</h2>
-                        <PrimaryButton v-if="getRemainingAmount" @click="showPaymentModal = true" class="!rounded-full">
+                        <PrimaryButton v-if="getRemainingAmount" @click="createPayment" class="!rounded-full">
                             Registrar abono
                         </PrimaryButton>
                     </div>
                     <el-table :data="loan.payments" max-height="500" ref="multipleTableRef"
-                        :row-class-name="tableRowClassName" 
-                        class="mt-5">
+                        :row-class-name="tableRowClassName" class="mt-5">
                         <el-table-column label="Restante" width="100">
                             <template #default="scope">
                                 <p>${{ scope.row.remaining.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
@@ -181,10 +180,11 @@
 
         <DialogModal :show="showPaymentModal" @close="showPaymentModal = false">
             <template #title>
-                <p class="font-bold text-left">Registrar abono (Saldo pendiente ${{ getRemainingAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }})</p>
+                <p class="font-bold text-left">Registrar abono (Saldo pendiente ${{
+                    getRemainingAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }})</p>
             </template>
             <template #content>
-                <form @submit.prevent="storePayment" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <form @submit.prevent="storeOrUpdatePayment" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <InputLabel value="Monto abonado*" />
                         <el-input v-model="form.amount" placeholder="Ej. $500"
@@ -219,9 +219,9 @@
                 </form>
             </template>
             <template #footer>
-                <PrimaryButton @click="storePayment" :disabled="form.processing">
+                <PrimaryButton @click="storeOrUpdatePayment" :disabled="form.processing">
                     <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
-                    Registrar
+                    {{ editingPayment ? 'Guardar cambios' : 'Registrar' }}
                 </PrimaryButton>
             </template>
         </DialogModal>
@@ -253,6 +253,7 @@ export default {
 
         return {
             form,
+            editingPayment: false,
             loanSelected: this.loan.id,
             showPaymentModal: false,
             paymentTypes: ['Efectivo', 'Transferencia', 'Depósito'],
@@ -290,16 +291,34 @@ export default {
         }
     },
     methods: {
-        storePayment() {
-            this.form.post(route('payments.store'), {
-                onSuccess: () => {
-                    this.showPaymentModal = false;
-                    this.form.reset();
-                },
-                onError: (error) => {
-                    console.log(error);
-                }
-            });
+        createPayment() {
+            this.form.reset();
+            this.showPaymentModal = true;
+            this.editingPayment = false;
+        },
+        storeOrUpdatePayment() {
+            if (editingPayment) {
+                this.form.post(route('payments.update'), {
+                    onSuccess: () => {
+                        this.showPaymentModal = false;
+                        this.editingPayment = false;
+                        this.form.reset();
+                    },
+                    onError: (error) => {
+                        console.log(error);
+                    }
+                });
+            } else {
+                this.form.post(route('payments.store'), {
+                    onSuccess: () => {
+                        this.showPaymentModal = false;
+                        this.form.reset();
+                    },
+                    onError: (error) => {
+                        console.log(error);
+                    }
+                });
+            }
         },
         handleCommand(command) {
             const commandName = command.split('-')[0];
@@ -309,11 +328,12 @@ export default {
                 const selectedPayment = this.loan.payments.find(item => item.id == rowId);
                 // llenar formulario con datos de abono seleccionado
                 this.form.amount = selectedPayment.amount,
-                    this.form.date = selectedPayment.date,
-                    this.form.payment_method = selectedPayment.payment_method,
-                    this.form.notes = selectedPayment.notes,
-                    // abrir modal
-                    this.showPaymentModal = true;
+                this.form.date = selectedPayment.date,
+                this.form.payment_method = selectedPayment.payment_method,
+                this.form.notes = selectedPayment.notes,
+                // abrir modal
+                this.editingPayment = true;
+                this.showPaymentModal = true;
             } else if (commandName === 'delete') {
                 this.deletePayment(rowId);
             }
