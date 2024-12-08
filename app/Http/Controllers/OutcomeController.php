@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Calendar;
 use App\Models\Outcome;
 use App\Models\RecurringOutcome;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -35,7 +36,18 @@ class OutcomeController extends Controller
             'description' => 'nullable',
         ]);
 
-        Outcome::create($request->all() + ['user_id' => auth()->id()]);
+        $outcome = Outcome::create($request->all() + ['user_id' => auth()->id()]);
+
+        //resta la cantidad del gasto a el total global
+        $user = User::find(auth()->id());
+
+        //si el dinero total es menor al gasto se queda en 0 para no tener números negativos
+        if ( $user->total_money < $outcome->amount ) {
+            $user->total_money = 0;
+        } else {
+            $user->total_money -= $outcome->amount;
+        }
+        $user->save();
 
         // Registrar en gasto fijo si se seleccionó el check.
         if ( $request->is_recurring_outcome ) {
@@ -124,8 +136,20 @@ class OutcomeController extends Controller
             //elimina el gasto fijo de la tabla de recurring outcomes
             RecurringOutcome::where('concept', $outcome->concept)->delete();
         }
-        
+
+        //suma la cantidad del gasto a el total global para restar la cantidad actualizada
+        $user = User::find(auth()->id());
+        $user->total_money += $outcome->amount;
+
         $outcome->update($request->all());
+
+        //si el dinero total es menor al gasto se queda en 0 para no tener números negativos
+        if ( $user->total_money < $outcome->amount ) {
+            $user->total_money = 0;
+        } else {
+            $user->total_money -= $outcome->amount;
+        }
+        $user->save();
 
         // Registrar en gasto fijo si se seleccionó el check.
         if ( $request->is_recurring_outcome ) {

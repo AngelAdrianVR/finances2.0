@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BankCard;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 
 class SettingController extends Controller
 {
     public function index()
-    {
-        //
+    {   
+        $bankCards = BankCard::where('user_id', auth()->id())->paginate(20);
+
+        return inertia('Setting/Index', compact('bankCards'));
     }
 
     public function create()
