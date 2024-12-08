@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Calendar;
 use App\Models\Income;
 use App\Models\RecurringIncome;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -35,7 +36,12 @@ class IncomeController extends Controller
             'description' => 'nullable',
         ]);
 
-        Income::create($request->all() + ['user_id' => auth()->id()]);
+        $income = Income::create($request->all() + ['user_id' => auth()->id()]);
+
+        //sumar la cantidad del ingreso a el total global
+        $user = User::find(auth()->id());
+        $user->total_money += $income->amount;
+        $user->save();
 
         // Registrar en ingresos recurrentes si se seleccionó el check.
         if ( $request->is_recurring_income ) {
@@ -125,8 +131,17 @@ class IncomeController extends Controller
             RecurringIncome::where('concept', $income->concept)->delete();
         }
 
+        //resta el ingreso al total global para sumar el actualizado
+        $user = User::find(auth()->id());
+        $user->total_money -= $income->amount;
+        $user->save();
+                
         //actualizar el ingreso
         $income->update($request->all());
+
+        //sumar la cantidad del ingreso editado a el total global
+        $user->total_money += $income->amount;
+        $user->save();
 
         // Registrar en ingresos recurrentes si se seleccionó el check.
         if ( $request->is_recurring_income ) {
