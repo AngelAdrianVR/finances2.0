@@ -38,9 +38,9 @@ class LoanController extends Controller
             'loan_date' => 'nullable|date',
         ]);
 
-        Loan::create($request->all() + ['user_id' => auth()->id()]);
+        $loan = Loan::create($request->all() + ['user_id' => auth()->id()]);
 
-        return to_route('loans.index');
+        return to_route('loans.show', $loan->id);
     }
 
     public function show(Loan $loan)

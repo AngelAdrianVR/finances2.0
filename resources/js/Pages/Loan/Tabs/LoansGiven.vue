@@ -11,7 +11,7 @@
 
                 <!-- buttons -->
                 <div class="mt-2 lg:mt-0">
-                    <button @click="deleteSelections"
+                    <button @click="showDeleteConfirmation = true"
                         class="rounded-full bg-[#F5BABA] disabled:bg-grayD9 disabled:cursor-not-allowed size-8"
                         :disabled="disableMassiveActions">
                         <i :class="disableMassiveActions ? 'text-gray9A' : 'text-red-600'"
@@ -104,11 +104,32 @@
                 </el-table-column>
             </el-table>
         </div>
-        <!-- tabla ends -->
+
+        <DeleteConfirmationModal :show="showDeleteConfirmation" @close="showDeleteConfirmation = false">
+            <template #title>
+                <div class="text-center">
+                    <p>¿Estas seguro que deseas eliminar el/los préstamos seleccionados?</p>
+                </div>
+            </template>
+            <template #content></template>
+            <template #footer>
+                <div class="w-full flex items-center justify-center space-x-2">
+                    <CancelButton @click="showDeleteConfirmation = false">No, Cancelar
+                    </CancelButton>
+                    <DangerButton @click="deleteSelections" :disabled="deleting">
+                        <i v-if="deleting" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
+                        Sí, estoy seguro
+                    </DangerButton>
+                </div>
+            </template>
+        </DeleteConfirmationModal>
     </main>
 </template>
 
 <script>
+import CancelButton from "@/Components/CancelButton.vue";
+import DangerButton from "@/Components/DangerButton.vue";
+import DeleteConfirmationModal from "@/Components/DeleteConfirmationModal.vue";
 import PaginationWithNoMeta from "@/Components/MyComponents/PaginationWithNoMeta.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import { format } from 'date-fns';
@@ -117,13 +138,20 @@ import { es } from 'date-fns/locale';
 export default {
     data() {
         return {
+            //modales
+            showDeleteConfirmation: false,
             //tabla
             disableMassiveActions: true,
+            // cargas
+            deleting: false,
         }
     },
     components: {
         PaginationWithNoMeta,
         PrimaryButton,
+        DeleteConfirmationModal,
+        CancelButton,
+        DangerButton,
     },
     props: {
         loans: Object
@@ -149,56 +177,49 @@ export default {
             this.$inertia.get(route('loans.' + commandName, rowId));
         },
         async deleteSelections() {
-            this.$confirm('¿Estás seguro que deseas continuar con la eliminación?', 'Confirmar', {
-                confirmButtonText: 'Sí',
-                cancelButtonText: 'No',
-                type: 'warning'
-            }).then(async () => {
-                try {
-                    const response = await axios.post(route('loans.massive-delete', {
-                        loans: this.$refs.multipleTableRef.value
-                    }));
+            try {
+                this.deleting = true;
+                const response = await axios.post(route('loans.massive-delete', {
+                    loans: this.$refs.multipleTableRef.value
+                }));
 
-                    if (response.status === 200) {
-                        this.$message({
-                            type: 'success',
-                            message: 'Eliminación correcta'
-                        });
+                if (response.status === 200) {
+                    this.$message({
+                        type: 'success',
+                        message: 'Eliminación correcta'
+                    });
 
-                        // update list of loans
-                        let deletedIndexes = [];
-                        this.loans.data.forEach((income, index) => {
-                            if (this.$refs.multipleTableRef.value.includes(income)) {
-                                deletedIndexes.push(index);
-                            }
-                        });
-
-                        deletedIndexes.sort((a, b) => b - a);
-
-                        for (const index of deletedIndexes) {
-                            this.loans.data.splice(index, 1);
+                    // update list of loans
+                    let deletedIndexes = [];
+                    this.loans.data.forEach((income, index) => {
+                        if (this.$refs.multipleTableRef.value.includes(income)) {
+                            deletedIndexes.push(index);
                         }
+                    });
 
-                    } else {
-                        this.$message({
-                            type: 'error',
-                            message: 'Algo salió mal'
-                        });
+                    deletedIndexes.sort((a, b) => b - a);
+
+                    for (const index of deletedIndexes) {
+                        this.loans.data.splice(index, 1);
                     }
 
-                } catch (err) {
+                    this.showDeleteConfirmation = false;
+
+                } else {
                     this.$message({
                         type: 'error',
                         message: 'Algo salió mal'
                     });
-                    console.log(err);
                 }
-            }).catch(() => {
+            } catch (err) {
                 this.$message({
-                    type: 'info',
-                    message: 'Eliminación cancelada'
+                    type: 'error',
+                    message: 'Algo salió mal'
                 });
-            });
+                console.log(err);
+            } finally {
+                this.deleting = false;
+            }
         },
         handleRowClick(row) {
             this.$inertia.get(route('loans.show', row.id));
