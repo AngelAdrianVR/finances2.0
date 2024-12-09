@@ -1,62 +1,56 @@
 <template>
     <div class="flex flex-col items-center text-primary">
-        <figure class="mt-20 mx-auto w-[30%] lg:w-[15%]">
+        <figure class="mt-20 mx-auto w-[25%] lg:w-[15%]">
             <img class="" src="@/../../public/images/color_logo.png" alt="logo">
         </figure>
-        <div class="loader">
-            <div class="shape"></div>
+        <div class="loader mt-3">
+            <div class="circle"></div>
         </div>
-        <!-- <i class="fa-solid fa-spinner fa-spin text-gray-600 text-4xl mt-2"></i>
-        <p>Cargando ...</p> -->
     </div>
 </template>
 
 <style>
-    /* From Uiverse.io by shadowmurphy */ 
+/* From Uiverse.io by mrhyddenn */ 
 .loader {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  width: 200px;
-  height: 15px;
-  background-color: rgb(216, 214, 214);
-  border-radius: 10px;
-  overflow: hidden;
+  background: transparent;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
   position: relative;
-  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.shape {
-  width: 50px;
-  height: 15px;
-  background-image: linear-gradient(144deg, #4fc2c4, #338a8b 50%, #296A6B);
-  border-radius: 25px;
+.circle {
+  width: 80px;
+  height: 80px;
+  border: 2px solid #ccc;
   position: absolute;
-  animation: slide 1.9s linear infinite;
-  background-size: 200%;
+  border-radius: 50%;
+  animation: circle14512 2s linear infinite;
 }
 
-@keyframes slide {
-  0% {
-    left: 0;
-  }
+.circle::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #296A6B;
+  box-shadow: 0 0 20px #9ae932, 0 0 60px #9ae932;
+}
 
-  50% {
-    left: calc(100% - 50px);
+@keyframes circle14512 {
+  0% {
+    transform: rotate(0deg);
   }
 
   100% {
-    left: 0;
-  }
-}
-
-@keyframes gradientChange {
-  0%, 100% {
-    background-image: linear-gradient(144deg, #AF40FF, #5B42F3 50%, #00DDEB);
-  }
-
-  50% {
-    background-image: linear-gradient(144deg, #00DDEB, #5B42F3 50%, #AF40FF);
+    transform: rotate(360deg);
   }
 }
 </style>

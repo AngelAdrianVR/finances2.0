@@ -108,7 +108,6 @@
                 class="size-10 px-2 hover:bg-[#272829] hover:text-white text-[#999999] rounded-lg flex items-center justify-center">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
             </svg>
-
         </button>
     </div>
 </template>
