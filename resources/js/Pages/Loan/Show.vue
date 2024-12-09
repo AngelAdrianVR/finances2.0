@@ -1,7 +1,7 @@
 <template>
     <AppLayout title="Préstamos">
         <main class="px-2 md:px-10 pt-4 pb-16">
-            <Back />
+            <Back :to="route('loans.index', {currentTab: loan.type == 'Otorgado' ? 1 : 2})" />
             <h1 class="font-bold my-4">Detalles del préstamo</h1>
             <div class="flex justify-between">
                 <div class="md:w-1/3 mr-2">
@@ -78,16 +78,12 @@
                     <p v-if="loan.profitability">{{ loan.profitability }} {{ loan.profitability_mode === 'Porcentaje' ?
                         '%' : '$' }}</p>
                     <p v-else>0.0</p>
-
-                    <p class="text-[#575757]">Tipo de interés:</p>
-                    <p>{{ loan.profitability_type ?? '-' }}</p>
-
                     <p class="text-[#575757]">Periodo de interés:</p>
                     <p>{{ loan.profitability_period }}</p>
-
+                    <p class="text-[#575757]">Tipo de interés:</p>
+                    <p>{{ loan.profitability_type ?? '-' }}</p>
                     <p class="text-[#575757]">Fecha de vencimiento:</p>
                     <p>{{ formatDate(loan.expired_date) ?? '-' }}</p>
-
                     <p class="text-[#575757]">Estado del préstamo:</p>
                     <div class="flex items-center space-x-2">
                         <svg v-if="loan.status === 'En curso'" width="14" height="14" viewBox="0 0 12 12" fill="none"
@@ -111,7 +107,7 @@
                     </div>
 
                     <p class="text-[#575757]">Descripción:</p>
-                    <p>{{ loan.Description ?? '-' }}</p>
+                    <p style="white-space: pre-line;">{{ loan.description ?? '-' }}</p>
                 </article>
                 <article class="w-2/3 rounded-xl border border-grayD9 py-5 px-8">
                     <div class="flex items-center justify-between">
@@ -255,6 +251,7 @@ export default {
             form,
             editingPayment: false,
             loanSelected: this.loan.id,
+            selectedPayment: null,
             showPaymentModal: false,
             paymentTypes: ['Efectivo', 'Transferencia', 'Depósito'],
         }
@@ -297,8 +294,8 @@ export default {
             this.editingPayment = false;
         },
         storeOrUpdatePayment() {
-            if (editingPayment) {
-                this.form.post(route('payments.update'), {
+            if (this.editingPayment) {
+                this.form.put(route('payments.update', this.selectedPayment), {
                     onSuccess: () => {
                         this.showPaymentModal = false;
                         this.editingPayment = false;
@@ -325,12 +322,12 @@ export default {
             const rowId = command.split('-')[1];
 
             if (commandName === 'edit') {
-                const selectedPayment = this.loan.payments.find(item => item.id == rowId);
+                this.selectedPayment = this.loan.payments.find(item => item.id == rowId);
                 // llenar formulario con datos de abono seleccionado
-                this.form.amount = selectedPayment.amount,
-                this.form.date = selectedPayment.date,
-                this.form.payment_method = selectedPayment.payment_method,
-                this.form.notes = selectedPayment.notes,
+                this.form.amount = this.selectedPayment.amount,
+                this.form.date = this.selectedPayment.date,
+                this.form.payment_method = this.selectedPayment.payment_method,
+                this.form.notes = this.selectedPayment.notes,
                 // abrir modal
                 this.editingPayment = true;
                 this.showPaymentModal = true;

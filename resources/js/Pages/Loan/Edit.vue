@@ -153,7 +153,7 @@
                 <div class="col-span-full space-x-4 text-right mt-7">
                     <PrimaryButton :disabled="form.processing">
                         <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
-                        Editar préstamo
+                        Guardar cambios
                     </PrimaryButton>
                 </div>
             </form>
