@@ -4,7 +4,7 @@
             <Back />
             <h1 class="font-bold my-4">Detalles del préstamo</h1>
             <div class="flex justify-between">
-                <div class="md:w-1/3 mr-2">
+                <div class="w-1/2 md:w-1/3 mr-2">
                     <el-select @change="$inertia.get(route('loans.show', loanSelected))" v-model="loanSelected"
                         clearable filterable placeholder="Buscar" no-data-text="No hay órdenes registradas"
                         no-match-text="No se encontraron coincidencias">
@@ -42,8 +42,10 @@
 
                 </div>
             </div>
-            <section class="flex space-x-5 mt-9 text-[15px]">
-                <article class="w-1/3 grid grid-cols-2 gap-2 rounded-xl bg-[#F2F2F2] border border-grayD9 p-5">
+
+            <section class="lg:flex lg:space-x-5 space-y-4 lg:space-y-0 mt-9 text-[15px]">
+
+                <article class="lg:w-1/3 grid grid-cols-2 gap-2 rounded-xl bg-[#F2F2F2] border border-grayD9 p-5">
                     <h2 class="font-bold col-span-full mb-4">Información del préstamo</h2>
                     <p class="text-[#575757]">Folio:</p>
                     <p>{{ loan.type === 'Otorgado' ? 'O-' : 'R-' }}{{ loan.id?.toString().padStart(3, '0') }}</p>
@@ -109,7 +111,8 @@
                     <p class="text-[#575757]">Descripción:</p>
                     <p>{{ loan.Description ?? '-' }}</p>
                 </article>
-                <article class="w-2/3 rounded-xl border border-grayD9 py-5 px-8">
+
+                <article class="lg:w-2/3 rounded-xl border border-grayD9 py-5 px-8">
                     <div class="flex items-center justify-between">
                         <h2 class="font-bold">Desgloce del préstamo</h2>
                         <PrimaryButton v-if="getRemainingAmount" @click="showPaymentModal = true" class="!rounded-full">

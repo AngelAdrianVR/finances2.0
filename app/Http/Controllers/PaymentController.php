@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Loan;
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -69,6 +70,22 @@ class PaymentController extends Controller
             'capital' => $capital,
             'remaining' => $newRemaining,
         ]);
+        
+        //sumar o restar la cantidad del abono segun sea el tipo del préstamo (otorgado o recibido) a el total global en la tabla users
+        $user = User::find(auth()->id());
+
+        if ( $loan->type === 'Otorgado' ) {
+            $user->total_money += $payment->amount;
+        } else {
+            //si el monto del abono es mayor al dinero global registrado, se manda a cero para no tener numeros negativos.
+            if ( $user->total_money < $payment->amount ) {
+                $user->total_money = 0;
+            } else {
+                $user->total_money -= $payment->amount;
+            }
+        }
+        $user->save();
+
     }
 
 

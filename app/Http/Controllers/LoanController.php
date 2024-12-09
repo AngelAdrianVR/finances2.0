@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Loan;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class LoanController extends Controller
@@ -38,7 +39,22 @@ class LoanController extends Controller
             'loan_date' => 'nullable|date',
         ]);
 
-        Loan::create($request->all() + ['user_id' => auth()->id()]);
+        $loan = Loan::create($request->all() + ['user_id' => auth()->id()]);
+
+        //sumar o restar la cantidad del prestamo segun sea el tipo (otorgado o recibido) a el total global en la tabla users
+        $user = User::find(auth()->id());
+
+        if ( $loan->type === 'Recibido' ) {
+            $user->total_money += $loan->amount;
+        } else {
+            //si el monto del préstamo es mayor al dinero global registrado, se manda a cero para no tener numeros negativos.
+            if ( $user->total_money < $loan->amount ) {
+                $user->total_money = 0;
+            } else {
+                $user->total_money -= $loan->amount;
+            }
+        }
+        $user->save();
 
         return to_route('loans.index');
     }
@@ -72,7 +88,36 @@ class LoanController extends Controller
             'loan_date' => 'nullable|date',
         ]);
 
+        //suma o restar la cantidad del préstamo a el total global para actualizar la cantidad
+        $user = User::find(auth()->id());
+
+        if ( $loan->type === 'Otorgado' ) {
+            $user->total_money += $loan->amount;
+        } else {
+            //si el monto del préstamo es mayor al dinero global registrado, se manda a cero para no tener numeros negativos.
+            if ( $user->total_money < $loan->amount ) {
+                $user->total_money = 0;
+            } else {
+                $user->total_money -= $loan->amount;
+            }
+        }
+        $user->save();
+
+        //Actualizar el prestamos
         $loan->update($request->all());
+
+        //sumar o restar la cantidad del prestamo segun sea el tipo (otorgado o recibido) a el total global en la tabla users
+        if ( $loan->type === 'Recibido' ) {
+            $user->total_money += $loan->amount;
+        } else {
+            //si el monto del préstamo es mayor al dinero global registrado, se manda a cero para no tener numeros negativos.
+            if ( $user->total_money < $loan->amount ) {
+                $user->total_money = 0;
+            } else {
+                $user->total_money -= $loan->amount;
+            }
+        }
+        $user->save();
 
         return to_route('loans.index');
     }

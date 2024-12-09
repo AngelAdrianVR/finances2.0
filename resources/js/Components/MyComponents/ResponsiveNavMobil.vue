@@ -77,8 +77,8 @@
                     getUnreadNotifications }}</span> -->
         </div>
         <button @click="showProfileCard = !showProfileCard"
-            :class="{ 'border-primary': route().current('profile.*') }"
-            class="relative size-10 flex justify-center items-center text-sm border border-[#999999] rounded-full focus:outline-none focus:border-primary transition">
+            :class="{ 'border-primary': showProfileCard }"
+            class="relative size-10 flex justify-center items-center text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-primary transition">
             <img class="size-9 p-1 rounded-full object-cover" :src="$page.props.auth.user.profile_photo_url"
                 :alt="$page.props.auth.user.name">
         </button>
