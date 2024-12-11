@@ -46,5 +46,58 @@
     --el-segmented-item-selected-border-color: #D9D9D9;
 }
 
-/* datepicker ------------------- */
+/* Primary button ------------------------ */
+.el-button--primary {
+    --el-button-bg-color: #296A6B !important;
+    --el-button-border-color: #296A6B !important;
+    --el-button-active-color: #225657 !important;
+    --el-button-hover-bg-color:  #317b7c !important;
+    --el-button-hover-border-color:   #317b7c !important;
+    --el-button-active-bg-color: #1c4a4b !important;
+    --el-button-disabled-bg-color:  #579fa0 !important;
+}
 
+.el-dropdown-menu__item:not(.is-disabled):focus,
+.el-dropdown-menu__item:not(.is-disabled):hover {
+    background-color: #bff4f593 !important;
+    color: #225657 !important;
+}
+
+/* datepicker ------------------- */
+.el-date-picker {
+    --el-datepicker-active-color: #225657 !important;
+    --el-datepicker-hover-text-color: #225657 !important;
+    --el-datepicker-inrange-bg-color: #bff4f593 !important;
+    --el-datepicker-inrange-hover-bg-color: #bff4f593 !important;
+}
+
+.el-month-table td.today .el-date-table-cell__text {
+    color: #225657 !important;
+}
+
+:root {
+    --el-menu-active-color: #225657 !important;
+    --el-color-primary: #225657 !important;
+}
+
+/* input ----------------------------------------- */
+[type='text'],
+input:where(:not([type])),
+[type='email'],
+[type='url'],
+[type='password'],
+[type='number'],
+[type='date'],
+[type='datetime-local'],
+[type='month'],
+[type='search'],
+[type='tel'],
+[type='time'],
+[type='week'],
+[multiple], textarea, select {
+    border-color: #225657 !important;
+}
+
+[type='text']:focus {
+    --tw-ring-color: #225657;
+}

@@ -80,7 +80,7 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel for="email" value="Email" class="ml-3" />
+                <InputLabel for="email" value="Correo electrónico" class="ml-3" />
                 <TextInput
                     id="email"
                     v-model="form.email"
@@ -95,7 +95,7 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Password" class="ml-3" />
+                <InputLabel for="password" value="Contraseña" class="ml-3" />
                 <TextInput
                     id="password"
                     v-model="form.password"
@@ -110,7 +110,7 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password_confirmation" value="Confirm Password" class="ml-3" />
+                <InputLabel for="password_confirmation" value="Confirmar contraseña" class="ml-3" />
                 <TextInput
                     id="password_confirmation"
                     v-model="form.password_confirmation"
