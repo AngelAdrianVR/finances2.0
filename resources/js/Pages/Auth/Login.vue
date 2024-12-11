@@ -100,18 +100,18 @@ const submit = () => {
             </div>
 
             <div class="flex items-center justify-end mt-4">
-                <PrimaryButton class="mx-auto px-28 md:px-48 lg:px-52 mt-3 flex space-x-2 items-center" :disabled="form.processing">
+                <PrimaryButton class="mx-auto px-28 md:px-48 mt-3 flex space-x-2 items-center" :disabled="form.processing">
                     <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
                     Ingresar
                 </PrimaryButton>
             </div>
             
-            <div class="border-t border-[#999999] mt-9 w-full relative">
+            <!-- <div class="border-t border-[#999999] mt-9 w-full relative">
                 <p class="bg-gray-100 px-4 absolute -bottom-3 right-[45%]">ó</p>
-            </div>
+            </div> -->
 
             <!-- Logueo por google o apple -->
-            <div class="mt-7 flex items-center space-x-3">
+            <!-- <div class="mt-7 flex items-center space-x-3">
                 <button type="button" class="flex items-center justify-center space-x-2 p-4 w-1/2 border border-grayD9 rounded-md">
                     <img src="@/../../public/images/google_icon.png" alt="">
                     <span>Continuar con Google</span>
@@ -120,7 +120,7 @@ const submit = () => {
                     <img src="@/../../public/images/apple_icon.png" alt="">
                     <span>Continuar con Apple</span>
                 </button>
-            </div>
+            </div> -->
 
             <p class="mt-12 text-center">¿No tienes cuenta? <strong @click="$inertia.get(route('register'))" class="text-primary cursor-pointer hover:underline ml-2">Regístrate</strong></p>
         </form>
