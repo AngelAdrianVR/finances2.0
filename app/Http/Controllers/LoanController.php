@@ -38,8 +38,15 @@ class LoanController extends Controller
             'status' => 'required|string',
             'loan_date' => 'nullable|date',
         ]);
+        
+        // registrar si es para mi o yo lo otorgué
+        if ( $request->type === 'Recibido' ) {
+            $is_for_me = true;
+        } else {
+            $is_for_me = false;
+        }
 
-        $loan = Loan::create($request->all() + ['user_id' => auth()->id()]);
+        $loan = Loan::create($request->all() + ['user_id' => auth()->id(), 'is_for_me' => $is_for_me]);
 
         //sumar o restar la cantidad del prestamo segun sea el tipo (otorgado o recibido) a el total global en la tabla users
         $user = User::find(auth()->id());
@@ -88,6 +95,13 @@ class LoanController extends Controller
             'loan_date' => 'nullable|date',
         ]);
 
+        // registrar si es para mi o yo lo otorgué
+        if ( $request->type === 'Recibido' ) {
+            $is_for_me = true;
+        } else {
+            $is_for_me = false;
+        }
+
         //suma o restar la cantidad del préstamo a el total global para actualizar la cantidad
         $user = User::find(auth()->id());
 
@@ -104,7 +118,7 @@ class LoanController extends Controller
         $user->save();
 
         //Actualizar el prestamos
-        $loan->update($request->all());
+        $loan->update($request->all() + [ 'is_for_me' => $is_for_me ]);
 
         //sumar o restar la cantidad del prestamo segun sea el tipo (otorgado o recibido) a el total global en la tabla users
         if ( $loan->type === 'Recibido' ) {

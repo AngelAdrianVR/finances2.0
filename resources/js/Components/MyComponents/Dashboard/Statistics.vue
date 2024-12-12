@@ -1,5 +1,5 @@
 <template>
-    <main class="border border-grayD9 rounded-xl p-5">
+    <main class="border border-grayD9 rounded-xl p-5 shadow hover:shadow-lg transition-all ease-linear duration-200 hover:-translate-y-1">
         <h2 class="text-[#575757] text-2xl font-bold">ESTADISTICAS</h2>
         <Basic v-if="incomes?.length || outcomes?.length" :chartOptions="options" :series="series" />
 
