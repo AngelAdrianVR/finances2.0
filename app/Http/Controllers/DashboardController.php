@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Dashboard;
 use App\Models\Income;
+use App\Models\Loan;
 use App\Models\Outcome;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -57,9 +58,15 @@ class DashboardController extends Controller
 
             $incomesQuery->whereDate('created_at', now());
             $incomes = $incomesQuery->get(['id', 'amount', 'category', 'concept', 'created_at', 'user_id']);
+
+            // Recuperar informacion de préstamos
+            $loans = Loan::with('payments:amount,loan_id,interest,capital,remaining')->where('status', 'En curso')->where('user_id', auth()->id())
+                ->get(['id', 'amount', 'is_for_me', 'user_id', 'status']);
+
             return response()->json([
                 'outcomes' => $outcomes,
                 'incomes' => $incomes,
+                'loans' => $loans,
             ]);
         }
 
@@ -99,9 +106,14 @@ class DashboardController extends Controller
         $outcomes = $outcomesQuery->get(['id', 'amount', 'category', 'concept', 'created_at', 'user_id']);
         $incomes = $incomesQuery->get(['id', 'amount', 'category', 'concept', 'created_at', 'user_id']);
 
+        // Recuperar informacion de préstamos
+        $loans = Loan::with('payments:amount,loan_id,interest,capital,remaining')->where('status', 'En curso')->where('user_id', auth()->id())
+            ->get(['id', 'amount', 'is_for_me', 'user_id', 'status']);
+
         return response()->json([
             'outcomes' => $outcomes,
             'incomes' => $incomes,
+            'loans' => $loans,
         ]);
     }
 

@@ -64,7 +64,7 @@
 
                 <section class="lg:w-[30%] space-y-7 mt-7 lg:mt-0">
                     <!-- Estado de préstamos -->
-                    <LoanStatus />
+                    <LoanStatus :loans="loans" />
 
                     <!-- Inversiones -->
                     <Investments />
@@ -91,6 +91,7 @@ data() {
       period: null, //periodo de tiempo seleccionado
       outcomes: null, //gastos recuperados de la petición
       incomes: null, //ingresos recuperados de la petición
+      loans: null, //préstamos recuperados de la petición
       periodicity: 'Por día',
       options: [
         'Por día',
@@ -123,6 +124,7 @@ methods:{
         if ( response.status === 200 ) {
           this.outcomes = response.data.outcomes;
           this.incomes = response.data.incomes;
+          this.loans = response.data.loans;
         }
       } catch (error) {
         console.log(error);
@@ -133,6 +135,8 @@ methods:{
 },
 mounted() {
     this.fetchDataForPeriod();
+
+    //setear la fecha del periodo al dia de hoy despues de peticion porque daba error xD
     this.period = new Date().toISOString();
 }
 }
