@@ -1,5 +1,5 @@
 <template>
-    <main class="border border-grayD9 rounded-xl p-5">
+    <main class="border border-grayD9 rounded-xl p-5 shadow hover:shadow-lg transition-all ease-linear duration-200 hover:-translate-y-1">
         <h1 class="text-2xl text-[#575757] font-bold my-3 ml-4">GASTOS</h1>
 
         <section class="sm:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 space-y-2 sm:space-y-0">

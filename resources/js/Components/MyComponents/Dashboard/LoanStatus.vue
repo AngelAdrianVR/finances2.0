@@ -1,5 +1,5 @@
 <template>
-    <main class="border border-grayD9 rounded-xl p-5 text-sm">
+    <main class="border border-grayD9 rounded-xl p-5 text-sm shadow hover:shadow-lg transition-all ease-linear duration-200 hover:-translate-y-1">
         <!-- Informacioón de prestamos -->
         <div v-if="loans?.length">
             <h2 class="text-[#575757] text-2xl border-b border-grayD9 font-bold pb-3">ESTADO DE PRÉSTAMOS</h2>
@@ -9,17 +9,17 @@
                     <p class="font-bold">Recibidos</p>
 
                     <p class="text-[#717171] mt-2">Total de préstamos recibidos:</p>
-                    <p class="ml-2">$ 14,000.00</p>
+                    <p class="ml-2">$ {{ totalLoansForMe?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
 
                     <p class="text-[#717171] mt-2">Total pagado:</p>
-                    <p class="ml-2">$ 4,000.00</p>
+                    <p class="ml-2">$ {{ totalPaidFromOthers?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")  }}</p>
 
                     <p class="text-[#717171] mt-2">Saldo restante:</p>
-                    <p class="ml-2 font-bold">$ 10,000.00</p>
+                    <p class="ml-2 font-bold">$ {{ (totalLoansForMe - totalPaidFromOthers)?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                 </div>
 
                 <div>
-                    <Basic :series="recievedLoans" />
+                    <Basic :series="[((totalPaidFromOthers * 100) / totalLoansForMe).toFixed(2)]" />
                 </div>
             </section>
 
@@ -28,20 +28,20 @@
                     <p class="font-bold">Otorgados</p>
 
                     <p class="text-[#717171] mt-2">Total de préstamos otorgados:</p>
-                    <p class="ml-2">$ 14,000.00</p>
+                    <p class="ml-2">$ {{ totalGivenLoans?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
 
                     <p class="text-[#717171] mt-2">Total pagado:</p>
-                    <p class="ml-2">$ 4,000.00</p>
+                    <p class="ml-2">$ {{ totalPaidForMe?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")  }}</p>
 
                     <p class="text-[#717171] mt-2">Saldo restante:</p>
-                    <p class="ml-2 font-bold">$ 10,000.00</p>
+                    <p class="ml-2 font-bold">$ {{ (totalGivenLoans - totalPaidForMe)?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
 
-                    <p class="text-[#717171] mt-2">Interés acumulado:</p>
-                    <p class="ml-2 font-bold">$ 3,000.00</p>
+                    <!-- <p class="text-[#717171] mt-2">Interés acumulado:</p>
+                    <p class="ml-2 font-bold">$ 3,000.00</p> -->
                 </div>
 
                 <div>
-                    <Basic :series="givenLoans" />
+                    <Basic :series="[((totalPaidForMe * 100) / totalGivenLoans).toFixed(2)]" />
                 </div>
             </section>
         </div>
@@ -92,13 +92,6 @@
 import Basic from '@/Components/MyComponents/Dashboard/Chart/RadialBar/Basic.vue';
 
 export default {
-data() {
-    return {
-        //charts
-        recievedLoans: [78], //Recibidos
-        givenLoans: [56], //Otorgados
-    }
-},
 components:{
     Basic
 },
@@ -110,7 +103,43 @@ props:{
 },
 methods:{
 
-}
+},
+computed: {
+    // Cantidad total para préstamos otorgados por mí
+    totalGivenLoans() {
+        return this.loans
+        .filter(loan => loan.is_for_me == false) // Prestamos otorgados por mí
+        .reduce((sum, loan) => sum + loan.amount, 0);
+    },
+    // Cantidad total para préstamos recibidos
+    totalLoansForMe() {
+        return this.loans
+        .filter(loan => loan.is_for_me == true) // Prestamos recibidos por mí
+        .reduce((sum, loan) => sum + loan.amount, 0);
+    },
+    // Total pagado en préstamos otorgados por mí
+    totalPaidForMe() {
+        return this.loans
+        .filter(loan => loan.is_for_me == false) // Prestamos otorgados por mí
+        .reduce((sum, loan) => {
+            return (
+            sum +
+            loan.payments.reduce((paymentSum, payment) => paymentSum + payment.capital, 0)
+            );
+        }, 0);
+    },
+    // Total pagado en préstamos recibidos
+    totalPaidFromOthers() {
+        return this.loans
+        .filter(loan => loan.is_for_me == true) // Prestamos recibidos por mí
+        .reduce((sum, loan) => {
+            return (
+            sum +
+            loan.payments.reduce((paymentSum, payment) => paymentSum + payment.capital, 0)
+            );
+        }, 0);
+    },
+},
 }
 </script>
 
