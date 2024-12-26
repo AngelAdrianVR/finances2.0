@@ -98,4 +98,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(BankCard::class);
     }
+
+    // otros metodos
+    public function getTotalLoan()
+    {
+        $loans = $this->loans()->where('is_for_me', false)->where('status', 'En curso')->get();
+        $totalLoan = 0;
+        foreach ($loans as $loan) {
+            $totalLoan += $loan->payments->last()->remaining ?? $loan->amount;
+        }
+        return $totalLoan;        
+    }
 }
