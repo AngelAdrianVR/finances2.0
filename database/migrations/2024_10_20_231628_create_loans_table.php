@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('lender_name')->nullable(); //nombre del prestamista que te prestó
             $table->timestamp('loan_date')->nullable(); //fecha del préstamo
             $table->float('amount')->unsigned();
+            $table->boolean('automatic')->default(true); //bandera que indica si al registrar abono se registra automaticamente ingreso / gasto
             $table->boolean('is_for_me')->default(false); //bandera que indica si el prestamo es para mi (yo lo recibí)
             $table->float('profitability')->unsigned()->nullable();
             $table->string('profitability_period')->nullable();

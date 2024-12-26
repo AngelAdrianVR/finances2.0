@@ -23,7 +23,6 @@
                     <p class="text-base md:text-lg font-bold text-[#575757]">$ {{ transport.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                 </div>
             </div>
-
             <!-- Compras -->
             <div @click="handleShowDetailOutcomes('Compras')" class="border border-grayD9 rounded-lg p-4 cursor-pointer flex space-x-5 transition-all ease-linear duration-200 hover:scale-105">
                 <div class="rounded-full size-11 flex items-center justify-center bg-[#F3D4C9]">
@@ -36,7 +35,6 @@
                     <p class="text-base md:text-lg font-bold text-[#575757]">$ {{ purchases.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                 </div>
             </div>
-
             <!-- Salud y bienestar -->
             <div @click="handleShowDetailOutcomes('Salud y bienestar')" class="border border-grayD9 rounded-lg p-4 cursor-pointer flex space-x-5 transition-all ease-linear duration-200 hover:scale-105">
                 <div class="rounded-full size-11 flex items-center justify-center bg-[#D4F3C9]">
@@ -50,7 +48,6 @@
                     <p class="text-base md:text-lg font-bold text-[#575757]">$ {{ health.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                 </div>
             </div>
-
             <!-- Entretenimiento -->
             <div @click="handleShowDetailOutcomes('Entretenimiento')" class="border border-grayD9 rounded-lg p-4 cursor-pointer flex space-x-5 transition-all ease-linear duration-200 hover:scale-105">
                 <div class="rounded-full size-11 flex items-center justify-center bg-[#F1C9F3]">
@@ -68,7 +65,6 @@
                     <p class="text-base md:text-lg font-bold text-[#575757]">$ {{ entretainment.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                 </div>
             </div>
-
             <!-- Alimentos y bebidas -->
             <div @click="handleShowDetailOutcomes('Alimentos y bebidas')" class="border border-grayD9 rounded-lg p-4 cursor-pointer flex space-x-5 transition-all ease-linear duration-200 hover:scale-105">
                 <div class="rounded-full size-11 flex items-center justify-center bg-[#F3EAC9]">
@@ -82,7 +78,6 @@
                     <p class="text-base md:text-lg font-bold text-[#575757]">$ {{ food.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                 </div>
             </div>
-
             <!-- Servicios -->
             <div @click="handleShowDetailOutcomes('Servicios')" class="border border-grayD9 rounded-lg p-4 cursor-pointer flex space-x-5 transition-all ease-linear duration-200 hover:scale-105">
                 <div class="rounded-full size-11 flex items-center justify-center bg-[#C9F3F0]">
@@ -95,7 +90,6 @@
                     <p class="text-base md:text-lg font-bold text-[#575757]">$ {{ services.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                 </div>
             </div>
-
             <!-- Educación y desarrollo personal -->
             <div @click="handleShowDetailOutcomes('Educación y desarrollo personal')" class="border border-grayD9 rounded-lg p-4 cursor-pointer flex space-x-5 transition-all ease-linear duration-200 hover:scale-105">
                 <div class="rounded-full size-11 flex items-center justify-center bg-[#F3C9DF]">
@@ -108,9 +102,8 @@
                     <p class="text-base md:text-lg font-bold text-[#575757]">$ {{ education.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                 </div>
             </div>
-
             <!-- Otros -->
-            <div @click="handleShowDetailOutcomes('Otros')" class="border border-grayD9 rounded-lg p-4 cursor-pointer flex space-x-5 transition-all ease-linear duration-200 hover:scale-105">
+            <div @click="handleShowDetailOutcomes('Otro')" class="border border-grayD9 rounded-lg p-4 cursor-pointer flex space-x-5 transition-all ease-linear duration-200 hover:scale-105">
                 <div class="rounded-full size-11 flex items-center justify-center bg-[#F3C9C9]">
                     <i class="fa-solid fa-ellipsis text-2xl text-[#851414]"></i>
                 </div>
@@ -155,7 +148,6 @@
                         </div>
                     </div>
             </template>
-
             <template #footer>
                 <PrimaryButton @click="showOutcomesDetailsModal = false">Cerrar</PrimaryButton>
             </template>

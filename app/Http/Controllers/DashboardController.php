@@ -47,12 +47,12 @@ class DashboardController extends Controller
     }
 
     public function fetchDataForPeriod(Request $request)
-    {   
+    {
         // Inicializar las consultas base
         $outcomesQuery = Outcome::where('user_id', auth()->id());
         $incomesQuery = Income::where('user_id', auth()->id());
 
-        if ( !$request->period ) {
+        if (!$request->period) {
             $outcomesQuery->whereDate('created_at', now());
             $outcomes = $outcomesQuery->get(['id', 'amount', 'category', 'concept', 'created_at', 'user_id']);
 
@@ -60,7 +60,11 @@ class DashboardController extends Controller
             $incomes = $incomesQuery->get(['id', 'amount', 'category', 'concept', 'created_at', 'user_id']);
 
             // Recuperar informacion de préstamos
-            $loans = Loan::with('payments:amount,loan_id,interest,capital,remaining')->where('status', 'En curso')->where('user_id', auth()->id())
+            $loans = Loan::with('payments:amount,loan_id,interest,capital,remaining')
+                ->where([
+                    'status' => 'En curso',
+                    'user_id' => auth()->id()
+                ])
                 ->get(['id', 'amount', 'is_for_me', 'user_id', 'status']);
 
             return response()->json([
@@ -79,7 +83,7 @@ class DashboardController extends Controller
             // Obtener el inicio y fin de la semana seleccionada
             $startOfWeek = Carbon::parse($request->period)->startOfWeek();
             $endOfWeek = Carbon::parse($request->period)->endOfWeek();
-            
+
             // arreglar el offset que tiene el metodo
             $startOfWeek->addDays(6);
             $endOfWeek->addDays(6);
@@ -107,7 +111,11 @@ class DashboardController extends Controller
         $incomes = $incomesQuery->get(['id', 'amount', 'category', 'concept', 'created_at', 'user_id']);
 
         // Recuperar informacion de préstamos
-        $loans = Loan::with('payments:amount,loan_id,interest,capital,remaining')->where('status', 'En curso')->where('user_id', auth()->id())
+        $loans = Loan::with('payments:amount,loan_id,interest,capital,remaining')
+            ->where([
+                'status' => 'En curso',
+                'user_id' => auth()->id()
+            ])
             ->get(['id', 'amount', 'is_for_me', 'user_id', 'status']);
 
         return response()->json([
@@ -116,5 +124,4 @@ class DashboardController extends Controller
             'loans' => $loans,
         ]);
     }
-
 }
