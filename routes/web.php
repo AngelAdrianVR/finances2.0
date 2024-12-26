@@ -11,6 +11,7 @@ use App\Http\Controllers\RecurringIncomeController;
 use App\Http\Controllers\RecurringOutcomeController;
 use App\Http\Controllers\SettingController;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -34,13 +35,14 @@ Route::middleware([
 });
 
 //Dashboard routes
-Route::post('/dashboard-fetch-data-for-period',[DashboardController::class, 'fetchDataForPeriod'])->middleware('auth')->name('dashboard.fetch-data-for-period');
+Route::post('/dashboard-fetch-data-for-period', [DashboardController::class, 'fetchDataForPeriod'])->middleware('auth')->name('dashboard.fetch-data-for-period');
 
 
 // Income routes -------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
 Route::resource('incomes', IncomeController::class)->middleware('auth');
 Route::post('incomes/massive-delete', [IncomeController::class, 'massiveDelete'])->name('incomes.massive-delete');
+Route::post('incomes/massive-update', [IncomeController::class, 'massiveUpdate'])->name('incomes.massive-update');
 Route::post('incomes/get-matches', [IncomeController::class, 'getMatches'])->name('incomes.get-matches');
 
 
@@ -56,6 +58,7 @@ Route::get('recurring-incomes/toggle-status/{recurring_income}', [RecurringIncom
 // ----------------------------------------------------------------------------------------------------
 Route::resource('outcomes', OutcomeController::class)->middleware('auth');
 Route::post('outcomes/massive-delete', [OutcomeController::class, 'massiveDelete'])->name('outcomes.massive-delete');
+Route::post('incomes/massive-update', [IncomeController::class, 'massiveUpdate'])->name('outcomes.massive-update');
 Route::post('outcomes/get-matches', [OutcomeController::class, 'getMatches'])->name('outcomes.get-matches');
 
 
@@ -96,3 +99,9 @@ Route::resource('settings', SettingController::class)->middleware('auth');
 Route::resource('bank-cards', BankCardController::class)->middleware('auth');
 Route::post('users/massive-delete', [BankCardController::class, 'massiveDelete'])->name('bank-cards.massive-delete');
 Route::get('bank-cards-toogle-status/{bank_card}', [BankCardController::class, 'toogleStatus'])->name('bank-cards.toogle-status')->middleware('auth');
+
+// comandos artisan
+Route::get('/storage-link', function () {
+    Artisan::call('storage:link');
+    return 'cleared.';
+});

@@ -5,16 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Calendar;
 use App\Models\Income;
 use App\Models\RecurringIncome;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class IncomeController extends Controller
 {
     public function index()
-    {   
-        $incomes = Income::paginate(50);
-        $recurring_incomes = RecurringIncome::paginate(50);
+    {
+        $incomes = Income::where('user_id', auth()->id())->latest('id')->paginate(50);
+        $recurring_incomes = RecurringIncome::where('user_id', auth()->id())->latest('id')->paginate(50);
 
         return inertia('Income/Index', compact('incomes', 'recurring_incomes'));
     }
@@ -38,13 +37,13 @@ class IncomeController extends Controller
 
         $income = Income::create($request->all() + ['user_id' => auth()->id()]);
 
-        //sumar la cantidad del ingreso a el total global
-        $user = User::find(auth()->id());
+        //sumar la cantidad del ingreso al total global
+        $user = auth()->user();
         $user->total_money += $income->amount;
         $user->save();
 
         // Registrar en ingresos recurrentes si se seleccionó el check.
-        if ( $request->is_recurring_income ) {
+        if ($request->is_recurring_income) {
             RecurringIncome::create($request->all() + ['user_id' => auth()->id()]);
 
             //agregar a calendario el ingreso recurrente con la frecuencia indicada ---------------------
@@ -74,13 +73,13 @@ class IncomeController extends Controller
                     }
                     break;
 
-                    case 'Anual':
-                        $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
-                        while ($startDate->lte($endDate)) {
-                            $dates[] = $startDate->copy();
-                            $startDate->addYear();
-                        }
-                        break;
+                case 'Anual':
+                    $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addYear();
+                    }
+                    break;
             }
 
             foreach ($dates as $date) {
@@ -123,7 +122,7 @@ class IncomeController extends Controller
             'description' => 'nullable',
         ]);
 
-        if ( $request->is_recurring_income ) {
+        if ($request->is_recurring_income) {
             //eliminar todos los registros del calendario con el nombre del ingreso recurrente editado.
             Calendar::where('title', $income->concept)->delete();
 
@@ -132,10 +131,10 @@ class IncomeController extends Controller
         }
 
         //resta el ingreso al total global para sumar el actualizado
-        $user = User::find(auth()->id());
+        $user = auth()->user();
         $user->total_money -= $income->amount;
         $user->save();
-                
+
         //actualizar el ingreso
         $income->update($request->all());
 
@@ -144,7 +143,7 @@ class IncomeController extends Controller
         $user->save();
 
         // Registrar en ingresos recurrentes si se seleccionó el check.
-        if ( $request->is_recurring_income ) {
+        if ($request->is_recurring_income) {
             //vuelve a crear el ingreso recurrente nuevo
             RecurringIncome::create($request->all() + ['user_id' => auth()->id()]);
 
@@ -175,13 +174,13 @@ class IncomeController extends Controller
                     }
                     break;
 
-                    case 'Anual':
-                        $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
-                        while ($startDate->lte($endDate)) {
-                            $dates[] = $startDate->copy();
-                            $startDate->addYear();
-                        }
-                        break;
+                case 'Anual':
+                    $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addYear();
+                    }
+                    break;
             }
 
             foreach ($dates as $date) {
@@ -211,10 +210,19 @@ class IncomeController extends Controller
     {
         foreach ($request->incomes as $income) {
             $income = Income::find($income['id']);
-            $income?->delete();            
+            $income?->delete();
         }
-
-        // return response()->json(['message' => 'Producto(s) eliminado(s)']);
+    }
+    
+    public function massiveUpdate(Request $request)
+    {
+        foreach ($request->selections as $income) {
+            $income = Income::find($income['id']);
+            $income?->update([
+                'category' => $request->category,
+                'payment_method' => $request->payment_method,
+            ]);
+        }
     }
 
     public function getMatches(Request $request)
