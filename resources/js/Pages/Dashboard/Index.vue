@@ -1,77 +1,58 @@
 <template>
-    <AppLayout title="Panel de inicio">
-        <main class="p-2">
-            <!-- Temporalidad -->
-            <div class="custom-style w-72 md:w-96 mx-auto">
-              <el-segmented @change="changeType" v-model="periodicity" :options="options" block />
+  <AppLayout title="Panel de inicio">
+    <main class="p-2">
+      <!-- Temporalidad -->
+      <div class="custom-style w-72 md:w-96 mx-auto">
+        <el-segmented @change="changeType" v-model="periodicity" :options="options" block />
 
-              <!-- Selector diario -->
-              <div  class="mt-2 text-center" v-if=" periodicity === 'Por día'">
-                  <el-date-picker
-                    @change="fetchDataForPeriod()"
-                    v-model="period"
-                    type="date"
-                    placeholder="Selecciona un día"
-                  />
-              </div>
+        <!-- Selector diario -->
+        <div class="mt-2 text-center" v-if="periodicity === 'Por día'">
+          <el-date-picker @change="fetchDataForPeriod()" v-model="period" type="date" placeholder="Selecciona un día" />
+        </div>
 
-              <!-- Selector semanal -->
-              <div class="mt-2 text-center" v-if=" periodicity === 'Semanal'">
-                <el-date-picker
-                  @change="fetchDataForPeriod()"
-                  v-model="period"
-                  type="week"
-                  format="[Week] ww"
-                  placeholder="Selecciona una semana"
-                />
-              </div>
+        <!-- Selector semanal -->
+        <div class="mt-2 text-center" v-if="periodicity === 'Semanal'">
+          <el-date-picker @change="fetchDataForPeriod()" v-model="period" type="week" format="[Week] ww"
+            placeholder="Selecciona una semana" />
+        </div>
 
-              <!-- Selector mensual -->
-              <div class="mt-2 text-center" v-if=" periodicity === 'Mensual'">
-                <el-date-picker
-                  @change="fetchDataForPeriod()"
-                  v-model="period"
-                  type="month"
-                  placeholder="Selecciona un mes"
-                />
-              </div>
+        <!-- Selector mensual -->
+        <div class="mt-2 text-center" v-if="periodicity === 'Mensual'">
+          <el-date-picker @change="fetchDataForPeriod()" v-model="period" type="month"
+            placeholder="Selecciona un mes" />
+        </div>
 
-              <!-- Selector anual -->
-              <div class="mt-2 text-center" v-if=" periodicity === 'Anual'">
-                <el-date-picker
-                  @change="fetchDataForPeriod()"
-                  v-model="period"
-                  type="year"
-                  placeholder="Selecciona un año"
-                />
-              </div>
-            </div>
+        <!-- Selector anual -->
+        <div class="mt-2 text-center" v-if="periodicity === 'Anual'">
+          <el-date-picker @change="fetchDataForPeriod()" v-model="period" type="year" placeholder="Selecciona un año" />
+        </div>
+      </div>
 
-            <!-- estado de carga -->
-            <LoadingLogo v-if="loading" class="mt-4 lg:mt-20" />
+      <!-- estado de carga -->
+      <LoadingLogo v-if="loading" class="mt-4 lg:mt-20" />
 
-            <article v-else class="lg:flex lg:space-x-5 mt-5">
-                <section class="lg:w-[70%] space-y-7">
-                    <!-- Balance total -->
-                    <TotalBalance />
+      <article v-else class="lg:flex lg:space-x-5 mt-5">
+        <section class="lg:w-[70%] space-y-7">
+          <!-- Balance total -->
+          <TotalBalance />
 
-                    <!-- Gastos -->
-                    <Outcomes :outcomes="outcomes" />
+          <!-- Gastos -->
+          <Outcomes :outcomes="outcomes" />
 
-                    <!-- Estadísticas -->
-                    <Statistics :outcomes="outcomes" :incomes="incomes" />
-                </section>
+          <!-- Estadísticas -->
+          <Statistics :outcomes="outcomes" :incomes="incomes" />
+        </section>
 
-                <section class="lg:w-[30%] space-y-7 mt-7 lg:mt-0">
-                    <!-- Estado de préstamos -->
-                    <LoanStatus :loans="loans" />
+        <section class="lg:w-[30%] space-y-7 mt-7 lg:mt-0">
+          <!-- Estado de préstamos -->
+          <LoanStatus :loans="loans" />
 
-                    <!-- Inversiones -->
-                    <Investments />
-                </section>
-            </article>
-        </main>        
-    </AppLayout>
+          <!-- Inversiones -->
+          <!-- <Investments /> -->
+        </section>
+      </article>
+    </main>
+  </AppLayout>
 </template>
 
 <script>
@@ -85,7 +66,7 @@ import LoadingLogo from "@/Components/MyComponents/LoadingLogo.vue";
 import axios from 'axios';
 
 export default {
-data() {
+  data() {
     return {
       loading: false,
       period: null, //periodo de tiempo seleccionado
@@ -100,8 +81,8 @@ data() {
         'Anual',
       ],
     }
-},
-components:{
+  },
+  components: {
     TotalBalance,
     LoadingLogo,
     Investments,
@@ -109,19 +90,19 @@ components:{
     LoanStatus,
     AppLayout,
     Outcomes,
-},
-props:{
+  },
+  props: {
 
-}, 
-methods:{
+  },
+  methods: {
     changeType(newVal) {
-        this.period = null;
+      this.period = null;
     },
     async fetchDataForPeriod() {
       try {
         this.loading = true;
         const response = await axios.post(route('dashboard.fetch-data-for-period'), { periodicity: this.periodicity, period: this.period });
-        if ( response.status === 200 ) {
+        if (response.status === 200) {
           this.outcomes = response.data.outcomes;
           this.incomes = response.data.incomes;
           this.loans = response.data.loans;
@@ -132,13 +113,13 @@ methods:{
         this.loading = false;
       }
     }
-},
-mounted() {
+  },
+  mounted() {
     this.fetchDataForPeriod();
 
     //setear la fecha del periodo al dia de hoy despues de peticion porque daba error xD
     this.period = new Date().toISOString();
-}
+  }
 }
 </script>
 

@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Income;
 use App\Models\Loan;
+use App\Models\Outcome;
 use App\Models\Payment;
-use App\Models\User;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -60,21 +61,46 @@ class PaymentController extends Controller
             'capital' => $calculation['capital'],
             'remaining' => $calculation['newRemaining'],
         ]);
-        
-        //sumar o restar la cantidad del abono segun sea el tipo del préstamo (otorgado o recibido) a el total global en la tabla users
-        $user = User::find(auth()->id());
 
-        if ( $loan->type === 'Otorgado' ) {
-            $user->total_money += $payment->amount;
-        } else {
-            //si el monto del abono es mayor al dinero global registrado, se manda a cero para no tener numeros negativos.
-            if ( $user->total_money < $payment->amount ) {
-                $user->total_money = 0;
+
+        // si el prestamo tiene registro automatico de ingresos o egresos
+        if ($loan->automatic) {
+            //sumar o restar la cantidad del abono segun sea el tipo del préstamo (otorgado o recibido) al total global en la tabla users
+            $user = auth()->user();
+            if ($loan->type === 'Otorgado') {
+                $user->total_money += $payment->amount;
+
+                if ($calculation['interest'] > 0) {
+                    // registrar nuevo ingreso por intereses de prestamo
+                    Income::create([
+                        'amount' => $calculation['interest'],
+                        'concept' => "Intereses de préstamo $loan->id",
+                        'category' => 'Intereses',
+                        'payment_method' => 'Transferencia',
+                        'user_id' => auth()->id(),
+                    ]);
+                }
             } else {
-                $user->total_money -= $payment->amount;
+                //si el monto del abono es mayor al dinero global registrado, se manda a cero para no tener numeros negativos.
+                if ($user->total_money < $payment->amount) {
+                    $user->total_money = 0;
+                } else {
+                    $user->total_money -= $payment->amount;
+                }
+
+                if ($calculation['interest'] > 0) {
+                    // registrar nuevo gasto por abono de prestamo recibido
+                    Outcome::create([
+                        'amount' => $calculation['interest'],
+                        'concept' => "Intereses de préstamo $loan->id",
+                        'category' => 'Otros',
+                        'payment_method' => 'Transferencia',
+                        'user_id' => auth()->id(),
+                    ]);
+                }
             }
+            $user->save();
         }
-        $user->save();
 
         // si no queda restante por pagar, marcar prestamo como pagado
         if ($calculation['newRemaining'] == 0) {

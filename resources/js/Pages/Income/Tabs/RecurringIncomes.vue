@@ -65,7 +65,6 @@
                 </el-table-column>
             </el-table>
         </div>
-        <!-- tabla ends -->
     </main>
 
     <!-- -------------- Show Modal starts----------------------- -->
@@ -130,7 +129,6 @@
             <PrimaryButton @click="showDetailsModal = false">Cerrar</PrimaryButton>
         </template>
     </DialogModal>
-    <!-- --------------------------- Modal ends ------------------------------------ -->
 </template>
 
 <script>
