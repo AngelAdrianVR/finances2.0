@@ -58,7 +58,7 @@ Route::get('recurring-incomes/toggle-status/{recurring_income}', [RecurringIncom
 // ----------------------------------------------------------------------------------------------------
 Route::resource('outcomes', OutcomeController::class)->middleware('auth');
 Route::post('outcomes/massive-delete', [OutcomeController::class, 'massiveDelete'])->name('outcomes.massive-delete');
-Route::post('incomes/massive-update', [IncomeController::class, 'massiveUpdate'])->name('outcomes.massive-update');
+Route::post('outcomes/massive-update', [OutcomeController::class, 'massiveUpdate'])->name('outcomes.massive-update');
 Route::post('outcomes/get-matches', [OutcomeController::class, 'getMatches'])->name('outcomes.get-matches');
 
 
