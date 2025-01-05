@@ -13,8 +13,8 @@ class IncomeController extends Controller
 {
     public function index()
     {   
-        $incomes = Income::paginate(50);
-        $recurring_incomes = RecurringIncome::paginate(50);
+        $incomes = Income::where('user_id', auth()->id())->paginate(50);
+        $recurring_incomes = RecurringIncome::where('user_id', auth()->id())->paginate(50);
 
         return inertia('Income/Index', compact('incomes', 'recurring_incomes'));
     }

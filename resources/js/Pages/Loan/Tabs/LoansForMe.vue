@@ -23,11 +23,11 @@
             <el-table :data="loans.data" @row-click="handleRowClick" max-height="670" style="width: 90%"
                 @selection-change="handleSelectionChange" ref="multipleTableRef" :row-class-name="tableRowClassName">
                 <el-table-column type="selection" width="30" />
-                <el-table-column label="Folio" width="80">
+                <!-- <el-table-column label="Folio" width="80">
                     <template #default="scope">
                         <p>O-{{ scope.row.id?.toString().padStart(3, '0') }}</p>
                     </template>
-                </el-table-column>
+                </el-table-column> -->
                 <el-table-column prop="lender_name" label="Prestamista" width="140" />
                 <el-table-column label="Fecha del préstamo" width="150">
                     <template #default="scope">

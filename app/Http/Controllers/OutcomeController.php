@@ -13,8 +13,8 @@ class OutcomeController extends Controller
 {
     public function index()
     {
-        $outcomes = Outcome::paginate(50);
-        $recurring_outcomes = RecurringOutcome::paginate(50);
+        $outcomes = Outcome::where('user_id', auth()->id())->paginate(50);
+        $recurring_outcomes = RecurringOutcome::where('user_id', auth()->id())->paginate(50);
 
         return inertia('Outcome/Index', compact('outcomes', 'recurring_outcomes'));
     }
