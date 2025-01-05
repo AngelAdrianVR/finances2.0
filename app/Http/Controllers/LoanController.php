@@ -3,17 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Loan;
-use App\Models\User;
 use Illuminate\Http\Request;
 
 class LoanController extends Controller
 {
     public function index()
     {
-        $loans_for_me = Loan::with(['payments'])->where('user_id', auth()->id())->where('type', 'Recibido')
+        $loans_for_me = Loan::with(['payments'])->where('type', 'Recibido')
+            ->where('user_id', auth()->id())
+            ->latest('id')
             ->paginate(50);
 
-        $loans_given = Loan::with(['payments'])->where('user_id', auth()->id())->where('type', 'Otorgado')
+        $loans_given = Loan::with(['payments'])->where('type', 'Otorgado')
+            ->where('user_id', auth()->id())
+            ->latest('id')
             ->paginate(50);
 
         return inertia('Loan/Index', compact('loans_for_me', 'loans_given'));
@@ -38,40 +41,34 @@ class LoanController extends Controller
             'status' => 'required|string',
             'loan_date' => 'nullable|date',
         ]);
-        
-        // registrar si es para mi o yo lo otorgué
-        if ( $request->type === 'Recibido' ) {
-            $is_for_me = true;
-        } else {
-            $is_for_me = false;
-        }
 
-        $loan = Loan::create($request->all() + ['user_id' => auth()->id(), 'is_for_me' => $is_for_me]);
+        $loan = Loan::create($request->all() + ['user_id' => auth()->id(), 'is_for_me' => $request->type === 'Recibido']);
 
-        //sumar o restar la cantidad del prestamo segun sea el tipo (otorgado o recibido) a el total global en la tabla users
-        $user = User::find(auth()->id());
-
-        if ( $loan->type === 'Recibido' ) {
-            $user->total_money += $loan->amount;
-        } else {
-            //si el monto del préstamo es mayor al dinero global registrado, se manda a cero para no tener numeros negativos.
-            if ( $user->total_money < $loan->amount ) {
-                $user->total_money = 0;
+        // si el prestamo tiene registro automatico de ingresos o egresos
+        if ($loan->automatic) {
+            //sumar o restar la cantidad del abono segun sea el tipo del préstamo (otorgado o recibido) al total global en la tabla users
+            $user = auth()->user();
+            if ($loan->type === 'Recibido') {
+                $user->total_money += $loan->amount;
             } else {
-                $user->total_money -= $loan->amount;
+                //si el monto del préstamo es mayor al dinero global registrado, se manda a cero para no tener numeros negativos.
+                if ($user->total_money < $loan->amount) {
+                    $user->total_money = 0;
+                } else {
+                    $user->total_money -= $loan->amount;
+                }
             }
+            $user->save();
         }
-        $user->save();
 
         return to_route('loans.show', $loan->id);
     }
 
     public function show(Loan $loan)
-    {   
+    {
         $loan->load(['payments']);
-        $loans = Loan::latest()->get(['id', 'type', 'beneficiary_name', 'lender_name', 'amount']);
+        $loans = Loan::latest()->where('user_id', auth()->id())->get(['id', 'type', 'beneficiary_name', 'lender_name', 'amount']);
 
-        // return $loans;
         return inertia('Loan/Show', compact('loan', 'loans'));
     }
 
@@ -95,43 +92,8 @@ class LoanController extends Controller
             'loan_date' => 'nullable|date',
         ]);
 
-        // registrar si es para mi o yo lo otorgué
-        if ( $request->type === 'Recibido' ) {
-            $is_for_me = true;
-        } else {
-            $is_for_me = false;
-        }
-
-        //suma o restar la cantidad del préstamo a el total global para actualizar la cantidad
-        $user = User::find(auth()->id());
-
-        if ( $loan->type === 'Otorgado' ) {
-            $user->total_money += $loan->amount;
-        } else {
-            //si el monto del préstamo es mayor al dinero global registrado, se manda a cero para no tener numeros negativos.
-            if ( $user->total_money < $loan->amount ) {
-                $user->total_money = 0;
-            } else {
-                $user->total_money -= $loan->amount;
-            }
-        }
-        $user->save();
-
         //Actualizar el prestamos
-        $loan->update($request->all() + [ 'is_for_me' => $is_for_me ]);
-
-        //sumar o restar la cantidad del prestamo segun sea el tipo (otorgado o recibido) a el total global en la tabla users
-        if ( $loan->type === 'Recibido' ) {
-            $user->total_money += $loan->amount;
-        } else {
-            //si el monto del préstamo es mayor al dinero global registrado, se manda a cero para no tener numeros negativos.
-            if ( $user->total_money < $loan->amount ) {
-                $user->total_money = 0;
-            } else {
-                $user->total_money -= $loan->amount;
-            }
-        }
-        $user->save();
+        $loan->update($request->all() + ['is_for_me' => $request->type === 'Recibido']);
 
         return to_route('loans.index');
     }
@@ -147,7 +109,7 @@ class LoanController extends Controller
     {
         foreach ($request->loans as $loan) {
             $loan = Loan::find($loan['id']);
-            $loan?->delete();            
+            $loan?->delete();
         }
 
         // return response()->json(['message' => 'Producto(s) eliminado(s)']);

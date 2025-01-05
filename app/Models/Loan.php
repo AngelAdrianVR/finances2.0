@@ -20,6 +20,7 @@ class Loan extends Model
         'lender_name',
         'is_for_me',
         'loan_date',
+        'automatic', // para registrar ingreso o gasto automatico al abonar
         'user_id',
         'amount',
         'status',

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Calendar;
 use App\Models\Outcome;
 use App\Models\RecurringOutcome;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -13,8 +12,8 @@ class OutcomeController extends Controller
 {
     public function index()
     {
-        $outcomes = Outcome::where('user_id', auth()->id())->paginate(50);
-        $recurring_outcomes = RecurringOutcome::where('user_id', auth()->id())->paginate(50);
+        $outcomes = Outcome::where('user_id', auth()->id())->latest('id')->paginate(50);
+        $recurring_outcomes = RecurringOutcome::where('user_id', auth()->id())->latest('id')->paginate(50);
 
         return inertia('Outcome/Index', compact('outcomes', 'recurring_outcomes'));
     }
@@ -39,10 +38,10 @@ class OutcomeController extends Controller
         $outcome = Outcome::create($request->all() + ['user_id' => auth()->id()]);
 
         //resta la cantidad del gasto a el total global
-        $user = User::find(auth()->id());
+        $user = auth()->user();
 
         //si el dinero total es menor al gasto se queda en 0 para no tener números negativos
-        if ( $user->total_money < $outcome->amount ) {
+        if ($user->total_money < $outcome->amount) {
             $user->total_money = 0;
         } else {
             $user->total_money -= $outcome->amount;
@@ -50,7 +49,7 @@ class OutcomeController extends Controller
         $user->save();
 
         // Registrar en gasto fijo si se seleccionó el check.
-        if ( $request->is_recurring_outcome ) {
+        if ($request->is_recurring_outcome) {
             RecurringOutcome::create($request->all() + ['user_id' => auth()->id()]);
 
             //agregar a calendario el gasto fijo con la frecuencia indicada ---------------------
@@ -80,13 +79,13 @@ class OutcomeController extends Controller
                     }
                     break;
 
-                    case 'Anual':
-                        $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
-                        while ($startDate->lte($endDate)) {
-                            $dates[] = $startDate->copy();
-                            $startDate->addYear();
-                        }
-                        break;
+                case 'Anual':
+                    $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addYear();
+                    }
+                    break;
             }
 
             foreach ($dates as $date) {
@@ -129,7 +128,7 @@ class OutcomeController extends Controller
             'description' => 'nullable',
         ]);
 
-        if ( $request->is_recurring_outcome ) {
+        if ($request->is_recurring_outcome) {
             //eliminar todos los registros del calendario con el nombre del gasto fijo editado.
             Calendar::where('title', $outcome->concept)->delete();
 
@@ -138,13 +137,13 @@ class OutcomeController extends Controller
         }
 
         //suma la cantidad del gasto a el total global para restar la cantidad actualizada
-        $user = User::find(auth()->id());
+        $user = auth()->user();
         $user->total_money += $outcome->amount;
 
         $outcome->update($request->all());
 
         //si el dinero total es menor al gasto se queda en 0 para no tener números negativos
-        if ( $user->total_money < $outcome->amount ) {
+        if ($user->total_money < $outcome->amount) {
             $user->total_money = 0;
         } else {
             $user->total_money -= $outcome->amount;
@@ -152,7 +151,7 @@ class OutcomeController extends Controller
         $user->save();
 
         // Registrar en gasto fijo si se seleccionó el check.
-        if ( $request->is_recurring_outcome ) {
+        if ($request->is_recurring_outcome) {
 
             //vuelve a crear el gasto fijo nuevo
             RecurringOutcome::create($request->all() + ['user_id' => auth()->id()]);
@@ -184,13 +183,13 @@ class OutcomeController extends Controller
                     }
                     break;
 
-                    case 'Anual':
-                        $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
-                        while ($startDate->lte($endDate)) {
-                            $dates[] = $startDate->copy();
-                            $startDate->addYear();
-                        }
-                        break;
+                case 'Anual':
+                    $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
+                    while ($startDate->lte($endDate)) {
+                        $dates[] = $startDate->copy();
+                        $startDate->addYear();
+                    }
+                    break;
             }
 
             foreach ($dates as $date) {
@@ -209,7 +208,6 @@ class OutcomeController extends Controller
         }
 
         return to_route('outcomes.index');
-
     }
 
     public function destroy(Outcome $outcome)
@@ -221,10 +219,19 @@ class OutcomeController extends Controller
     {
         foreach ($request->outcomes as $outcome) {
             $outcome = Outcome::find($outcome['id']);
-            $outcome?->delete();            
+            $outcome?->delete();
         }
+    }
 
-        // return response()->json(['message' => 'Producto(s) eliminado(s)']);
+    public function massiveUpdate(Request $request)
+    {
+        foreach ($request->selections as $outcome) {
+            $outcome = Outcome::find($outcome['id']);
+            $outcome?->update([
+                'category' => $request->category,
+                'payment_method' => $request->payment_method,
+            ]);
+        }
     }
 
     public function getMatches(Request $request)
