@@ -239,12 +239,15 @@ class OutcomeController extends Controller
         $query = $request->input('query');
 
         // Realiza la búsqueda
-        $outcomes = Outcome::where('id', 'like', "%{$query}%")
-            ->orWhere('concept', 'like', "%{$query}%")
-            ->orWhere('amount', 'like', "%{$query}%")
-            ->orWhere('category', 'like', "%{$query}%")
-            ->orWhere('created_at', 'like', "%{$query}%")
-            ->orWhere('payment_method', 'like', "%{$query}%")
+        $outcomes = Outcome::where('user_id', auth()->id())
+        ->where(function ($q) use ($query) {
+            $q->where('id', 'like', "%{$query}%")
+                ->orWhere('concept', 'like', "%{$query}%")
+                ->orWhere('amount', 'like', "%{$query}%")
+                ->orWhere('category', 'like', "%{$query}%")
+                ->orWhere('created_at', 'like', "%{$query}%")
+                ->orWhere('payment_method', 'like', "%{$query}%");
+        })
             ->paginate(200);
 
         // Devuelve los items encontrados

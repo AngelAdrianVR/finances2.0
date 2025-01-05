@@ -229,13 +229,16 @@ class IncomeController extends Controller
     {
         $query = $request->input('query');
 
-        // Realiza la búsqueda
-        $incomes = Income::where('id', 'like', "%{$query}%")
-            ->orWhere('concept', 'like', "%{$query}%")
-            ->orWhere('amount', 'like', "%{$query}%")
-            ->orWhere('category', 'like', "%{$query}%")
-            ->orWhere('created_at', 'like', "%{$query}%")
-            ->orWhere('payment_method', 'like', "%{$query}%")
+        // Realiza la búsqueda correctamente
+        $incomes = Income::where('user_id', auth()->id())
+            ->where(function ($q) use ($query) {
+                $q->where('id', 'like', "%{$query}%")
+                ->orWhere('concept', 'like', "%{$query}%")
+                ->orWhere('amount', 'like', "%{$query}%")
+                ->orWhere('category', 'like', "%{$query}%")
+                ->orWhere('created_at', 'like', "%{$query}%")
+                ->orWhere('payment_method', 'like', "%{$query}%");
+            })
             ->paginate(200);
 
         // Devuelve los items encontrados
