@@ -122,7 +122,7 @@
 
             <template #content>
                    <div class="mt-4 max-h-80 overflow-auto">
-                        <table v-if="outcomes.some(item => item.category === categorySelected)" class="w-full mx-auto text-sm">
+                        <table v-if="outcomes.some(item => item.category === categorySelected)" class="w-full mx-auto text-xs md:text-sm">
                             <thead>
                                 <tr class="text-left border-b border-primary">
                                     <th class="font-bold">Concepto</th>
@@ -134,7 +134,7 @@
                                 <tr class="text-left"
                                     v-for="item in outcomes.filter(item => item.category === categorySelected)" :key="item">
                                     <td class="py-1">
-                                        <p class="truncate w-full">
+                                        <p class="truncate w-28 md:w-44 lg:w-48">
                                             {{ item.concept }}
                                         </p>
                                     </td>

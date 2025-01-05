@@ -1,6 +1,6 @@
 <template>
   <AppLayout title="Panel de inicio">
-    <main class="p-2">
+    <main class="py-2 px-2 md:px-5">
       <!-- Temporalidad -->
       <div class="custom-style w-72 md:w-96 mx-auto">
         <el-segmented @change="changeType" v-model="periodicity" :options="options" block />
@@ -39,6 +39,9 @@
           <!-- Gastos -->
           <Outcomes :outcomes="outcomes" />
 
+          <!-- Ingresos -->
+          <Incomes :incomes="incomes" />
+
           <!-- Estadísticas -->
           <Statistics :outcomes="outcomes" :incomes="incomes" />
         </section>
@@ -59,6 +62,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import TotalBalance from '@/Components/MyComponents/Dashboard/TotalBalance.vue';
 import Outcomes from '@/Components/MyComponents/Dashboard/Outcomes.vue';
+import Incomes from '@/Components/MyComponents/Dashboard/Incomes.vue';
 import Statistics from '@/Components/MyComponents/Dashboard/Statistics.vue';
 import LoanStatus from '@/Components/MyComponents/Dashboard/LoanStatus.vue';
 import Investments from '@/Components/MyComponents/Dashboard/Investments.vue';
@@ -90,6 +94,7 @@ export default {
     LoanStatus,
     AppLayout,
     Outcomes,
+    Incomes
   },
   props: {
 
@@ -106,6 +111,7 @@ export default {
           this.outcomes = response.data.outcomes;
           this.incomes = response.data.incomes;
           this.loans = response.data.loans;
+          // console.log(response.data);
         }
       } catch (error) {
         console.log(error);

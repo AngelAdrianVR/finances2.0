@@ -123,7 +123,7 @@ data() {
 
     return {
         form,
-        categories: ['Servicios', 'Comida', 'Transporte', 'Deuda', 'Renta', 'Otro'],
+        categories: ['Servicios', 'Transporte', 'Compras', 'Salud y bienestar', 'Educación y desarrollo personal', 'Entretenimiento', 'Alimentos y bebidas', 'Otro'],
         payment_methods: ['Efectivo', 'Transferencia', 'Depósito', 'Pago con tarjeta'],
         periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
     }

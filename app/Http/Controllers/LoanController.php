@@ -120,12 +120,15 @@ class LoanController extends Controller
         $query = $request->input('query');
 
         // Realiza la búsqueda
-        $loans = Loan::where('id', 'like', "%{$query}%")
-            ->orWhere('beneficiary_name', 'like', "%{$query}%")
-            ->orWhere('lender_name', 'like', "%{$query}%")
-            ->orWhere('amount', 'like', "%{$query}%")
-            ->orWhere('loan_date', 'like', "%{$query}%")
-            ->orWhere('profitability_type', 'like', "%{$query}%")
+        $loans = Loan::where('user_id', auth()->id())
+            ->where(function ($q) use ($query) {
+                $q->where('id', 'like', "%{$query}%")
+                ->orWhere('beneficiary_name', 'like', "%{$query}%")
+                ->orWhere('lender_name', 'like', "%{$query}%")
+                ->orWhere('amount', 'like', "%{$query}%")
+                ->orWhere('loan_date', 'like', "%{$query}%")
+                ->orWhere('profitability_type', 'like', "%{$query}%");
+            })
             ->paginate(200);
 
         // Devuelve los items encontrados
