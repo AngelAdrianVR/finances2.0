@@ -124,4 +124,27 @@ class DashboardController extends Controller
             'loans' => $loans,
         ]);
     }
+
+    // Obtener los datos de comparación de ingresos y egresos mensuales actuales y anteriores del usuario autenticado
+    public function fetchDataComparison()
+    {
+        $current_month_income = Income::where('user_id', auth()->id())
+            ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+            ->sum('amount');
+
+        $prev_month_income = Income::where('user_id', auth()->id())
+            ->whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])
+            ->sum('amount');
+        
+        $current_month_outcome = Outcome::where('user_id', auth()->id())
+            ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+            ->sum('amount');
+        
+        $prev_month_outcome = Outcome::where('user_id', auth()->id())
+            ->whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])
+            ->sum('amount');
+
+        return response()->json(compact('current_month_income', 'prev_month_income', 'current_month_outcome', 'prev_month_outcome'));
+        
+    }
 }

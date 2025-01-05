@@ -6,9 +6,9 @@
       <form @submit.prevent="store" class="rounded-xl border border-grayD9 lg:p-5 p-3 lg:w-2/3 xl:w-1/2 mx-auto mt-2 lg:grid lg:grid-cols-2 gap-3 shadow-lg">
         <div class="flex items-center justify-between col-span-full">
           <el-collapse accordion>
-            <el-collapse-item v-if="remainType === 'Ingreso recurrente'" title="Ingreso recurrente" name="1">
+            <el-collapse-item v-if="remaindType === 'Ingreso recurrente'" title="Ingreso recurrente" name="1">
               <template #title>
-                <h1 class="text-primary font-bold text-base">{{ remainType }}</h1>
+                <h1 class="text-primary font-bold text-base">{{ remaindType }}</h1>
               </template>
               <div>
                 Los ingresos recurrentes se registran automáticamente en el sistema.
@@ -17,7 +17,7 @@
             </el-collapse-item>
             <el-collapse-item v-else title="Gasto fijo" name="2">
               <template #title>
-                <h1 class="text-primary font-bold text-base">{{ remainType }}</h1>
+                <h1 class="text-primary font-bold text-base">{{ remaindType }}</h1>
               </template>
               <div>
                 Los gastos fijos se registran automáticamente en el sistema. 
@@ -26,18 +26,18 @@
             </el-collapse-item>
           </el-collapse>
           <div class="custom-style">
-            <el-segmented @change="changeType" v-model="remainType" :options="options" block />
+            <el-segmented @change="changeType" v-model="remaindType" :options="options" block />
           </div>
         </div>
 
         <!-- form body -->
         <div class="col-span-full mb-3 lg:mb-0">
-            <InputLabel v-if="remainType === 'Ingreso recurrente'" value="Nombre del ingreso*" class="ml-3 mb-1" />
+            <InputLabel v-if="remaindType === 'Ingreso recurrente'" value="Nombre del ingreso*" class="ml-3 mb-1" />
             <InputLabel v-else value="Nombre del gasto*" class="ml-3 mb-1" />
             <el-input
                 v-model="form.title"
                 maxlength="80"
-                :placeholder="remainType === 'Ingreso recurrente' ? 'Ej. Pago de nómina' : 'Ej. Compra de despensa'"
+                :placeholder="remaindType === 'Ingreso recurrente' ? 'Ej. Pago de nómina' : 'Ej. Compra de despensa'"
                 show-word-limit
                 type="text"
             />
@@ -75,7 +75,7 @@
             <el-select class="!w-full" filterable v-model="form.category"
                 placeholder="Seleccione" no-data-text="No hay opciones registradas"
                 no-match-text="No se encontraron coincidencias">
-                <el-option class="md:!w-[500px]" v-for="category in categories" :key="category" :label="category.label" :value="category.label">
+                <el-option class="md:!w-[500px]" v-for="category in remaindType === 'Ingreso recurrente' ? incomeCategories : outcomeCategories" :key="category" :label="category.label" :value="category.label">
                     <p class="flex items-center justify-between">
                         <span>{{ category.label }}</span>
                         <span class="text-xs text-gray-400">{{ category.description }}</span>
@@ -161,7 +161,7 @@ export default {
 
     return {
       form,
-      remainType: this.type,
+      remaindType: this.type,
       options: [
         'Ingreso recurrente',
         'Gasto fijo'
@@ -173,7 +173,7 @@ export default {
         'Efectivo'
       ],
       periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
-      categories: [
+      incomeCategories: [
         {
           label: 'Nómina',
           description: '(Salarios o sueldos fijos)'
@@ -210,7 +210,41 @@ export default {
           label: 'Rendimientos financieros',
           description: '(Intereses por inversiones)'
         },
-      ]
+      ],
+      outcomeCategories: [
+        {
+          label: 'Servicios',
+          description: '(Agua, luz, gas, internet, etc.)'
+        },
+        {
+          label: 'Transporte',
+          description: '(Gasolina, transporte público, mantenimiento de vehículos)'
+        },
+        {
+          label: 'Compras',
+          description: '(ropa, calzado, artículos de limpieza, etc.)'
+        },
+        {
+          label: 'Salud y bienestar',
+          description: '(Consultas médicas, medicamentos, seguros)'
+        },
+        {
+          label: 'Educación y desarrollo personal',
+          description: '(Cursos, talleres, libros, etc.)'
+        },
+        {
+          label: 'Entretenimiento',
+          description: '(Cine, teatro, conciertos, juegos, etc.)'
+        },
+        {
+          label: 'Alimentos y bebidas',
+          description: '(Supermercado, restaurantes, etc.)'
+        },
+        {
+          label: 'Otro',
+          description: '(Gastos no clasificados)'
+        },  
+      ],
     };
   },
   components: {
@@ -242,7 +276,7 @@ export default {
       return time.getTime() < today.getTime();
     },
     changeType(newVal) {
-      this.remainType = newVal;
+      this.remaindType = newVal;
       this.form.type = newVal;
     }
   },
