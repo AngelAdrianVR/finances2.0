@@ -36,6 +36,7 @@ Route::middleware([
 
 //Dashboard routes
 Route::post('/dashboard-fetch-data-for-period', [DashboardController::class, 'fetchDataForPeriod'])->middleware('auth')->name('dashboard.fetch-data-for-period');
+Route::get('/dashboard-fetch-data-comparison', [DashboardController::class, 'fetchDataComparison'])->middleware('auth')->name('dashboard.fetch-data-comparison');
 
 
 // Income routes -------------------------------------------------------------------------------------

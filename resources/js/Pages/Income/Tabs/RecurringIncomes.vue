@@ -21,7 +21,7 @@
                 @selection-change="handleSelectionChange" ref="multipleTableRef"
                 :row-class-name="tableRowClassName">
                 <el-table-column type="selection" width="30" />
-                <el-table-column prop="id" label="ID" width="80" />
+                <!-- <el-table-column prop="id" label="ID" width="80" /> -->
                 <el-table-column prop="concept" label="Concepto del ingreso" width="200" />
                 <el-table-column prop="amount" label="Monto" width="150">
                     <template #default="scope">
@@ -85,10 +85,10 @@
 
         <template #content>
             <section class="space-y-2">
-                <div class="flex">
+                <!-- <div class="flex">
                     <p class="text-[#7a7a7a] w-44">ID</p>
                     <p>{{ itemToShow.id }}</p>
-                </div>
+                </div> -->
                 <div class="flex">
                     <p class="text-[#7a7a7a] w-44">Concepto del ingreso</p>
                     <p>{{ itemToShow.concept }}</p>
