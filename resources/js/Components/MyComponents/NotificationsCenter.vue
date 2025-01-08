@@ -3,7 +3,7 @@
         <template #trigger>
             <div class="mr-3 relative">
                 <div class="group relative ml-3">
-                    <button class="rounded-full size-9 flex items-center justify-center">
+                    <button class="rounded-full size-9 flex items-center justify-center text-gray-600">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="size-5 md:size-6 lg:size-7">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -121,9 +121,9 @@ export default {
             try {
                 const response = await axios.post(route("users.read-user-notifications"));
 
-                if (response.data.unread) {
-                    this.fetchNotifications();
-                }
+                // if (response.data.unread) {
+                //     this.fetchNotifications();
+                // }
             } catch (error) {
                 console.log(error);
             }

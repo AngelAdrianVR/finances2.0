@@ -75,6 +75,7 @@ Route::get('recurring-outcomes/toggle-status/{recurring_outcome}', [RecurringOut
 // Loan routes ---------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
 Route::resource('loans', LoanController::class)->middleware('auth');
+Route::get('loans/external-view/{encrypted_id}', [LoanController::class, 'externalView'])->name('loans.external-view');
 Route::post('loans/massive-delete', [LoanController::class, 'massiveDelete'])->name('loans.massive-delete');
 Route::post('loans/get-matches', [LoanController::class, 'getMatches'])->name('loans.get-matches');
 
