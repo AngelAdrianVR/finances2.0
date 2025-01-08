@@ -6,6 +6,7 @@ use App\Models\Income;
 use App\Models\Loan;
 use App\Models\Outcome;
 use App\Models\Payment;
+use App\Notifications\MovementNotification;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -79,6 +80,13 @@ class PaymentController extends Controller
                         'payment_method' => 'Transferencia',
                         'user_id' => auth()->id(),
                     ]);
+
+                    // notificar al usuario
+                    $user->notify(new MovementNotification(
+                        "Se ha registrado un ingreso por intereses de préstamo $loan->id",
+                        "income",
+                        route('loans.show', $loan->id)
+                    ));
                 }
             } else {
                 //si el monto del abono es mayor al dinero global registrado, se manda a cero para no tener numeros negativos.
@@ -97,6 +105,13 @@ class PaymentController extends Controller
                         'payment_method' => 'Transferencia',
                         'user_id' => auth()->id(),
                     ]);
+
+                    // notificar al usuario
+                    $user->notify(new MovementNotification(
+                        "Se ha registrado un gasto por intereses de préstamo $loan->id",
+                        "outcome",
+                        route('loans.show', $loan->id)
+                    ));
                 }
             }
             $user->save();
