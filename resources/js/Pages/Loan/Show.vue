@@ -1,7 +1,7 @@
 <template>
     <AppLayout title="Préstamos">
         <main class="px-2 md:px-10 pt-4 pb-16">
-            <Back :to="route('loans.index', {currentTab: loan.type == 'Otorgado' ? 1 : 2})" />
+            <Back :to="route('loans.index', { currentTab: loan.type == 'Otorgado' ? 1 : 2 })" />
             <h1 class="font-bold my-4">Detalles del préstamo</h1>
             <div class="flex justify-between">
                 <div class="w-1/2 md:w-1/3 mr-2">
@@ -32,6 +32,13 @@
                         </svg>
                         <p>Editar préstamo</p>
                     </ThirthButton>
+                    <ThirthButton @click="showShareModal = true" class="!size-9 !p-0 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+                        </svg>
+                    </ThirthButton>
                     <ThirthButton @click="deleteItem()" class="!size-9 !p-0 flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="size-5">
@@ -39,12 +46,10 @@
                                 d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                         </svg>
                     </ThirthButton>
-
                 </div>
             </div>
 
             <section class="lg:flex lg:space-x-5 space-y-4 lg:space-y-0 mt-9 text-[15px]">
-
                 <article class="lg:w-1/3 grid grid-cols-2 gap-2 rounded-xl bg-[#F2F2F2] border border-grayD9 p-5">
                     <h2 class="font-bold col-span-full mb-4">Información del préstamo</h2>
                     <p class="text-[#575757]">Folio:</p>
@@ -107,11 +112,13 @@
                         </svg>
                         <p>{{ loan.status }}</p>
                     </div>
-
                     <p class="text-[#575757]">Descripción:</p>
                     <p style="white-space: pre-line;">{{ loan.description ?? '-' }}</p>
+                    <p class="text-[#575757]">Intereses a pagar de este periodo:</p>
+                    <p>${{ calculatePeriodInterest().toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
+                    <p class="text-[#575757]">Intereses desde el último pago hasta hoy:</p>
+                    <p>${{ calculateAccumulatedInterest().toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                 </article>
-
                 <article class="lg:w-2/3 rounded-xl border border-grayD9 py-5 px-8">
                     <div class="flex items-center justify-between">
                         <h2 class="font-bold">Desgloce del préstamo</h2>
@@ -224,12 +231,49 @@
                 </PrimaryButton>
             </template>
         </DialogModal>
+
+        <DialogModal :show="showShareModal" @close="showShareModal = false" max-width="md">
+            <template #title>
+                <p class="font-bold text-left">Compartir enlace</p>
+            </template>
+            <template #content>
+                <p>
+                    El enlace que se compartirá muestra el estado completo del préstamo pero no se puede editar,
+                    eliminar o registrar abonos. Es meramente informativo.
+                    <a :href="route('loans.external-view', encryptId())" target="_blank" rel="noopener noreferrer"
+                        class="text-primary underline">Vista previa</a>
+                </p>
+                <br>
+
+                <section>
+                    <h2>Compartir con:</h2>
+                    <article class="flex justify-around mt-3">
+                        <button @click="shareByWhatsapp" type="button" class="flex flex-col items-center space-x-2">
+                            <i class="fa-brands fa-whatsapp text-green-600 text-4xl"></i>
+                            <span>Whatsapp</span>
+                        </button>
+                        <button @click="copyToClipboard" type="button" class="flex flex-col items-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="size-10">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+                            </svg>
+                            <span>Copiar link</span>
+                        </button>
+                    </article>
+                </section>
+            </template>
+            <template #footer>
+                <CancelButton @click="showShareModal = false">
+                    Cancelar
+                </CancelButton>
+            </template>
+        </DialogModal>
     </AppLayout>
 </template>
 
 <script>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import PaymentsTable from '@/Components/MyComponents/Loan/PaymentsTable.vue';
 import Back from "@/Components/MyComponents/Back.vue";
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import ThirthButton from '@/Components/MyComponents/ThirthButton.vue';
@@ -239,6 +283,7 @@ import DialogModal from '@/Components/DialogModal.vue';
 import { useForm } from '@inertiajs/vue3';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
+import CancelButton from '@/Components/CancelButton.vue';
 
 export default {
     data() {
@@ -256,12 +301,14 @@ export default {
             loanSelected: this.loan.id,
             selectedPayment: null,
             showPaymentModal: false,
+            showShareModal: false,
             paymentTypes: ['Efectivo', 'Transferencia', 'Depósito'],
         }
     },
     components: {
         PrimaryButton,
         ThirthButton,
+        CancelButton,
         AppLayout,
         Back,
         DialogModal,
@@ -291,6 +338,82 @@ export default {
         }
     },
     methods: {
+        encryptId() {
+            return btoa(this.loan.id);
+        },
+        shareByWhatsapp() {
+            const url = 'https://finanzas.dtw.com.mx/loans/' + this.encryptId();
+            const message = `¡Hola! Quiero compartirte este enlace: ${url}`;
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        },
+        copyToClipboard() {
+            const url = 'https://finanzas.dtw.com.mx/loans/' + this.encryptId();
+            navigator.clipboard.writeText(url).then(() => {
+                this.showShareModal = false;
+                this.$notify({
+                    title: 'Enlace copiado al portapapeles',
+                    type: 'success',
+                });
+            }).catch(() => {
+                this.showShareModal = false;
+                this.$message({
+                    type: 'error',
+                    message: 'Error al copiar el enlace',
+                });
+            });
+        },
+        calculatePeriodInterest() {
+            const principal = this.loan.payments.length
+                ? this.loan.payments[this.loan.payments.length - 1].remaining
+                : this.loan.amount;
+
+            if (this.loan.profitability_mode === 'Porcentaje') {
+                const interestRate = this.loan.profitability / 100;
+                return principal * interestRate;
+            } else if (this.loan.profitability_mode === 'Cantidad') {
+                return this.loan.profitability;
+            }
+        },
+        calculateAccumulatedInterest() {
+            const loanDate = new Date(this.loan.loan_date);
+            const today = new Date();
+            const lastPaymentDate = this.loan.payments.length ? new Date(this.loan.payments[this.loan.payments.length - 1].date) : loanDate;
+
+            const timeDiff = today - lastPaymentDate;
+            const daysDiff = timeDiff / (1000 * 3600 * 24);
+
+            const principal = this.loan.amount;
+            let accumulatedInterest = 0;
+
+            const calculateDailyInterest = (rate, period) => {
+                switch (period) {
+                    case 'Todos los días':
+                        return rate;
+                    case 'Semanal':
+                        return rate / 7;
+                    case 'Quincenal':
+                        return rate / 15;
+                    case 'Mensual':
+                        return rate / 30;
+                    case 'Anual':
+                        return rate / 365;
+                    default:
+                        return 0;
+                }
+            };
+
+            if (this.loan.profitability_mode === 'Porcentaje') {
+                const interestRate = this.loan.profitability / 100;
+                const dailyInterestRate = calculateDailyInterest(interestRate, this.loan.profitability_period);
+                accumulatedInterest = principal * dailyInterestRate * daysDiff;
+            } else if (this.loan.profitability_mode === 'Cantidad') {
+                const dailyInterest = calculateDailyInterest(this.loan.profitability, this.loan.profitability_period);
+                accumulatedInterest = dailyInterest * daysDiff;
+            }
+
+            return accumulatedInterest;
+        },
         createPayment() {
             this.form.reset();
             this.showPaymentModal = true;
@@ -328,11 +451,11 @@ export default {
                 this.selectedPayment = this.loan.payments.find(item => item.id == rowId);
                 // llenar formulario con datos de abono seleccionado
                 this.form.amount = this.selectedPayment.amount,
-                this.form.date = this.selectedPayment.date,
-                this.form.payment_method = this.selectedPayment.payment_method,
-                this.form.notes = this.selectedPayment.notes,
-                // abrir modal
-                this.editingPayment = true;
+                    this.form.date = this.selectedPayment.date,
+                    this.form.payment_method = this.selectedPayment.payment_method,
+                    this.form.notes = this.selectedPayment.notes,
+                    // abrir modal
+                    this.editingPayment = true;
                 this.showPaymentModal = true;
             } else if (commandName === 'delete') {
                 this.deletePayment(rowId);
