@@ -87,32 +87,32 @@
             </article>
             <article class="lg:w-2/3 rounded-xl border border-grayD9 py-5 px-8">
                 <el-table :data="loan.payments" max-height="500" :row-class-name="tableRowClassName" class="mt-5">
-                    <el-table-column label="Restante">
+                    <el-table-column label="Restante" width="100">
                         <template #default="scope">
                             <p>${{ scope.row.remaining.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                         </template>
                     </el-table-column>
-                    <el-table-column label="Intereses">
+                    <el-table-column label="Intereses" width="100">
                         <template #default="scope">
                             <p>${{ scope.row.interest.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="amount" label="Abono">
+                    <el-table-column prop="amount" label="Abono" width="100">
                         <template #default="scope">
                             <p>${{ scope.row.amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                         </template>
                     </el-table-column>
-                    <el-table-column label="Pago a capital">
+                    <el-table-column label="Pago a capital" width="100">
                         <template #default="scope">
                             <p>${{ scope.row.capital.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }}</p>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="date" label="Fecha">
+                    <el-table-column prop="date" label="Fecha" width="100">
                         <template #default="scope">
                             <p>{{ formatShortDate(scope.row.date) }}</p>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="notes" label="Comentarios">
+                    <el-table-column prop="notes" label="Comentarios" width="120">
                         <template #default="scope">
                             <p class="w-full truncate" :title="scope.row.notes">{{ scope.row.notes ?? '-' }}</p>
                         </template>
