@@ -10,6 +10,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RecurringIncomeController;
 use App\Http\Controllers\RecurringOutcomeController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
@@ -74,6 +75,7 @@ Route::get('recurring-outcomes/toggle-status/{recurring_outcome}', [RecurringOut
 // Loan routes ---------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
 Route::resource('loans', LoanController::class)->middleware('auth');
+Route::get('loans/external-view/{encrypted_id}', [LoanController::class, 'externalView'])->name('loans.external-view');
 Route::post('loans/massive-delete', [LoanController::class, 'massiveDelete'])->name('loans.massive-delete');
 Route::post('loans/get-matches', [LoanController::class, 'getMatches'])->name('loans.get-matches');
 
@@ -100,6 +102,13 @@ Route::resource('settings', SettingController::class)->middleware('auth');
 Route::resource('bank-cards', BankCardController::class)->middleware('auth');
 Route::post('users/massive-delete', [BankCardController::class, 'massiveDelete'])->name('bank-cards.massive-delete');
 Route::get('bank-cards-toogle-status/{bank_card}', [BankCardController::class, 'toogleStatus'])->name('bank-cards.toogle-status')->middleware('auth');
+
+
+// rutas de usuarios
+Route::get('users-get-notifications', [UserController::class, 'getNotifications'])->middleware('auth')->name('users.get-notifications');
+Route::post('users-read-notifications', [UserController::class, 'readNotifications'])->middleware('auth')->name('users.read-user-notifications');
+Route::post('users-delete-notification', [UserController::class, 'deleteNotifications'])->middleware('auth')->name('users.delete-user-notification');
+
 
 // comandos artisan
 Route::get('/storage-link', function () {
