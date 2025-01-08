@@ -3,7 +3,7 @@
         <main class="px-2 md:px-10 pt-4 pb-16">
             <Back :to="route('loans.index', { currentTab: loan.type == 'Otorgado' ? 1 : 2 })" />
             <h1 class="font-bold my-4">Detalles del préstamo</h1>
-            <div class="flex justify-between">
+            <div class="flex flex-col lg:flex-row justify-between">
                 <div class="w-1/2 md:w-1/3 mr-2">
                     <el-select @change="$inertia.get(route('loans.show', loanSelected))" v-model="loanSelected"
                         clearable filterable placeholder="Buscar" no-data-text="No hay órdenes registradas"
@@ -20,9 +20,8 @@
                         </el-option>
                     </el-select>
                 </div>
-
                 <!-- Botones de acción -->
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-2 mt-3 lg:mt-0">
                     <ThirthButton @click="$inertia.get(route('loans.edit', loan.id))"
                         class="flex items-center space-x-1">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -342,13 +341,13 @@ export default {
             return btoa(this.loan.id);
         },
         shareByWhatsapp() {
-            const url = 'https://finanzas.dtw.com.mx/loans/' + this.encryptId();
+            const url = 'https://finanzas.dtw.com.mx/loans/external-view/' + this.encryptId();
             const message = `¡Hola! Quiero compartirte este enlace: ${url}`;
             const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
         },
         copyToClipboard() {
-            const url = 'https://finanzas.dtw.com.mx/loans/' + this.encryptId();
+            const url = 'https://finanzas.dtw.com.mx/loans/external-view/' + this.encryptId();
             navigator.clipboard.writeText(url).then(() => {
                 this.showShareModal = false;
                 this.$notify({

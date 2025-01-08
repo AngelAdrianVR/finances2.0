@@ -115,3 +115,11 @@ Route::get('/storage-link', function () {
     Artisan::call('storage:link');
     return 'cleared.';
 });
+
+Route::get('/clear-all', function () {
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('route:clear');
+    Artisan::call('view:clear');
+    return 'cleared.';
+});
