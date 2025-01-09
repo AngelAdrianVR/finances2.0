@@ -33,6 +33,9 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/notifications', function () {
+        return inertia('Notifications');
+    })->name('notifications');
 });
 
 //Dashboard routes

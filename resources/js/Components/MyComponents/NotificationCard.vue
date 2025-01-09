@@ -25,7 +25,7 @@
         </Link>
         <div class="w-[10%] flex flex-col items-end justify-between">
             <div v-if="notification.read_at === null" class="size-[6px] rounded-full bg-primary"></div>
-            <div class="scale-0 transition-all duration-300 ease-in-out group-hover:scale-100">
+            <div :class="{'scale-0 transition-all duration-300 ease-in-out group-hover:scale-100': deleteAtHover}">
                 <el-popconfirm confirm-button-text="Si" cancel-button-text="No" icon-color="#373737"
                     :title="'¿Deseas eliminar esta notificación?'" @confirm="deleteNotification()">
                     <template #reference>
@@ -52,7 +52,11 @@ export default {
         notification: {
             type: Object,
             required: true
-        }
+        },
+        deleteAtHover: {
+            type: Boolean,
+            default: true,
+        },
     },
     components: {
         Link,
