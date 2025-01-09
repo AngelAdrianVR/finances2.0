@@ -79,10 +79,6 @@
 
 <script>
 import Dropdown from '@/Components/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import Checkbox from '@/Components/Checkbox.vue';
-import { Link } from '@inertiajs/vue3';
 import NotificationCard from './NotificationCard.vue';
 import axios from 'axios';
 
@@ -94,11 +90,7 @@ export default {
     },
     components: {
         Dropdown,
-        DropdownLink,
-        PrimaryButton,
-        Checkbox,
         NotificationCard,
-        Link,
     },
     methods: {
         async fetchNotifications() {

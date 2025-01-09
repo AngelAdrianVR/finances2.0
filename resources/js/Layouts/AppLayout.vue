@@ -54,7 +54,7 @@ defineProps({
                                 </div>
 
                                 <!-- notificaciones -->
-                                <div class="mr-3 mt-2 relative">
+                                <div class="hidden md:inline mr-3 mt-2 relative">
                                     <NotificationsCenter />
                                 </div>
                                 <!-- calendario -->
