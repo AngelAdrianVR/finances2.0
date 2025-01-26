@@ -265,6 +265,7 @@ class CalendarController extends Controller
         // Obtener los recordatorios del mes y año proporcionados
         $reminders = Calendar::whereMonth('date', $request->month)
             ->whereYear('date', $request->year)
+            ->where('user_id', auth()->id())
             ->get();
 
         // Retornar los recordatorios como JSON

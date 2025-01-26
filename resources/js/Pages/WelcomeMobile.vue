@@ -1,7 +1,7 @@
 <template>
 
     <Head title="Bienvenido" />
-    <header class="flex itemscenter justify-between bg-[#043C3A] px-10 py-4 sticky top-0 left-0 w-full z-20">
+    <header class="flex itemscenter justify-between bg-[#043C3A] px-5 py-4 sticky top-0 left-0 w-full z-20">
         <svg width="78" height="40" viewBox="0 0 78 40" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
                 d="M57.8128 11.3056C57.8128 7.34127 51.2248 2.58225 45.332 0V13.3611C45.332 16.004 50.7483 20.611 57.8128 23.9325V11.3056Z"
@@ -22,104 +22,89 @@
                 d="M5.632 30.088V31.512H2.4L2.528 31.88V37H2.128C1.552 37 1.21067 36.9627 1.104 36.888C1.008 36.8027 0.96 36.5147 0.96 36.024V25.48H5.824V26.84H2.384L2.528 27.24V29.688L2.384 30.088H5.632ZM7.25688 36.024V25.48H7.59288C8.17954 25.48 8.52088 25.5227 8.61688 25.608C8.72354 25.6827 8.77688 25.9653 8.77688 26.456V37H8.40887C7.83288 37 7.49688 36.9627 7.40088 36.888C7.30488 36.8027 7.25688 36.5147 7.25688 36.024ZM14.4704 33.48V25.48H14.8224C15.3984 25.48 15.7344 25.5227 15.8304 25.608C15.9264 25.6827 15.9744 25.9653 15.9744 26.456V37H15.4944C14.961 37 14.6304 36.9627 14.5024 36.888C14.3744 36.8027 14.2357 36.5413 14.0864 36.104L12.0224 29.192H11.9424V36.024C11.9424 36.5147 11.8944 36.8027 11.7984 36.888C11.7024 36.9627 11.3664 37 10.7904 37H10.4544V25.48H10.8064C11.329 25.48 11.649 25.5173 11.7664 25.592C11.8837 25.6667 12.0277 25.928 12.1984 26.376L14.3904 33.48H14.4704ZM23.0871 37C22.5431 37 22.2125 36.9573 22.0951 36.872C21.9885 36.7867 21.8871 36.504 21.7911 36.024L21.2471 33.32H19.2311L18.5751 37H18.2071C17.6951 37 17.3698 36.9733 17.2311 36.92C17.0925 36.856 17.0231 36.7173 17.0231 36.504C17.0231 36.28 17.8338 32.6053 19.4551 25.48H20.9911L23.6151 37H23.0871ZM20.1431 28.392L19.5511 31.512L19.4231 31.784H21.0711C21.0605 31.7733 21.0338 31.7253 20.9911 31.64C20.9485 31.544 20.9271 31.4907 20.9271 31.48L20.3031 28.392H20.1431ZM28.6735 33.48V25.48H29.0255C29.6015 25.48 29.9375 25.5227 30.0335 25.608C30.1295 25.6827 30.1775 25.9653 30.1775 26.456V37H29.6975C29.1642 37 28.8335 36.9627 28.7055 36.888C28.5775 36.8027 28.4388 36.5413 28.2895 36.104L26.2255 29.192H26.1455V36.024C26.1455 36.5147 26.0975 36.8027 26.0015 36.888C25.9055 36.9627 25.5695 37 24.9935 37H24.6575V25.48H25.0095C25.5322 25.48 25.8522 25.5173 25.9695 25.592C26.0868 25.6667 26.2308 25.928 26.4015 26.376L28.5935 33.48H28.6735ZM35.2423 35.576C35.8076 35.576 36.1383 35.6453 36.2343 35.784C36.3409 35.912 36.3943 36.3173 36.3943 37H31.3863V35.816L34.7143 26.84H31.3863C31.3863 26.168 31.4236 25.7787 31.4983 25.672C31.5836 25.5547 31.8663 25.496 32.3463 25.496L36.4423 25.48V26.568L33.0343 35.576H35.2423ZM43.3059 37C42.7619 37 42.4312 36.9573 42.3139 36.872C42.2072 36.7867 42.1059 36.504 42.0099 36.024L41.4659 33.32H39.4499L38.7939 37H38.4259C37.9139 37 37.5885 36.9733 37.4499 36.92C37.3112 36.856 37.2419 36.7173 37.2419 36.504C37.2419 36.28 38.0525 32.6053 39.6739 25.48H41.2099L43.8339 37H43.3059ZM40.3619 28.392L39.7699 31.512L39.6419 31.784H41.2899C41.2792 31.7733 41.2525 31.7253 41.2099 31.64C41.1672 31.544 41.1459 31.4907 41.1459 31.48L40.5219 28.392H40.3619ZM44.7963 35.416C45.8629 35.5227 46.6416 35.576 47.1323 35.576C47.6229 35.576 47.9589 35.5387 48.1403 35.464C48.3323 35.3893 48.4763 35.304 48.5723 35.208C48.6683 35.1013 48.7376 34.9467 48.7803 34.744C48.8336 34.488 48.8602 34.1733 48.8602 33.8C48.8602 33.4267 48.7696 33.1013 48.5883 32.824C48.4069 32.5467 48.2363 32.3387 48.0763 32.2C47.9269 32.0613 47.6496 31.816 47.2443 31.464C46.8389 31.112 46.5509 30.8613 46.3803 30.712C46.2203 30.552 45.9909 30.3067 45.6923 29.976C45.1483 29.3787 44.8763 28.7547 44.8763 28.104C44.8763 26.9733 44.9936 26.28 45.2283 26.024C45.5909 25.6507 45.9803 25.4373 46.3963 25.384C46.8123 25.32 47.2549 25.288 47.7243 25.288L49.9003 25.752C49.8149 26.36 49.6923 26.7173 49.5323 26.824C49.4576 26.888 49.3243 26.92 49.1323 26.92C48.9509 26.92 48.7109 26.888 48.4123 26.824L47.8043 26.712C47.1749 26.712 46.7909 26.84 46.6523 27.096C46.5669 27.2347 46.5136 27.3627 46.4923 27.48C46.4816 27.5973 46.4763 27.7733 46.4763 28.008C46.4763 28.4453 47.0149 29.1173 48.0923 30.024C48.6043 30.4293 49.0043 30.7707 49.2923 31.048C49.5803 31.3253 49.8523 31.6613 50.1083 32.056C50.3643 32.4507 50.4923 32.824 50.4923 33.176C50.4923 33.528 50.4869 33.8 50.4763 33.992C50.4763 34.1733 50.4549 34.4293 50.4123 34.76C50.3803 35.08 50.3269 35.3307 50.2523 35.512C50.1776 35.6933 50.0656 35.9013 49.9163 36.136C49.7669 36.3707 49.5856 36.5467 49.3723 36.664C48.8283 36.9627 48.1776 37.112 47.4203 37.112C46.9936 37.112 46.4976 37.064 45.9323 36.968C45.3669 36.8613 44.9883 36.7973 44.7963 36.776V35.416Z"
                 fill="white" />
         </svg>
-        <div class="flex items-center space-x-3">
-            <button type="button" @click="scrollToTop"
-                class="bg-white bg-opacity-30 border border-[#B8B8B8] rounded-full text-white px-4 py-1">Inicio</button>
-            <button type="button" @click="scrollToFeatures"
-                class="bg-white bg-opacity-30 border border-[#B8B8B8] rounded-full text-white px-4 py-1">Funciones</button>
-        </div>
         <button @click="$inertia.visit(route('login'))" type="button" class="z-10 normal-button">
             Iniciar sesión
         </button>
     </header>
     <main class="relative">
-        <section class="hero lg:px-28 relative">
-            <figure class="w-1/2">
-                <img src="@/../../public/images/hero1.png" class="select-none" :draggable="false"
+        <section class="hero text-center relative px-3">
+            <h1 class="text-2xl font-bold text-white pt-2">CONTROLA TUS FINANZAS DE MANERA FÁCIL</h1>
+            <figure class="mt-3">
+                <img src="@/../../public/images/hero1mobile.png" class="select-none" :draggable="false"
                     alt="Smartphone con imagenes de graficas">
             </figure>
-            <div class="w-1/2 absolute top-[20%] left-[40%] text-white text-end">
-                <h1 class="text-6xl text-center font-bold">CONTROLA TUS FINANZAS DE MANERA FÁCIL</h1>
-                <p class="mt-8 text-2xl text-center">Crea tus ingresos, gastos, préstamos y más desde un solo lugar</p>
-                <button @click="$inertia.visit(route('register'))" type="button"
-                    class="futuristic-button mt-24 ml-auto">
-                    Crear cuenta gratis
-                </button>
-            </div>
-            <img src="@/../../public/images/hero2.png" class="select-none absolute -top-24 right-0" :draggable="false"
-                alt="">
+            <p class="mt-8 text-[#585858]">Crea tus ingresos, gastos, préstamos y más desde un solo lugar</p>
+            <button @click="$inertia.visit(route('register'))" type="button" class="futuristic-button mt-10 ml-auto">
+                Crear cuenta gratis
+            </button>
         </section>
         <section class="lg:px-28 relative">
             <img src="@/../../public/images/decoration1.png" class="-z-10 select-none absolute -top-24 left-0"
                 :draggable="false" alt="">
             <img src="@/../../public/images/decoration2.png" class="-z-10 select-none absolute bottom-24 right-0"
                 :draggable="false" alt="">
-            <h1 id="Features" class="font-extrabold text-5xl text-center mt-10">FUNCIONES</h1>
-            <article class="grid grid-cols-2 gap-16 mt-16 items-center">
-                <figure>
-                    <img src="@/../../public/images/features1.png" class="select-none" :draggable="false"
-                        alt="Smartphone con imagenes de graficas">
-                </figure>
-                <div class="text-center px-24">
-                    <h2 class="text-5xl">Graficas intuitivas</h2>
-                    <p class="mt-8 text-2xl">
+            <h1 id="Features" class="font-extrabold text-2xl text-center mt-10">FUNCIONES</h1>
+            <article class="mt-6 items-center">
+                <div class="text-center px-10">
+                    <h2 class="text-2xl">Graficas intuitivas</h2>
+                    <p class="mt-3 mx-3 text-base leading-tight">
                         Consulta de un vistazo tus ingresos, gastos y saldo total. Gráficos interactivos que simplifican
                         la toma de decisiones financieras.
                     </p>
                 </div>
-                <div class="text-center px-24">
-                    <h2 class="text-5xl">Control Total de Préstamos</h2>
-                    <p class="mt-8 text-2xl">
+                <figure class="mx-2 mt-3">
+                    <img src="@/../../public/images/features1.png" class="select-none" :draggable="false"
+                        alt="Smartphone con imagenes de graficas">
+                </figure>
+                <div class="text-center px-10 mt-16">
+                    <h2 class="text-2xl">Control Total de Préstamos</h2>
+                    <p class="mt-3 mx-3 text-base leading-tight">
                         Registra préstamos otorgados y recibidos. Automatiza los abonos para mantener tus finanzas
                         organizadas sin esfuerzo
                     </p>
                 </div>
-                <figure>
+                <figure class="mx-2 mt-3">
                     <img src="@/../../public/images/features2.png" class="select-none" :draggable="false"
                         alt="Smartphone con imagenes de graficas">
                 </figure>
-                <div>
-                    <figure>
-                        <img src="@/../../public/images/features3.png" class="select-none" :draggable="false"
-                            alt="Calendario con eventos">
-                    </figure>
-                    <div class="text-center px-24 mt-8">
-                        <h2 class="text-5xl">Gestión desde un calendario</h2>
-                        <p class="mt-8 text-2xl">
-                            Planea y organiza con nuestro calendario integrado. Gestiona tus movimientos recurrentes en
-                            un solo lugar.
-                        </p>
-                    </div>
+                <div class="text-center px-10 mt-16">
+                    <h2 class="text-2xl">Administra tus gastos e ingresos</h2>
+                    <p class="mt-3 mx-3 text-base leading-tight">
+                        Organiza tus movimientos financieros por categoría y mantén el control al día.
+                    </p>
                 </div>
-                <div>
-                    <figure>
-                        <img src="@/../../public/images/features4.png" width="70%" class="select-none"
-                            :draggable="false" alt="Calendario con eventos">
-                    </figure>
-                    <div class="text-center px-24 mt-8">
-                        <h2 class="text-5xl">Administra tus gastos e ingresos</h2>
-                        <p class="mt-8 text-2xl">
-                            Organiza tus movimientos financieros por categoría y mantén el control al día.
-                        </p>
-                    </div>
+                <figure class="ml-10">
+                    <img src="@/../../public/images/features4.png" width="90%" class="select-none" :draggable="false"
+                        alt="iconos coloridos">
+                </figure>
+                <div class="text-center px-10 mt-16">
+                    <h2 class="text-2xl">Gestión desde un calendario</h2>
+                    <p class="mt-3 mx-3 text-base leading-tight">
+                        Planea y organiza con nuestro calendario integrado. Gestiona tus movimientos recurrentes en
+                        un solo lugar.
+                    </p>
                 </div>
+                <figure>
+                    <img src="@/../../public/images/features3.png" class="select-none" :draggable="false"
+                        alt="Calendario con eventos">
+                </figure>
             </article>
         </section>
-        <section class="pl-6 mt-10">
-            <figure class="relative">
+        <section class="mx-2 mt-10">
+            <figure class="relative flex justify-center">
                 <Link rel="stylesheet" :href="route('register')"
-                    class="w-[32%] absolute bottom-24 left-36 hover:scale-105 transition-transform duration-200">
+                    class="w-[65%] md:w-[52%] absolute top-2 md:-top-4 left-16 md:left-44 hover:scale-105 transition-transform duration-200">
                 <img src="@/../../public/images/hero3_1.png" class="select-none" :draggable="false"
                     alt="Smartphone con imagenes de graficas">
                 </Link>
-                <img src="@/../../public/images/hero3.png" class="select-none" :draggable="false"
+                <img src="@/../../public/images/hero3_mobile.png" class="select-none" :draggable="false"
                     alt="Smartphone con imagenes de graficas">
             </figure>
         </section>
     </main>
-    <footer class="footer text-white text-center py-1 px-6 mt-10">
-        <section class="flex space-x-2">
-            <div class="self-center w-[20%] flex flex-col items-center space-y-2 py-10">
+    <footer class="footer text-white text-center py-3 px-6 mt-10">
+        <section class="flex flex-col space-y-2">
+            <div class="flex flex-col items-start space-y-2">
                 <svg width="110" height="58" viewBox="0 0 110 58" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                         d="M81.7598 15.9884C81.7598 10.3821 72.443 3.65184 64.1094 0V18.8954C64.1094 22.6329 71.7691 29.1482 81.7598 33.8456V15.9884Z"
@@ -142,13 +127,13 @@
                 </svg>
                 <span>Organiza, ahorra y crece</span>
             </div>
-            <div class="w-[80%] flex items-end justify-between">
-                <p class="text-sm">Copyright © 2025 FinanzasDTW. Todos los derechos reservados</p>
+            <div class="flex justify-end">
                 <a href="https://app.dtw.com.mx" target="_blank" class="flex items-center space-x-2">
                     <small>By</small>
-                    <DTWMark class="w-32" />
+                    <DTWMark class="w-20" />
                 </a>
             </div>
+            <p class="text-xs">Copyright © 2025 FinanzasDTW. Todos los derechos reservados</p>
         </section>
     </footer>
 </template>
@@ -168,22 +153,6 @@ export default {
         ApplicationMark,
         Link,
         DTWMark,
-    },
-    methods: {
-        // funcion que me lleva al principio de la pagina de manera suave
-        scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        },
-        // funcion que me lleva al elemento con id "Features" de manera suave
-        scrollToFeatures() {
-            const element = document.getElementById('Features');
-            element.scrollIntoView({
-                behavior: 'smooth'
-            });
-        }
     }
 }
 </script>
@@ -195,10 +164,9 @@ export default {
 /* From Uiverse.io by vanaparthyguptha */
 .futuristic-button {
     position: relative;
-    padding: 15px 30px;
+    padding: 10px 16px;
     font-size: 14px;
     color: #fff;
-    letter-spacing: 2px;
     background: linear-gradient(90deg, #75b4b5, #296A6B);
     border: none;
     border-radius: 30px;
@@ -263,7 +231,7 @@ export default {
 /* From Uiverse.io by adamgiebl */
 .normal-button {
     --green: #fff;
-    font-size: 15px;
+    font-size: 12px;
     padding: 0.6em 2em;
     letter-spacing: 0.06em;
     position: relative;

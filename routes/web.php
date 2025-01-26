@@ -14,18 +14,19 @@ use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
+use Laravel\Jetstream\Agent;
 
-// Route::get('/', function () {
-//     return Inertia::render('Welcome', [
-//         'canLogin' => Route::has('login'),
-//         'canRegister' => Route::has('register'),
-//         'laravelVersion' => Application::VERSION,
-//         'phpVersion' => PHP_VERSION,
-//     ]);
-// });
+Route::get('/', function () {
+    $agent = new Agent();
 
-Route::redirect('/', 'login');
+    if ($agent->isDesktop() || $agent->isLaptop()) {
+        return inertia('Welcome');
+    } else {
+        return inertia('WelcomeMobile');
+    }
+});
+
+// Route::redirect('/', 'login');
 
 Route::middleware([
     'auth:sanctum',
