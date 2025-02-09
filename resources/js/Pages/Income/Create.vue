@@ -97,6 +97,7 @@ import InputError from "@/Components/InputError.vue";
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import Back from "@/Components/MyComponents/Back.vue";
 import { useForm } from "@inertiajs/vue3";
+import { format } from "date-fns";
 
 export default {
     data() {
@@ -104,7 +105,7 @@ export default {
             amount: null,
             category: null,
             concept: null,
-            created_at: new Date().toISOString().split('T')[0], // Fecha en formato YYYY-MM-DD
+            created_at: format(new Date(), "yyyy-MM-dd"), // Establece la fecha de hoy por defecto
             payment_method: null,
             is_recurring_income: false,
             periodicity: null,

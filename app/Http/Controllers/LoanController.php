@@ -72,6 +72,17 @@ class LoanController extends Controller
         return inertia('Loan/Show', compact('loan', 'loans'));
     }
 
+    public function externalView($encrypted_id)
+    {
+        // Desencriptar el ID
+        $decoded_id = base64_decode($encrypted_id);
+
+        // Buscar el préstamo usando el ID desencriptado
+        $loan = Loan::with(['payments'])->findOrFail($decoded_id);
+
+        return inertia('Loan/ExternalView', compact('loan'));
+    }
+
     public function edit(Loan $loan)
     {
         return inertia('Loan/Edit', compact('loan'));
@@ -123,11 +134,11 @@ class LoanController extends Controller
         $loans = Loan::where('user_id', auth()->id())
             ->where(function ($q) use ($query) {
                 $q->where('id', 'like', "%{$query}%")
-                ->orWhere('beneficiary_name', 'like', "%{$query}%")
-                ->orWhere('lender_name', 'like', "%{$query}%")
-                ->orWhere('amount', 'like', "%{$query}%")
-                ->orWhere('loan_date', 'like', "%{$query}%")
-                ->orWhere('profitability_type', 'like', "%{$query}%");
+                    ->orWhere('beneficiary_name', 'like', "%{$query}%")
+                    ->orWhere('lender_name', 'like', "%{$query}%")
+                    ->orWhere('amount', 'like', "%{$query}%")
+                    ->orWhere('loan_date', 'like', "%{$query}%")
+                    ->orWhere('profitability_type', 'like', "%{$query}%");
             })
             ->paginate(200);
 
