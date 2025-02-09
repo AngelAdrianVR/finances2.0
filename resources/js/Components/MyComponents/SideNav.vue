@@ -75,7 +75,7 @@
                                         </button>
                                     
                                         <!-- Adorno lateral de subcategorias-->
-                                        <i v-if="option.active" class="absolute left-[13px] fa-solid fa-circle text-[7px] z-10 bg-[#17141D] p-1"></i>
+                                        <i v-if="option.active" class="absolute left-[13px] top-[6px] fa-solid fa-circle text-[7px] z-10 bg-[#17141D] p-1"></i>
                                         <div class="border-l border-[#999999] absolute left-5 h-full"></div>
                                     </Link>
 
