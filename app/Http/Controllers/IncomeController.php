@@ -208,10 +208,18 @@ class IncomeController extends Controller
 
     public function massiveDelete(Request $request)
     {
+        $user = auth()->user();
+        
         foreach ($request->incomes as $income) {
             $income = Income::find($income['id']);
             $income?->delete();
+
+            //descuenta la cantidad del ingreso del dinero total
+            $user->total_money -= $income->amount;
         }
+        
+        //guarda los cambios en el dinero total del usuario
+        $user->save();
     }
     
     public function massiveUpdate(Request $request)
