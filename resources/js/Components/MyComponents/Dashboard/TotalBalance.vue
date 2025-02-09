@@ -50,12 +50,20 @@ props:{
 },
 computed:{
     incomePercentage() {
-      const incomePercentage = ((this.currentIncome - this.prevIncome) / this.prevIncome) * 100;
-      return incomePercentage ?  Math.abs(incomePercentage).toFixed(2) : 0; // Retorna el porcentaje sin signo
+        if (this.prevIncome === 0 && this.currentIncome > 0) {
+            return 100; // Evita la división por cero y devuelve 100
+        }
+        
+        const incomePercentage = ((this.currentIncome - this.prevIncome) / this.prevIncome) * 100;
+        return incomePercentage ? Math.abs(incomePercentage).toFixed(2) : 0; // Retorna el porcentaje sin signo
     },
     outcomePercentage() {
-      const outcomePercentage = ((this.currentOutcome - this.prevOutcome) / this.prevOutcome) * 100;
-      return outcomePercentage ? Math.abs(outcomePercentage).toFixed(2) : 0; // Retorna el porcentaje sin signo
+        if (this.prevOutcome === 0 && this.currentOutcome > 0) {
+            return 100; // Evita la división por cero y devuelve 100
+        }
+
+        const outcomePercentage = ((this.currentOutcome - this.prevOutcome) / this.prevOutcome) * 100;
+        return outcomePercentage ? Math.abs(outcomePercentage).toFixed(2) : 0; // Retorna el porcentaje sin signo
     },
     incomeComparison() {
       const percentage = (this.currentIncome - this.prevIncome) / this.prevIncome;

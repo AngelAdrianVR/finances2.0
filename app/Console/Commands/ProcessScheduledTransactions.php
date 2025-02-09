@@ -11,7 +11,7 @@ use Illuminate\Console\Command;
 
 class ProcessScheduledTransactions extends Command
 {
-    protected $signature = 'transactions:process-scheduled';
+    protected $signature = 'calendar:process-scheduled';
     protected $description = 'Procesa ingresos o gastos programados para el día actual';
 
     public function handle()
