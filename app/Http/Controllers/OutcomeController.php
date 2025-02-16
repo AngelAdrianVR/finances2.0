@@ -216,11 +216,19 @@ class OutcomeController extends Controller
     }
 
     public function massiveDelete(Request $request)
-    {
+    {   
+        $user = auth()->user();
+
         foreach ($request->outcomes as $outcome) {
             $outcome = Outcome::find($outcome['id']);
             $outcome?->delete();
+
+            //Agrega la cantidad del egreso eliminado al dinero total
+            $user->total_money += $outcome->amount;
         }
+
+        //guarda los cambios en el dinero total del usuario
+        $user->save();
     }
 
     public function massiveUpdate(Request $request)
