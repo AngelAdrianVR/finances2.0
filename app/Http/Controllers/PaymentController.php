@@ -198,12 +198,13 @@ class PaymentController extends Controller
         $payment->delete();
 
         // Actualizar los pagos subsecuentes
-        $this->updateSubsequentPaymentsAfterDeletion($loan, $remaining, $lastDate);
+        $this->updateSubsequentPaymentsAfterDeletion($loan, $remaining, $lastDate, $payment->id);
     }
 
-    private function updateSubsequentPaymentsAfterDeletion(Loan $loan, $remaining, $lastDate)
+    private function updateSubsequentPaymentsAfterDeletion(Loan $loan, $remaining, $lastDate, $deletedPaymentId)
     {
         $subsequentPayments = Payment::where('loan_id', $loan->id)
+            ->where('id', '>', $deletedPaymentId)
             ->orderBy('id')
             ->get();
 
@@ -232,6 +233,38 @@ class PaymentController extends Controller
             $loan->update(['status' => 'En curso']);
         }
     }
+
+    // private function updateSubsequentPaymentsAfterDeletion(Loan $loan, $remaining, $lastDate)
+    // {
+    //     $subsequentPayments = Payment::where('loan_id', $loan->id)
+    //         ->orderBy('id')
+    //         ->get();
+
+    //     foreach ($subsequentPayments as $payment) {
+    //         $calculation = $this->calculateInterestAndCapital(
+    //             $loan,
+    //             $remaining,
+    //             $payment->amount,
+    //             $lastDate,
+    //             $payment->date
+    //         );
+
+    //         $payment->update([
+    //             'interest' => $calculation['interest'],
+    //             'capital' => $calculation['capital'],
+    //             'remaining' => $calculation['newRemaining'],
+    //         ]);
+
+    //         $remaining = $calculation['newRemaining'];
+    //         $lastDate = $payment->date;
+    //     }
+
+    //     // Revisar el restante del último pago
+    //     $lastPayment = Payment::where('loan_id', $loan->id)->latest('id')->first();
+    //     if ($lastPayment && $lastPayment->remaining > 0) {
+    //         $loan->update(['status' => 'En curso']);
+    //     }
+    // }
 
     private function calculateInterestAndCapital(Loan $loan, $remaining, $amount, $lastDate, $currentDate)
     {
