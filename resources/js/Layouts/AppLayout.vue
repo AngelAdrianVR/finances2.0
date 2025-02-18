@@ -1,5 +1,5 @@
 <script setup>
-// import { ref } from 'vue';
+import { ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import ApplicationMark from '@/Components/ApplicationMark.vue';
 import Banner from '@/Components/Banner.vue';
@@ -11,6 +11,11 @@ defineProps({
     title: String,
 });
 
+const notifications = ref(null);
+
+const updateNotifications = (value) => {
+    notifications.value = value; // Guarda el número emitido en la variable
+};
 // const showingNavigationDropdown = ref(false);
 
 // const switchToTeam = (team) => {
@@ -29,7 +34,7 @@ defineProps({
 <template>
     <div>
 
-        <Head :title="title" />
+        <Head :title="(notifications > 0 ? '(' + notifications + ') ' : '') + title" />
 
         <Banner />
 
@@ -55,7 +60,7 @@ defineProps({
 
                                 <!-- notificaciones -->
                                 <div class="hidden md:inline mr-3 mt-2 relative">
-                                    <NotificationsCenter />
+                                    <NotificationsCenter @notifications="updateNotifications" />
                                 </div>
                                 <!-- calendario -->
                                 <div class="mr-3 mt-2 relative">

@@ -41,7 +41,7 @@ Route::middleware([
 
 //Dashboard routes
 Route::post('/dashboard-fetch-data-for-period', [DashboardController::class, 'fetchDataForPeriod'])->middleware('auth')->name('dashboard.fetch-data-for-period');
-Route::get('/dashboard-fetch-data-comparison', [DashboardController::class, 'fetchDataComparison'])->middleware('auth')->name('dashboard.fetch-data-comparison');
+Route::post('/dashboard-fetch-data-comparison', [DashboardController::class, 'fetchDataComparison'])->middleware('auth')->name('dashboard.fetch-data-comparison');
 
 
 // Income routes -------------------------------------------------------------------------------------
@@ -122,6 +122,11 @@ Route::post('users-delete-notification', [UserController::class, 'deleteNotifica
 Route::get('/storage-link', function () {
     Artisan::call('storage:link');
     return 'cleared.';
+});
+
+Route::get('/calendar-schedule', function () {
+    Artisan::call('calendar:process-scheduled');
+    return 'comando de calendario ejecutado';
 });
 
 Route::get('/clear-all', function () {
