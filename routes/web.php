@@ -124,6 +124,11 @@ Route::get('/storage-link', function () {
     return 'cleared.';
 });
 
+Route::get('/calendar-schedule', function () {
+    Artisan::call('calendar:process-scheduled');
+    return 'comando de calendario ejecutado';
+});
+
 Route::get('/clear-all', function () {
     Artisan::call('cache:clear');
     Artisan::call('config:clear');

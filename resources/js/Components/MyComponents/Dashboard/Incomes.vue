@@ -1,8 +1,13 @@
 <template>
     <main
         class="border border-grayD9 rounded-xl p-5 shadow hover:shadow-lg transition-all ease-linear duration-200 hover:-translate-y-1">
-        <h1 class="text-2xl text-[#575757] font-bold my-3 ml-4">
-            INGRESOS (${{ totalIncomes.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }})
+        <h1 class="flex justify-between text-2xl text-[#575757] font-bold my-3 ml-4">
+            <span>INGRESOS (${{ totalIncomes.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") }})</span>
+            <button @click="$inertia.get(route('incomes.create'))" class="flex items-center justify-center size-8 border border-gray-400 rounded-full hover:bg-gray-50">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+            </button>
         </h1>
 
         <section class="sm:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 space-y-2 sm:space-y-0">
