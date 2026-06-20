@@ -92,6 +92,7 @@ export default {
         Dropdown,
         NotificationCard,
     },
+    emits: ['notifications'],
     methods: {
         async fetchNotifications() {
             try {
@@ -123,7 +124,10 @@ export default {
     },
     computed: {
         getUnreadMessages() {
-            return this.notifications?.filter(item => item.read_at === null);
+            const notReadedNotifications = this.notifications?.filter(item => item.read_at === null);
+            this.$emit('notifications', notReadedNotifications.length); //emite la cantidad de notificaciones no leidas
+
+            return notReadedNotifications;
         },
         todayNotifications() {
             const today = new Date().toISOString().split('T')[0];

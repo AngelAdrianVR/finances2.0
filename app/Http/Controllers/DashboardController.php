@@ -126,25 +126,83 @@ class DashboardController extends Controller
     }
 
     // Obtener los datos de comparación de ingresos y egresos mensuales actuales y anteriores del usuario autenticado
-    public function fetchDataComparison()
+    // public function fetchDataComparison()
+    // {
+    //     $current_month_income = Income::where('user_id', auth()->id())
+    //         ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+    //         ->sum('amount');
+
+    //     $prev_month_income = Income::where('user_id', auth()->id())
+    //         ->whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])
+    //         ->sum('amount');
+        
+    //     $current_month_outcome = Outcome::where('user_id', auth()->id())
+    //         ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+    //         ->sum('amount');
+        
+    //     $prev_month_outcome = Outcome::where('user_id', auth()->id())
+    //         ->whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])
+    //         ->sum('amount');
+
+    //     return response()->json(compact('current_month_income', 'prev_month_income', 'current_month_outcome', 'prev_month_outcome'));
+        
+    // }
+
+    public function fetchDataComparison(Request $request) 
     {
-        $current_month_income = Income::where('user_id', auth()->id())
-            ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+        $userId = auth()->id();
+        $periodicity = $request->input('periodicity', 'Mensual');
+        // return $periodicity;
+        switch ($periodicity) {
+            case 'Por día':
+                $currentStart = now()->startOfDay();
+                $currentEnd = now()->endOfDay();
+                $prevStart = now()->subDay()->startOfDay();
+                $prevEnd = now()->subDay()->endOfDay();
+                break;
+            
+            case 'Semanal':
+                $currentStart = now()->startOfWeek();
+                $currentEnd = now()->endOfWeek();
+                $prevStart = now()->subWeek()->startOfWeek();
+                $prevEnd = now()->subWeek()->endOfWeek();
+                break;
+            
+            case 'Mensual':
+                $currentStart = now()->startOfMonth();
+                $currentEnd = now()->endOfMonth();
+                $prevStart = now()->subMonth()->startOfMonth();
+                $prevEnd = now()->subMonth()->endOfMonth();
+                break;
+            
+            case 'Anual':
+                $currentStart = now()->startOfYear();
+                $currentEnd = now()->endOfYear();
+                $prevStart = now()->subYear()->startOfYear();
+                $prevEnd = now()->subYear()->endOfYear();
+                break;
+            
+            default:
+                return response()->json(['error' => 'Periodicidad no válida'], 400);
+        }
+
+        $current_income = Income::where('user_id', $userId)
+            ->whereBetween('created_at', [$currentStart, $currentEnd])
             ->sum('amount');
 
-        $prev_month_income = Income::where('user_id', auth()->id())
-            ->whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])
+        $prev_income = Income::where('user_id', $userId)
+            ->whereBetween('created_at', [$prevStart, $prevEnd])
             ->sum('amount');
         
-        $current_month_outcome = Outcome::where('user_id', auth()->id())
-            ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+        $current_outcome = Outcome::where('user_id', $userId)
+            ->whereBetween('created_at', [$currentStart, $currentEnd])
             ->sum('amount');
         
-        $prev_month_outcome = Outcome::where('user_id', auth()->id())
-            ->whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])
+        $prev_outcome = Outcome::where('user_id', $userId)
+            ->whereBetween('created_at', [$prevStart, $prevEnd])
             ->sum('amount');
 
-        return response()->json(compact('current_month_income', 'prev_month_income', 'current_month_outcome', 'prev_month_outcome'));
-        
+        return response()->json(compact('current_income', 'prev_income', 'current_outcome', 'prev_outcome'));
     }
+
 }

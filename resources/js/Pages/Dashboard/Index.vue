@@ -34,7 +34,7 @@
       <article v-else class="lg:flex lg:space-x-5 mt-5">
         <section class="lg:w-[70%] space-y-7">
           <!-- Balance total -->
-          <TotalBalance />
+          <TotalBalance :periodicity="periodicity" />
 
           <!-- Gastos -->
           <Outcomes :outcomes="outcomes" />
