@@ -5,7 +5,6 @@ import ActionMessage from '@/Components/ActionMessage.vue';
 import FormSection from '@/Components/FormSection.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 
 const passwordInput = ref(null);
@@ -91,14 +90,8 @@ const updatePassword = () => {
         </template>
 
         <template #actions>
-            <ActionMessage :on="form.recentlySuccessful" class="me-3">
-                Guardado.
-            </ActionMessage>
-
-            <PrimaryButton class="flex items-center space-x-2" :disabled="form.processing">
-                <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
-                Guardar
-            </PrimaryButton>
+            <ActionMessage :on="form.recentlySuccessful" class="me-3">Guardado.</ActionMessage>
+            <el-button type="primary" :loading="form.processing" @click="updatePassword">Guardar</el-button>
         </template>
     </FormSection>
 </template>

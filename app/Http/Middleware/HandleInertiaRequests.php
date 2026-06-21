@@ -38,7 +38,7 @@ class HandleInertiaRequests extends Middleware
         return array_merge(parent::share($request), [
             'auth.user.total_loan' => function () use ($request) {
                 if ($request->user()) {
-                    return $request->user()->getTotalLoan();
+                    return $request->user()->getTotalLoansGiven();
                 }
 
                 return 0.0;

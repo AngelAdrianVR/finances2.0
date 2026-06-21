@@ -2,147 +2,125 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Loans\CreateLoanAction;
+use App\Actions\Loans\DeleteLoanAction;
+use App\Actions\Loans\UpdateLoanAction;
+use App\Http\Requests\Loans\StoreLoanRequest;
+use App\Http\Requests\Loans\UpdateLoanRequest;
 use App\Models\Loan;
+use App\Services\SearchService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Response as InertiaResponse;
 
 class LoanController extends Controller
 {
-    public function index()
+    public function __construct(
+        private readonly CreateLoanAction $createLoanAction,
+        private readonly UpdateLoanAction $updateLoanAction,
+        private readonly DeleteLoanAction $deleteLoanAction,
+        private readonly SearchService $searchService,
+    ) {}
+
+    // ========================
+    // Views
+    // ========================
+
+    public function index(): InertiaResponse
     {
-        $loans_for_me = Loan::with(['payments'])->where('type', 'Recibido')
-            ->where('user_id', auth()->id())
+        $loans_for_me = Loan::with('payments')
+            ->forUser()
+            ->byType('Recibido')
             ->latest('id')
             ->paginate(50);
 
-        $loans_given = Loan::with(['payments'])->where('type', 'Otorgado')
-            ->where('user_id', auth()->id())
+        $loans_given = Loan::with('payments')
+            ->forUser()
+            ->byType('Otorgado')
             ->latest('id')
             ->paginate(50);
 
         return inertia('Loan/Index', compact('loans_for_me', 'loans_given'));
     }
 
-    public function create()
+    public function create(): InertiaResponse
     {
         return inertia('Loan/Create');
     }
 
-    public function store(Request $request)
+    public function show(Loan $loan): InertiaResponse
     {
-        $request->validate([
-            'type' => 'required|string',
-            'beneficiary_name' => $request->type == 'Otorgado' ? 'required|string' : 'nullable|string',
-            'lender_name' => $request->type == 'Recibido' ? 'required|string' : 'nullable|string',
-            'payment_periodicity' =>  'nullable|string',
-            'profitability' => $request->no_interest ? 'nullable|numeric|min:0|max:999999' : 'required|numeric|min:0|max:999999',
-            'profitability_type' => $request->no_interest ? 'nullable|string' : 'required|string',
-            'expired_date' => 'nullable|date|after:today',
-            'amount' => 'required|numeric|min:0|max:999999',
-            'status' => 'required|string',
-            'loan_date' => 'nullable|date',
-        ]);
-
-        $loan = Loan::create($request->all() + ['user_id' => auth()->id(), 'is_for_me' => $request->type === 'Recibido']);
-
-        // si el prestamo tiene registro automatico de ingresos o egresos
-        if ($loan->automatic) {
-            //sumar o restar la cantidad del abono segun sea el tipo del préstamo (otorgado o recibido) al total global en la tabla users
-            $user = auth()->user();
-            if ($loan->type === 'Recibido') {
-                $user->total_money += $loan->amount;
-            } else {
-                //si el monto del préstamo es mayor al dinero global registrado, se manda a cero para no tener numeros negativos.
-                if ($user->total_money < $loan->amount) {
-                    $user->total_money = 0;
-                } else {
-                    $user->total_money -= $loan->amount;
-                }
-            }
-            $user->save();
-        }
-
-        return to_route('loans.show', $loan->id);
-    }
-
-    public function show(Loan $loan)
-    {
-        $loan->load(['payments']);
-        $loans = Loan::latest()->where('user_id', auth()->id())->get(['id', 'type', 'beneficiary_name', 'lender_name', 'amount']);
+        $loan->load('payments');
+        $loans = Loan::forUser()->latest()->get(['id', 'type', 'beneficiary_name', 'lender_name', 'amount']);
 
         return inertia('Loan/Show', compact('loan', 'loans'));
     }
 
-    public function externalView($encrypted_id)
-    {
-        // Desencriptar el ID
-        $decoded_id = base64_decode($encrypted_id);
-
-        // Buscar el préstamo usando el ID desencriptado
-        $loan = Loan::with(['payments'])->findOrFail($decoded_id);
-
-        return inertia('Loan/ExternalView', compact('loan'));
-    }
-
-    public function edit(Loan $loan)
+    public function edit(Loan $loan): InertiaResponse
     {
         return inertia('Loan/Edit', compact('loan'));
     }
 
-    public function update(Request $request, Loan $loan)
+    public function externalView(string $encrypted_id): InertiaResponse
     {
-        $request->validate([
-            'type' => 'required|string',
-            'beneficiary_name' => $request->type == 'Otorgado' ? 'required|string' : 'nullable|string',
-            'lender_name' => $request->type == 'Recibido' ? 'required|string' : 'nullable|string',
-            'payment_periodicity' =>  'nullable|string',
-            'profitability' => $request->no_interest ? 'nullable|numeric|min:0|max:999999' : 'required|numeric|min:0|max:999999',
-            'profitability_type' => $request->no_interest ? 'nullable|string' : 'required|string',
-            'expired_date' => 'nullable|date|after:today',
-            'amount' => 'required|numeric|min:0|max:999999',
-            'status' => 'required|string',
-            'loan_date' => 'nullable|date',
-        ]);
+        $decoded_id = base64_decode($encrypted_id);
+        $loan = Loan::with('payments')->findOrFail($decoded_id);
 
-        //Actualizar el prestamos
-        $loan->update($request->all() + ['is_for_me' => $request->type === 'Recibido']);
+        return inertia('Loan/ExternalView', compact('loan'));
+    }
+
+    // ========================
+    // CRUD
+    // ========================
+
+    public function store(StoreLoanRequest $request): RedirectResponse
+    {
+        $loan = $this->createLoanAction->execute($request->validated());
+
+        return to_route('loans.show', $loan->id);
+    }
+
+    public function update(UpdateLoanRequest $request, Loan $loan): RedirectResponse
+    {
+        $this->updateLoanAction->execute($loan, $request->validated());
 
         return to_route('loans.index');
     }
 
-    public function destroy(Loan $loan)
+    public function destroy(Loan $loan): RedirectResponse
     {
-        $loan->delete();
+        $this->deleteLoanAction->execute($loan);
 
         return to_route('loans.index');
     }
 
-    public function massiveDelete(Request $request)
-    {
-        foreach ($request->loans as $loan) {
-            $loan = Loan::find($loan['id']);
-            $loan?->delete();
-        }
+    // ========================
+    // Massive operations
+    // ========================
 
-        // return response()->json(['message' => 'Producto(s) eliminado(s)']);
+    public function massiveDelete(Request $request): RedirectResponse
+    {
+        $ids = array_column($request->input('loans', []), 'id');
+        $this->deleteLoanAction->executeBulk($ids);
+
+        return to_route('loans.index');
     }
 
-    public function getMatches(Request $request)
+    // ========================
+    // Search
+    // ========================
+
+    public function getMatches(Request $request): JsonResponse
     {
-        $query = $request->input('query');
+        $query = $request->input('query', '');
 
-        // Realiza la búsqueda
-        $loans = Loan::where('user_id', auth()->id())
-            ->where(function ($q) use ($query) {
-                $q->where('id', 'like', "%{$query}%")
-                    ->orWhere('beneficiary_name', 'like', "%{$query}%")
-                    ->orWhere('lender_name', 'like', "%{$query}%")
-                    ->orWhere('amount', 'like', "%{$query}%")
-                    ->orWhere('loan_date', 'like', "%{$query}%")
-                    ->orWhere('profitability_type', 'like', "%{$query}%");
-            })
-            ->paginate(200);
+        $items = $this->searchService->searchForUser(
+            Loan::class,
+            $query,
+            ['id', 'beneficiary_name', 'lender_name', 'amount', 'loan_date', 'profitability_type']
+        );
 
-        // Devuelve los items encontrados
-        return response()->json(['items' => $loans], 200);
+        return response()->json(['items' => $items]);
     }
 }

@@ -1,0 +1,383 @@
+/* ============================================
+   AppMenu — Stripe/Notion dark sidebar
+   Overrides for Element Plus ElMenu
+   ============================================ */
+
+/* --- Root menu (sidebar container) --- */
+.app-menu {
+    --el-menu-bg-color: #0F2728;
+    --el-menu-text-color: #9CACAC;
+    --el-menu-hover-bg-color: rgba(255, 255, 255, 0.05);
+    --el-menu-active-color: #FFFFFF;
+    --el-menu-item-height: 44px;
+    border-right: none !important;
+}
+
+.app-menu .el-menu-item,
+.app-menu .el-sub-menu__title {
+    color: #9CACAC;
+    transition: all 150ms ease;
+}
+
+.app-menu .el-menu-item:hover,
+.app-menu .el-sub-menu__title:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: #FFFFFF !important;
+}
+
+/* Active menu item */
+.app-menu .el-menu-item.is-active {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #FFFFFF !important;
+    position: relative;
+}
+
+/* Active left indicator bar */
+.app-menu .el-menu-item.is-active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 24px;
+    background-color: #5B9C9D;
+    border-radius: 0 9999px 9999px 0;
+}
+
+/* --- Sub-menu --- */
+.app-menu .el-sub-menu .el-menu {
+    background-color: transparent;
+}
+
+.app-menu .el-sub-menu.is-active > .el-sub-menu__title {
+    color: #FFFFFF !important;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Sub-menu items */
+.app-menu .el-sub-menu .el-menu-item {
+    padding-left: 48px !important;
+    font-size: 13px;
+}
+
+/* Sub-menu active indicator */
+.app-menu .el-sub-menu .el-menu-item.is-active::before {
+    left: 24px;
+}
+
+/* Sub-menu vertical connector line */
+.app-menu .el-sub-menu .el-menu {
+    position: relative;
+}
+
+/* --- Collapsed mode --- */
+.app-menu.el-menu--collapse {
+    width: 64px;
+    overflow: visible !important;
+}
+
+.app-menu.el-menu--collapse .el-menu-item {
+    justify-content: center;
+    padding: 0 !important;
+}
+
+.app-menu.el-menu--collapse .el-menu-item.is-active::before {
+    left: 0;
+}
+
+/* Collapsed sub-menu popover */
+.app-menu.el-menu--collapse .el-sub-menu__title {
+    justify-content: center;
+    padding: 0 !important;
+}
+
+/* Ensure sub-menu popover appears above everything */
+.el-menu--popup-container {
+    z-index: 9999 !important;
+}
+
+.el-popper.is-light.el-menu--popup-container {
+    background-color: #0F2728 !important;
+    border: 1px solid #1A3A3B !important;
+    border-radius: 8px !important;
+    padding: 4px !important;
+    min-width: 180px !important;
+}
+
+.el-popper.is-light.el-menu--popup-container .el-menu {
+    background-color: transparent;
+}
+
+.el-popper.is-light.el-menu--popup-container .el-menu-item {
+    color: #9CACAC;
+    height: 36px;
+    line-height: 36px;
+    border-radius: 6px;
+    margin: 2px 0;
+}
+
+.el-popper.is-light.el-menu--popup-container .el-menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #FFFFFF !important;
+}
+
+.el-popper.is-light.el-menu--popup-container .el-menu-item.is-active {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #FFFFFF !important;
+}
+
+.el-popper.is-light .el-popper__arrow::before {
+    background: #0F2728 !important;
+    border-color: #1A3A3B !important;
+}
+
+/* --- Icons --- */
+.app-menu .menu-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* --- Mobile drawer --- */
+.mobile-drawer .el-drawer__header {
+    margin-bottom: 0;
+    padding: 16px 20px;
+    border-bottom: 1px solid #1A3A3B;
+    background-color: #0F2728;
+    color: #FFFFFF;
+}
+
+.mobile-drawer .el-drawer__body {
+    padding: 0;
+    background-color: #0F2728;
+}
+
+.mobile-drawer .el-drawer__close-btn {
+    color: #9CACAC;
+}
+
+.mobile-drawer .el-drawer__close-btn:hover {
+    color: #FFFFFF;
+}
+
+/* Mobile menu items in drawer */
+.mobile-drawer .app-menu {
+    --el-menu-item-height: 48px;
+}
+
+.mobile-drawer .app-menu .el-menu-item {
+    font-size: 15px;
+    padding-left: 24px !important;
+}
+
+.mobile-drawer .app-menu .el-sub-menu .el-menu-item {
+    padding-left: 56px !important;
+}
+
+/* --- User profile section (sidebar footer) --- */
+.menu-profile-btn {
+    transition: all 150ms ease;
+}
+
+.menu-profile-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* --- Collapse toggle --- */
+.menu-collapse-btn {
+    width: 48px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    margin: 0 auto;
+    color: #9CACAC;
+    transition: all 150ms ease;
+}
+
+.menu-collapse-btn:hover {
+    color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* ============================================
+   Custom submenu (replaces el-sub-menu)
+   ============================================ */
+.submenu-wrapper {
+    position: relative;
+}
+
+.submenu-trigger {
+    display: flex;
+    align-items: center;
+    height: var(--el-menu-item-height, 44px);
+    padding: 0 20px;
+    color: #9CACAC;
+    cursor: pointer;
+    transition: all 150ms ease;
+    user-select: none;
+    gap: 8px;
+}
+
+.submenu-trigger:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: #FFFFFF !important;
+}
+
+.submenu-trigger.is-expanded {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #FFFFFF !important;
+}
+
+.submenu-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.submenu-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+}
+
+.submenu-arrow {
+    flex-shrink: 0;
+    transition: transform 150ms ease;
+    color: #9CACAC;
+}
+
+.submenu-trigger.is-expanded .submenu-arrow {
+    transform: rotate(90deg);
+}
+
+/* Children (in-place, expanded mode) */
+.submenu-children {
+    background-color: transparent;
+    padding-bottom: 4px;
+}
+
+.submenu-child {
+    padding: 8px 20px 8px 48px;
+    font-size: 13px;
+    color: #9CACAC;
+    cursor: pointer;
+    transition: all 150ms ease;
+    position: relative;
+    user-select: none;
+}
+
+.submenu-child:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: #FFFFFF !important;
+}
+
+.submenu-child.is-active {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #FFFFFF !important;
+}
+
+.submenu-child.is-active::before {
+    content: '';
+    position: absolute;
+    left: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 24px;
+    background-color: #5B9C9D;
+    border-radius: 0 9999px 9999px 0;
+}
+
+/* Popover for collapsed mode */
+.submenu-popover-custom {
+    background-color: #0F2728 !important;
+    border: 1px solid #1A3A3B !important;
+    border-radius: 8px !important;
+    padding: 4px !important;
+    min-width: 180px !important;
+}
+
+.submenu-popover-custom .el-popper__arrow::before {
+    background: #0F2728 !important;
+    border-color: #1A3A3B !important;
+}
+
+.submenu-popover-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.submenu-popover-item {
+    padding: 8px 16px;
+    font-size: 13px;
+    color: #9CACAC;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 150ms ease;
+    user-select: none;
+}
+
+.submenu-popover-item:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #FFFFFF !important;
+}
+
+.submenu-popover-item.is-active {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #FFFFFF !important;
+}
+
+/* Collapsed mode adjustments */
+.app-menu.el-menu--collapse .submenu-trigger {
+    justify-content: center;
+    padding: 0;
+}
+
+.app-menu.el-menu--collapse .submenu-trigger .submenu-icon {
+    margin: 0;
+}
+
+/* Drawer menu items (mobile) */
+.drawer-menu {
+    padding: 8px 0;
+}
+
+.drawer-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+    color: #9CACAC;
+    cursor: pointer;
+    transition: all 150ms ease;
+    font-size: 15px;
+    user-select: none;
+}
+
+.drawer-menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #FFFFFF;
+}
+
+.drawer-menu .submenu-child {
+    padding-left: 56px !important;
+    font-size: 14px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.drawer-menu .submenu-child.is-active::before {
+    left: 32px;
+}

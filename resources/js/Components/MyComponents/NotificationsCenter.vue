@@ -3,7 +3,7 @@
         <template #trigger>
             <div class="mr-3 relative">
                 <div class="group relative ml-3">
-                    <button class="rounded-full size-9 flex items-center justify-center text-gray-600">
+                    <button class="rounded-full size-9 flex items-center justify-center text-gray-600 dark:text-gray-400">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="size-5 md:size-6 lg:size-7">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -11,26 +11,26 @@
                         </svg>
                     </button>
                     <strong
-                        class="absolute -bottom-10 left-[50%] -translate-x-[50%] z-20 origin-left scale-0 px-3 rounded-lg border border-gray-300 bg-white py-2 text-sm font-boldshadow-md transition-all duration-300 ease-in-out group-hover:scale-100">
+                        class="absolute -bottom-10 left-[50%] -translate-x-[50%] z-20 origin-left scale-0 px-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-2 text-sm font-boldshadow-md dark:text-gray-200 transition-all duration-300 ease-in-out group-hover:scale-100">
                         notificaciones
                     </strong>
                 </div>
             </div>
             <span v-if="getUnreadMessages.length"
-                class="size-4 bg-primary text-white text-[9px] rounded-full absolute top-0 -right-0 flex items-center justify-center border border-white">
+                class="size-4 bg-primary text-white text-[9px] rounded-full absolute top-0 -right-0 flex items-center justify-center border border-white dark:border-[#1E2424]">
                 {{ getUnreadMessages.length }}
             </span>
         </template>
         <template #content>
             <div class="px-4 py-2 h-[300px] overflow-y-auto">
-                <h1 class="text-sm px-1">
+                <h1 class="text-sm px-1 dark:text-gray-200">
                     Notificaciones
                 </h1>
                 <!-- HOY -->
                 <section class="mt-3">
                     <h2 class="text-xs px-1 flex items-center space-x-1">
-                        <span class="text-[#575757]">Hoy</span>
-                        <span class="border-grayD9 bg-grayF2 rounded-[5px] px-[5px] py-[2px]">
+                        <span class="text-[#575757] dark:text-gray-400">Hoy</span>
+                        <span class="border-grayD9 dark:border-gray-600 bg-grayF2 dark:bg-gray-800 rounded-[5px] px-[5px] py-[2px] dark:text-gray-300">
                             {{ todayNotifications.length }}</span>
                     </h2>
                     <!-- notificacion de hoy -->
@@ -38,37 +38,37 @@
                         <!-- notificaciones cuya propiedad created_at es de hoy -->
                         <NotificationCard v-for="(item, index) in todayNotifications" :key="index" @notification-deleted="fetchNotifications"
                             :notification="item" />
-                        <p v-if="!todayNotifications.length" class="text-[10px] text-center">No hay notificaciones para
+                        <p v-if="!todayNotifications.length" class="text-[10px] text-center dark:text-gray-400">No hay notificaciones para
                             mostrar</p>
                     </article>
                 </section>
                 <!-- Ayer -->
                 <section class="mt-3">
                     <h2 class="text-xs px-1 flex items-center space-x-1">
-                        <span class="text-[#575757]">Ayer</span>
-                        <span class="border-grayD9 bg-grayF2 rounded-[5px] px-[5px] py-[2px]">
+                        <span class="text-[#575757] dark:text-gray-400">Ayer</span>
+                        <span class="border-grayD9 dark:border-gray-600 bg-grayF2 dark:bg-gray-800 rounded-[5px] px-[5px] py-[2px] dark:text-gray-300">
                             {{ yesterdayNotifications.length }}</span>
                     </h2>
                     <!-- notificacion -->
                     <article class="space-y-2 mt-3">
                         <NotificationCard v-for="(item, index) in yesterdayNotifications" :key="index" @notification-deleted="fetchNotifications"
                             :notification="item" />
-                        <p v-if="!yesterdayNotifications.length" class="text-[10px] text-center">No hay notificaciones
+                        <p v-if="!yesterdayNotifications.length" class="text-[10px] text-center dark:text-gray-400">No hay notificaciones
                             para mostrar</p>
                     </article>
                 </section>
                 <!-- Este mes -->
                 <section class="mt-3">
                     <h2 class="text-xs px-1 flex items-center space-x-1">
-                        <span class="text-[#575757]">Este mes</span>
-                        <span class="border-grayD9 bg-grayF2 rounded-[5px] px-[5px] py-[2px]">
+                        <span class="text-[#575757] dark:text-gray-400">Este mes</span>
+                        <span class="border-grayD9 dark:border-gray-600 bg-grayF2 dark:bg-gray-800 rounded-[5px] px-[5px] py-[2px] dark:text-gray-300">
                             {{ monthNotifications.length }}</span>
                     </h2>
                     <!-- notificacion -->
                     <article class="space-y-2 mt-3">
                         <NotificationCard v-for="(item, index) in monthNotifications" :key="index" @notification-deleted="fetchNotifications"
                             :notification="item" />
-                        <p v-if="!monthNotifications.length" class="text-[10px] text-center">No hay notificaciones para
+                        <p v-if="!monthNotifications.length" class="text-[10px] text-center dark:text-gray-400">No hay notificaciones para
                             mostrar</p>
                     </article>
                 </section>
