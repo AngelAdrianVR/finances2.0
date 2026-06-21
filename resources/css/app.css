@@ -36,6 +36,249 @@
     }
 }
 
+/* ============================================
+   DARK MODE — Global overrides
+   ============================================ */
+.dark {
+    --color-primary-50: #1A3A3B;
+    --color-primary-100: #205254;
+    --color-primary-200: #296A6B;
+    --color-primary-300: #357F80;
+    --color-primary-400: #5B9C9D;
+    --color-primary-500: #84B7B8;
+    --color-primary-600: #B0D1D1;
+    --color-primary-700: #D7E8E8;
+    --color-primary-800: #EEF5F5;
+    --color-primary-900: #F7F9F9;
+
+    --color-accent-100: #3A2A20;
+    --color-accent-400: #E8946B;
+    --color-accent-600: #D9743F;
+
+    --color-success-50: #1A3A2A;
+    --color-success-600: #3BB970;
+    --color-success-700: #2F9E5B;
+    --color-danger-50: #3A1A1A;
+    --color-danger-600: #F05A5A;
+    --color-danger-700: #D64545;
+    --color-warning-50: #3A2E1A;
+    --color-warning-600: #E8AD3A;
+    --color-warning-700: #D99A2B;
+    --color-info-50: #1A2A3A;
+    --color-info-600: #5B9BE8;
+    --color-info-700: #3B7DD8;
+
+    --color-gray-50: #1A1F1F;
+    --color-gray-100: #2B3232;
+    --color-gray-200: #3F4949;
+    --color-gray-300: #566363;
+    --color-gray-400: #728282;
+    --color-gray-500: #9AA8A8;
+    --color-gray-600: #C2CDCD;
+    --color-gray-700: #DCE3E3;
+    --color-gray-800: #EDF1F1;
+    --color-gray-900: #F7F9F9;
+
+    --color-white: #1E2424;
+    --color-bg: #151A1A;
+
+    --border-color: var(--color-gray-200);
+    --border-color-strong: var(--color-gray-300);
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.15);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-focus: 0 0 0 3px rgba(176, 209, 209, 0.3);
+}
+
+/* Dark mode Element Plus overrides */
+.dark {
+    /* Primary */
+    --el-color-primary: var(--color-primary-600);
+    --el-color-primary-light-3: var(--color-primary-400);
+    --el-color-primary-light-5: var(--color-primary-300);
+    --el-color-primary-light-7: var(--color-primary-200);
+    --el-color-primary-light-8: var(--color-primary-100);
+    --el-color-primary-light-9: var(--color-primary-50);
+    --el-color-primary-dark-2: var(--color-primary-700);
+
+    /* Semantic */
+    --el-color-success: var(--color-success-600);
+    --el-color-success-light-9: var(--color-success-50);
+    --el-color-danger: var(--color-danger-600);
+    --el-color-danger-light-9: var(--color-danger-50);
+    --el-color-warning: var(--color-warning-600);
+    --el-color-warning-light-9: var(--color-warning-50);
+    --el-color-info: var(--color-info-600);
+    --el-color-info-light-9: var(--color-info-50);
+
+    /* Typography */
+    --el-text-color-primary: var(--color-gray-900);
+    --el-text-color-regular: var(--color-gray-700);
+    --el-text-color-secondary: var(--color-gray-500);
+    --el-text-color-placeholder: var(--color-gray-400);
+
+    /* Borders */
+    --el-border-color: var(--color-gray-200);
+    --el-border-color-light: var(--color-gray-100);
+    --el-border-color-lighter: var(--color-gray-100);
+    --el-border-color-extra-light: var(--color-gray-50);
+
+    /* Background */
+    --el-bg-color: var(--color-white);
+    --el-bg-color-page: var(--color-gray-50);
+    --el-bg-color-overlay: #252B2B;
+    --el-fill-color: var(--color-gray-100);
+    --el-fill-color-light: var(--color-gray-100);
+    --el-fill-color-lighter: var(--color-gray-50);
+    --el-fill-color-blank: var(--color-white);
+
+    /* Menu */
+    --el-menu-bg-color: #0F2728;
+    --el-menu-hover-bg-color: rgba(255, 255, 255, 0.08);
+    --el-menu-text-color: #9CACAC;
+    --el-menu-active-color: #FFFFFF;
+
+    /* Table */
+    --el-table-bg-color: var(--color-white);
+    --el-table-tr-bg-color: var(--color-white);
+    --el-table-header-bg-color: var(--color-gray-50);
+    --el-table-row-hover-bg-color: var(--color-gray-100);
+    --el-table-border-color: var(--color-gray-200);
+    --el-table-header-text-color: var(--color-gray-500);
+
+    /* Input */
+    --el-input-bg-color: var(--color-white);
+    --el-input-border-color: var(--color-gray-300);
+    --el-input-hover-border-color: var(--color-primary-600);
+    --el-input-focus-border-color: var(--color-primary-600);
+    --el-input-placeholder-color: var(--color-gray-400);
+    --el-input-text-color: var(--color-gray-800);
+
+    /* Date picker */
+    --el-datepicker-inrange-bg-color: var(--color-primary-50);
+    --el-datepicker-inrange-hover-bg-color: var(--color-primary-50);
+
+    /* Segmented */
+    --el-segmented-bg-color: var(--color-gray-100);
+    --el-segmented-item-selected-bg-color: var(--color-white);
+    --el-segmented-item-selected-color: var(--color-gray-900);
+
+    /* Dialog / Drawer */
+    --el-dialog-bg-color: #252B2B;
+    --el-dialog-title-font-size: 16px;
+    --el-color-info-dark-2: var(--color-gray-400);
+
+    /* Popover / Dropdown */
+    --el-popup-bg-color: #252B2B;
+    --el-popper-bg-color: #252B2B;
+    --el-dropdown-menu-item-hover-bg-color: var(--color-gray-100);
+    --el-dropdown-menu-item-hover-color: var(--color-gray-800);
+
+    /* Tag */
+    --el-tag-bg-color: var(--color-gray-100);
+    --el-tag-border-color: var(--color-gray-200);
+    --el-tag-text-color: var(--color-gray-700);
+
+    /* Tabs */
+    --el-tabs-header-bg-color: transparent;
+    --el-tab-bar-color: var(--color-primary-600);
+
+    /* Pagination */
+    --el-pagination-button-bg-color: var(--color-gray-100);
+    --el-pagination-hover-color: var(--color-primary-600);
+
+    /* Skeleton */
+    --el-skeleton-color: var(--color-gray-100);
+    --el-skeleton-to-color: var(--color-gray-200);
+
+    /* Notification */
+    --el-notification-bg-color: #252B2B;
+
+    /* Scrollbar */
+    --el-scrollbar-bg-color: var(--color-gray-200);
+}
+
+/* Dark scrollbar */
+.dark *::-webkit-scrollbar-thumb {
+    background: #3F4949;
+}
+.dark *::-webkit-scrollbar-thumb:hover {
+    background: #566363;
+}
+
+/* Dark mode segmented override */
+.dark .el-segmented {
+    --el-segmented-item-selected-color: var(--color-gray-900);
+    --el-segmented-bg-color: var(--color-gray-100);
+    --el-segmented-item-selected-bg-color: var(--color-white);
+    --el-border-radius-base: 10px;
+    --el-segmented-item-selected-border-color: var(--color-gray-200);
+}
+
+/* Dark mode segmented (dashboard) */
+.dark .dashboard-periodicity .el-segmented {
+    --el-segmented-item-selected-color: var(--color-gray-900);
+    --el-segmented-bg-color: var(--color-gray-100);
+    --el-segmented-item-selected-bg-color: var(--color-white);
+    --el-segmented-item-selected-border-color: var(--color-gray-200);
+}
+
+/* Dark mode date-picker */
+.dark .el-date-picker {
+    --el-datepicker-active-color: var(--color-primary-600);
+    --el-datepicker-hover-text-color: var(--color-primary-600);
+    --el-datepicker-inrange-bg-color: var(--color-primary-50);
+    --el-datepicker-inrange-hover-bg-color: var(--color-primary-50);
+}
+
+.dark .el-month-table td.today .el-date-table-cell__text {
+    color: var(--color-primary-600);
+}
+
+/* Dark mode dropdown menu items */
+.dark .el-dropdown-menu__item:not(.is-disabled):focus,
+.dark .el-dropdown-menu__item:not(.is-disabled):hover {
+    background-color: var(--color-primary-50);
+    color: var(--color-primary-700);
+}
+
+/* Dark mode table inactive row */
+.dark .el-table .inactive-row {
+    background-color: #2A1A1A !important;
+}
+
+/* Dark mode input overrides */
+.dark [type='text'],
+.dark input:where(:not([type])),
+.dark [type='email'],
+.dark [type='url'],
+.dark [type='password'],
+.dark [type='number'],
+.dark [type='date'],
+.dark [type='datetime-local'],
+.dark [type='month'],
+.dark [type='search'],
+.dark [type='tel'],
+.dark [type='time'],
+.dark [type='week'],
+.dark [multiple],
+.dark textarea,
+.dark select {
+    border-color: var(--color-gray-300) !important;
+}
+
+.dark [type='text']:focus {
+    --tw-ring-color: var(--color-primary-600);
+}
+
+/* Dark mode skeleton */
+.dark .el-skeleton {
+    --el-skeleton-color: var(--color-gray-100);
+    --el-skeleton-to-color: var(--color-gray-200);
+}
+
 /* Estilos de componentes de element plus */
 /* segmented ------------------ */
 .el-segmented {

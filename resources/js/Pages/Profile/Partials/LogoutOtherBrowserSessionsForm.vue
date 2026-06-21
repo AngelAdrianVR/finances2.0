@@ -3,11 +3,7 @@ import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import ActionMessage from '@/Components/ActionMessage.vue';
 import ActionSection from '@/Components/ActionSection.vue';
-import DialogModal from '@/Components/DialogModal.vue';
 import InputError from '@/Components/InputError.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
 
 defineProps({
     sessions: Array,
@@ -53,7 +49,7 @@ const closeModal = () => {
         </template>
 
         <template #content>
-            <div class="max-w-xl text-sm text-gray-600">
+            <div class="max-w-xl text-sm text-gray-600 dark:text-gray-400">
                 Si es necesario, puede cerrar la sesión de todas las demás sesiones del navegador en todos sus dispositivos. A continuación se enumeran algunas de sus sesiones recientes; sin embargo, es posible que esta lista no sea exhaustiva. Si cree que su cuenta ha sido vulnerada, también debe actualizar su contraseña.
             </div>
 
@@ -71,12 +67,12 @@ const closeModal = () => {
                     </div>
 
                     <div class="ms-3">
-                        <div class="text-sm text-gray-600">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
                             {{ session.agent.platform ? session.agent.platform : 'Unknown' }} - {{ session.agent.browser ? session.agent.browser : 'Unknown' }}
                         </div>
 
                         <div>
-                            <div class="text-xs text-gray-500">
+                            <div class="text-xs text-gray-500 dark:text-gray-400">
                                 {{ session.ip_address }},
 
                                 <span v-if="session.is_current_device" class="text-green-500 font-semibold">Este dispositivo</span>
@@ -88,9 +84,7 @@ const closeModal = () => {
             </div>
 
             <div class="flex items-center mt-5">
-                <PrimaryButton @click="confirmLogout">
-                    Cerrar sesión en otras sesiones del navegador
-                </PrimaryButton>
+                <el-button type="primary" @click="confirmLogout">Cerrar sesion en otras sesiones del navegador</el-button>
 
                 <ActionMessage :on="form.recentlySuccessful" class="ms-3">
                     Hecho.
@@ -98,45 +92,17 @@ const closeModal = () => {
             </div>
 
             <!-- Log Out Other Devices Confirmation Modal -->
-            <DialogModal :show="confirmingLogout" @close="closeModal">
-                <template #title>
-                    Cerrar sesión en otras sesiones del navegador
-                </template>
-
-                <template #content>
-                    Ingrese su contraseña para confirmar que desea cerrar sesión en otras sesiones de su navegador en todos sus dispositivos.
-
-                    <div class="mt-4">
-                        <TextInput
-                            ref="passwordInput"
-                            v-model="form.password"
-                            type="password"
-                            class="mt-1 block w-3/4"
-                            placeholder="Password"
-                            autocomplete="current-password"
-                            @keyup.enter="logoutOtherBrowserSessions"
-                            :errorMessage="form.errors.password"
-                        />
-
-                        <!-- <InputError :message="form.errors.password" class="mt-2" /> -->
-                    </div>
-                </template>
-
+            <el-dialog v-model="confirmingLogout" title="Cerrar sesion en otros dispositivos" width="480px">
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Ingrese su contrasena para confirmar que desea cerrar sesion en otras sesiones de su navegador en todos sus dispositivos.</p>
+                <el-form-item label="Contrasena">
+                    <el-input ref="passwordInput" v-model="form.password" type="password" placeholder="Contrasena" autocomplete="current-password" @keyup.enter="logoutOtherBrowserSessions" />
+                    <InputError :message="form.errors.password" />
+                </el-form-item>
                 <template #footer>
-                    <SecondaryButton @click="closeModal">
-                        Cancelar
-                    </SecondaryButton>
-
-                    <PrimaryButton
-                        class="ms-3"
-                        :disabled="form.processing"
-                        @click="logoutOtherBrowserSessions"
-                    >
-                    <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
-                        Cerrar sesión en otras sesiones del navegador
-                    </PrimaryButton>
+                    <el-button @click="closeModal">Cancelar</el-button>
+                    <el-button type="primary" :loading="form.processing" @click="logoutOtherBrowserSessions">Cerrar sesion en otras sesiones</el-button>
                 </template>
-            </DialogModal>
+            </el-dialog>
         </template>
     </ActionSection>
 </template>

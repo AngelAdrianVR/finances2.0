@@ -6,10 +6,10 @@
                 <!-- Default Trigger Button -->
                 <button :id="`accordion-title-${id}`"
                     class="w-full text-start px-2 my-2 flex items-center justify-between text-xs rounded-md py-2 ml-2"
-                    :class="active ? 'bg-[#272829] text-white' : 'hover:text-white hover:bg-[#272829] text-[#999999]'">
+                    :class="active ? 'bg-white/10 text-white' : 'hover:text-white hover:bg-white/5 text-[#9CACAC]'">
                     <span v-html="icon"></span>
                     <p class="truncate text-sm"> {{ title }}</p>
-                    <i class="fa-solid fa-angle-down transform origin-center transition duration-200 ease-out text-xs text-[#999999]"
+                    <i class="fa-solid fa-angle-down transform origin-center transition duration-200 ease-out text-xs text-[#9CACAC]"
                         :class="{ '!rotate-180': accordionOpen }">
                     </i>
                 </button>

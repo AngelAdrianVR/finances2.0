@@ -19,12 +19,20 @@ class Payment extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'amount'    => 'float',
+        'remaining' => 'float',
+        'interest'  => 'float',
+        'capital'   => 'float',
+        'date'      => 'datetime',
     ];
 
-    //relationships
-    public function loan() :BelongsTo
+    // ========================
+    // Relationships
+    // ========================
+
+    public function loan(): BelongsTo
     {
         return $this->belongsTo(Loan::class);
     }
 }
+

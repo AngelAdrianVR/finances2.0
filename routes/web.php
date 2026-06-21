@@ -42,6 +42,7 @@ Route::middleware([
 //Dashboard routes
 Route::post('/dashboard-fetch-data-for-period', [DashboardController::class, 'fetchDataForPeriod'])->middleware('auth')->name('dashboard.fetch-data-for-period');
 Route::post('/dashboard-fetch-data-comparison', [DashboardController::class, 'fetchDataComparison'])->middleware('auth')->name('dashboard.fetch-data-comparison');
+Route::post('/dashboard-fetch-yearly-averages', [DashboardController::class, 'fetchYearlyAverages'])->middleware('auth')->name('dashboard.fetch-yearly-averages');
 
 
 // Income routes -------------------------------------------------------------------------------------
@@ -62,6 +63,8 @@ Route::get('recurring-incomes/toggle-status/{recurring_income}', [RecurringIncom
 
 // Outcome routes -------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
+// Custom GET routes MUST be before resource to avoid being captured as {outcome}
+Route::get('outcomes/get-linked-users', [OutcomeController::class, 'getLinkedUsers'])->middleware('auth')->name('outcomes.get-linked-users');
 Route::resource('outcomes', OutcomeController::class)->middleware('auth');
 Route::post('outcomes/massive-delete', [OutcomeController::class, 'massiveDelete'])->name('outcomes.massive-delete');
 Route::post('outcomes/massive-update', [OutcomeController::class, 'massiveUpdate'])->name('outcomes.massive-update');
@@ -95,14 +98,16 @@ Route::resource('payments', PaymentController::class)->middleware('auth');
 
 // calendar routes -------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
+Route::get('calendars/fetch-month-reminders', [CalendarController::class, 'fetchMonthReminders'])->middleware('auth')->name('calendars.fetch-month-reminders');
 Route::resource('calendars', CalendarController::class)->middleware('auth');
-Route::post('calendars-fetch-month-reminders', [CalendarController::class, 'fetchMonthReminders'])->middleware('auth')->name('calendars.fetch-month-reminders');
-// Route::post('calendars-destroy/{calendar}', [CalendarController::class, 'destroy'])->middleware('auth')->name('calendars.destroy');
 
 
 // setting routes -------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
 Route::resource('settings', SettingController::class)->middleware('auth');
+Route::post('settings/link-by-code', [SettingController::class, 'linkByCode'])->middleware('auth')->name('settings.link-by-code');
+Route::post('settings/accept-link/{userLink}', [SettingController::class, 'acceptLink'])->middleware('auth')->name('settings.accept-link');
+Route::delete('settings/remove-link/{userLink}', [SettingController::class, 'removeLink'])->middleware('auth')->name('settings.remove-link');
 
 
 // bankcards routes -------------------------------------------------------------------------------------

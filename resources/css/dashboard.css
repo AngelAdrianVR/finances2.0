@@ -1,0 +1,268 @@
+/* ============================================
+   Dashboard — Stripe/Notion style cards & widgets
+   ============================================ */
+
+/* --- Dashboard card base --- */
+.dashboard-card {
+    background: var(--color-white, #FFFFFF);
+    border: 1px solid var(--color-gray-200, #DCE3E3);
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-6, 24px);
+    box-shadow: 0 1px 3px rgba(26, 31, 31, 0.06), 0 1px 2px rgba(26, 31, 31, 0.04);
+    transition: box-shadow 200ms ease, transform 200ms ease;
+}
+
+.dashboard-card:hover {
+    box-shadow: 0 4px 8px rgba(26, 31, 31, 0.06), 0 2px 4px rgba(26, 31, 31, 0.04);
+}
+
+/* --- Card title --- */
+.dashboard-card-title {
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: 600;
+    color: #3F4949;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #DCE3E3;
+}
+
+/* --- Category card (clickable income/expense category) --- */
+.category-card {
+    border: 1px solid #DCE3E3;
+    border-radius: var(--radius-md, 8px);
+    padding: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 200ms ease;
+    background: #FFFFFF;
+}
+
+.category-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 6px rgba(26, 31, 31, 0.06);
+    border-color: #C2CDCD;
+}
+
+/* --- Category icon circle --- */
+.category-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* --- Category label --- */
+.category-label {
+    font-size: 12px;
+    color: #566363;
+    font-weight: 500;
+}
+
+/* --- Category amount --- */
+.category-amount {
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: #2B3232;
+    font-feature-settings: 'tnum' 1;
+}
+
+/* --- Monetary amounts (in tables, widgets) --- */
+.monetary-amount {
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+    font-feature-settings: 'tnum' 1;
+    font-weight: 600;
+}
+
+.amount-income {
+    color: #2F9E5B; /* success-600 */
+}
+
+.amount-expense {
+    color: #D64545; /* danger-600 */
+}
+
+/* --- Percentage badge --- */
+.percentage-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm, 6px);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.percentage-badge.positive {
+    background: #EAF7EF;
+    color: #247A47;
+}
+
+.percentage-badge.negative {
+    background: #FCEAEA;
+    color: #B23636;
+}
+
+/* --- Total Balance card (green header) --- */
+.total-balance-card {
+    border-radius: var(--radius-lg, 12px);
+    background: linear-gradient(135deg, #296A6B 0%, #173B3C 100%);
+    color: #FFFFFF;
+    overflow: hidden;
+}
+
+.total-balance-card .metric-box {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-md, 8px);
+    padding: 14px 18px;
+    backdrop-filter: blur(4px);
+}
+
+.total-balance-card .metric-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 6px;
+}
+
+.total-balance-card .metric-value {
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    font-feature-settings: 'tnum' 1;
+    color: #FFFFFF;
+}
+
+/* --- Empty state --- */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+}
+
+.empty-state-icon {
+    margin-bottom: 16px;
+    color: #B0D1D1;
+}
+
+.empty-state-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #566363;
+    margin-bottom: 6px;
+}
+
+.empty-state-text {
+    font-size: 13px;
+    color: #9AA8A8;
+    max-width: 280px;
+}
+
+/* --- Detail table in dialog --- */
+.detail-table {
+    width: 100%;
+    font-size: 14px;
+    border-collapse: collapse;
+}
+
+.detail-table thead th {
+    font-size: 12px;
+    font-weight: 600;
+    color: #728282;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #DCE3E3;
+    background: #F7F9F9;
+}
+
+.detail-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #EDF1F1;
+    color: #566363;
+}
+
+.detail-table tbody tr:hover {
+    background: #F7F9F9;
+}
+
+/* --- Segmented control override --- */
+.dashboard-periodicity .el-segmented {
+    --el-segmented-item-selected-color: #1A1F1F;
+    --el-segmented-bg-color: #EDF1F1;
+    --el-segmented-item-selected-bg-color: #FFFFFF;
+    --el-border-radius-base: 10px;
+    --el-segmented-item-selected-border-color: #DCE3E3;
+}
+
+/* ============================================
+   DARK MODE — Dashboard overrides
+   ============================================ */
+.dark .dashboard-card {
+    background: var(--color-white, #1E2424);
+    border-color: var(--color-gray-200, #3F4949);
+}
+
+.dark .dashboard-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.dark .dashboard-card-title {
+    color: var(--color-gray-700, #DCE3E3);
+    border-bottom-color: var(--color-gray-200, #3F4949);
+}
+
+.dark .category-card {
+    background: var(--color-white, #1E2424);
+    border-color: var(--color-gray-200, #3F4949);
+}
+
+.dark .category-card:hover {
+    border-color: var(--color-gray-300, #566363);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.dark .category-label {
+    color: var(--color-gray-600, #C2CDCD);
+}
+
+.dark .category-amount {
+    color: var(--color-gray-800, #EDF1F1);
+}
+
+.dark .empty-state-icon {
+    color: var(--color-primary-300, #357F80);
+}
+
+.dark .empty-state-title {
+    color: var(--color-gray-600, #C2CDCD);
+}
+
+.dark .empty-state-text {
+    color: var(--color-gray-400, #728282);
+}
+
+.dark .detail-table thead th {
+    color: var(--color-gray-500, #9AA8A8);
+    border-bottom-color: var(--color-gray-200, #3F4949);
+    background: var(--color-gray-50, #1A1F1F);
+}
+
+.dark .detail-table tbody td {
+    border-bottom-color: var(--color-gray-100, #2B3232);
+    color: var(--color-gray-600, #C2CDCD);
+}
+
+.dark .detail-table tbody tr:hover {
+    background: var(--color-gray-50, #1A1F1F);
+}

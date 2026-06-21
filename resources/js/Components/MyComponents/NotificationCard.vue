@@ -1,27 +1,27 @@
 <template>
-    <div class="group border border-grayD9 rounded-[10px] px-3 py-2 shadow-md flex space-x-1">
+    <div class="group border border-grayD9 dark:border-gray-600 rounded-[10px] px-3 py-2 shadow-md dark:shadow-gray-900/50 flex space-x-1">
         <div class="w-[10%]">
             <svg v-if="notification.data.type == 'income'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                stroke-width="1.5" stroke="currentColor" class="size-4 text-gray99">
+                stroke-width="1.5" stroke="currentColor" class="size-4 text-gray99 dark:text-gray-400">
                 <path stroke-linecap="round" stroke-linejoin="round"
                     d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
             </svg>
             <svg v-else-if="notification.data.type == 'outcome'" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 dark:text-gray-400">
                 <path stroke-linecap="round" stroke-linejoin="round"
                     d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
             </svg>
             <svg v-else-if="notification.data.type == 'schedule'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="size-6">
+                stroke="currentColor" class="size-6 dark:text-gray-400">
                 <path stroke-linecap="round" stroke-linejoin="round"
                     d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
         </div>
         <Link :href="notification.data.url" class="w-[80%]">
-        <p class="text-xs">
+        <p class="text-xs dark:text-gray-300">
             {{ notification.data.description }}
         </p>
-        <span class="text-gray99 text-xs">{{ notification.created_at_for_humans }}</span>
+        <span class="text-gray99 dark:text-gray-400 text-xs">{{ notification.created_at_for_humans }}</span>
         </Link>
         <div class="w-[10%] flex flex-col items-end justify-between">
             <div v-if="notification.read_at === null" class="size-[6px] rounded-full bg-primary"></div>

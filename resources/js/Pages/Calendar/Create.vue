@@ -1,295 +1,104 @@
-<template>
-  <AppLayout title="Crear recordatorio">
-    <main class="px-3 md:px-16 py-8">
-      <Back />
-  
-      <form @submit.prevent="store" class="rounded-xl border border-grayD9 lg:p-5 p-3 lg:w-2/3 xl:w-1/2 mx-auto mt-2 lg:grid lg:grid-cols-2 gap-3 shadow-lg">
-        <div class="flex items-center justify-between col-span-full">
-          <el-collapse accordion>
-            <el-collapse-item v-if="remaindType === 'Ingreso recurrente'" title="Ingreso recurrente" name="1">
-              <template #title>
-                <h1 class="text-primary font-bold text-base">{{ remaindType }}</h1>
-              </template>
-              <div>
-                Los ingresos recurrentes se registran automáticamente en el sistema.
-                Estos corresponden a entradas periódicas, como sueldos, rentas u otros pagos regulares.
-              </div>
-            </el-collapse-item>
-            <el-collapse-item v-else title="Gasto fijo" name="2">
-              <template #title>
-                <h1 class="text-primary font-bold text-base">{{ remaindType }}</h1>
-              </template>
-              <div>
-                Los gastos fijos se registran automáticamente en el sistema. 
-                Estos corresponden a salidas periódicas, pago de servicios, alimentos y otros pagos regulares.
-              </div>
-            </el-collapse-item>
-          </el-collapse>
-          <div class="custom-style">
-            <el-segmented @change="changeType" v-model="remaindType" :options="options" block />
-          </div>
-        </div>
+<script setup>
+import { ref, computed } from 'vue';
+import { useForm } from '@inertiajs/vue3';
+import AppLayout from '@/Layouts/AppLayout.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import InputError from '@/Components/InputError.vue';
+import Back from '@/Components/MyComponents/Back.vue';
 
-        <!-- form body -->
-        <div class="col-span-full mb-3 lg:mb-0">
-            <InputLabel v-if="remaindType === 'Ingreso recurrente'" value="Nombre del ingreso*" class="ml-3 mb-1" />
-            <InputLabel v-else value="Nombre del gasto*" class="ml-3 mb-1" />
-            <el-input
-                v-model="form.title"
-                maxlength="80"
-                :placeholder="remaindType === 'Ingreso recurrente' ? 'Ej. Pago de nómina' : 'Ej. Compra de despensa'"
-                show-word-limit
-                type="text"
-            />
-            <InputError :message="form.errors.title" />
-        </div>
+const props = defineProps({ type: String });
 
-        <div class="mb-3 lg:mb-0">
-            <InputLabel value="Fecha de inicio*" class="ml-3 mb-1" />
-            <el-date-picker
-                class="!w-full"
-                v-model="form.date"
-                type="date"
-                placeholder="Selecciona la fecha de inicio"
-            />
-            <InputError :message="form.errors.date" />
-        </div>
+const form = useForm({ type: props.type, title: null, date: null, amount: null, category: null, description: null, periodicity: null, payment_method: null });
 
-        <div class="mb-3 lg:mb-0">
-            <InputLabel value="Monto*" class="ml-3 mb-1" />
-            <el-input
-              v-model="form.amount"
-              placeholder="Ej. $2,000"
-              :formatter="(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
-              :parser="(value) => value.replace(/\$\s?|(,*)/g, '')"
-            >
-              <template #prepend>
-                $
-              </template>
-            </el-input>
-            <InputError :message="form.errors.amount" />
-        </div>
+const remaindType = ref(props.type);
+const options = ['Ingreso recurrente', 'Gasto fijo'];
+const paymentMethods = ['Transferencia', 'Deposito', 'Cheque', 'Efectivo'];
+const periodicities = ['Todos los dias', 'Semanal', 'Mensual', 'Anual'];
 
-        <div class="mb-3 lg:mb-0">
-            <InputLabel value="Categoría" class="ml-3 mb-1" />
-            <el-select class="!w-full" filterable v-model="form.category"
-                placeholder="Seleccione" no-data-text="No hay opciones registradas"
-                no-match-text="No se encontraron coincidencias">
-                <el-option class="md:!w-[500px]" v-for="category in remaindType === 'Ingreso recurrente' ? incomeCategories : outcomeCategories" :key="category" :label="category.label" :value="category.label">
-                    <p class="flex items-center justify-between">
-                        <span>{{ category.label }}</span>
-                        <span class="text-xs text-gray-400">{{ category.description }}</span>
-                    </p>
-                </el-option>
-            </el-select>
-            <InputError :message="form.errors.category" />
-        </div>
+const incomeCategories = [
+    { label: 'Nomina', description: '(Salarios o sueldos fijos)' },
+    { label: 'Renta de propiedad', description: '(Ingresos por alquiler de propiedades)' },
+    { label: 'Regalias', description: '(Pagos por derechos de autor, musica, libros, etc.)' },
+    { label: 'Dividendos', description: '(Ganancias por acciones o inversiones)' },
+    { label: 'Pension', description: '(Ingresos por jubilacion o retiro)' },
+    { label: 'Contratos de servicios', description: '(Mantenimiento o soporte tecnico)' },
+    { label: 'Otro', description: '' },
+];
 
-        <div class="mb-3 lg:mb-0">
-            <InputLabel value="Método de pago" class="ml-3 mb-1" />
-            <el-select class="!w-full" filterable v-model="form.payment_method"
-                placeholder="Seleccione" no-data-text="No hay opciones registradas"
-                no-match-text="No se encontraron coincidencias">
-                <el-option v-for="item in paymentMethods" :key="item" :label="item" :value="item">
-                    <p class="flex items-center justify-between">
-                        <span>{{ item }}</span>
-                    </p>
-                </el-option>
-            </el-select>
-            <InputError :message="form.errors.payment_method" />
-        </div>
+const outcomeCategories = [
+    { label: 'Servicios', description: '(Agua, luz, internet, etc.)' },
+    { label: 'Alimentos y bebidas', description: '(Compras de despensa y comida)' },
+    { label: 'Transporte', description: '(Gasolina, transporte publico, etc.)' },
+    { label: 'Salud y bienestar', description: '(Medicinas, consultas, etc.)' },
+    { label: 'Educacion', description: '(Cursos, colegiaturas, etc.)' },
+    { label: 'Entretenimiento', description: '(Streaming, cine, etc.)' },
+    { label: 'Otro', description: '' },
+];
 
-        <div class="mb-3 lg:mb-0">
-            <InputLabel value="Frecuencia*" class="ml-3 mb-1" />
-            <el-select class="!w-full" filterable v-model="form.periodicity"
-                placeholder="Seleccione" no-data-text="No hay opciones registradas"
-                no-match-text="No se encontraron coincidencias">
-                <el-option v-for="item in periodicities" :key="item" :label="item" :value="item">
-                    <p class="flex items-center justify-between">
-                        <span>{{ item }}</span>
-                    </p>
-                </el-option>
-            </el-select>
-            <InputError :message="form.errors.periodicity" />
-        </div>
+const currentCategories = computed(() => remaindType.value === 'Ingreso recurrente' ? incomeCategories : outcomeCategories);
 
-        <div class="col-span-full">
-            <InputLabel value="Descripción" class="ml-3 mb-1" />
-            <el-input
-                v-model="form.description"
-                maxlength="255"
-                placeholder="Agrega una breve descripción (opcional)"
-                show-word-limit
-                type="textarea"
-            />
-            <InputError :message="form.errors.description" />
-        </div>
+function changeType() { form.type = remaindType.value; form.category = null; }
 
-        <div class="col-span-full space-x-4 text-right mt-7">
-            <PrimaryButton :disabled="form.processing">
-                <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
-                Crear
-            </PrimaryButton>
-        </div>
-      </form>      
-    </main>
-  </AppLayout>
-</template>
-
-<script>
-import AppLayout from "@/Layouts/AppLayout.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-import InputError from "@/Components/InputError.vue";
-import Checkbox from "@/Components/Checkbox.vue";
-import Back from "@/Components/MyComponents/Back.vue";
-import InputLabel from "@/Components/InputLabel.vue";
-import { useForm } from "@inertiajs/vue3";
-
-export default {
-  data() {
-    const form = useForm({
-      type: this.type,
-      title: null,
-      date: null,
-      amount: null,
-      category: null,
-      description: null,
-      periodicity: null,
-      payment_method: null,
-      
-    });
-
-    return {
-      form,
-      remaindType: this.type,
-      options: [
-        'Ingreso recurrente',
-        'Gasto fijo'
-      ],
-      paymentMethods: [
-        'Transferencia',
-        'Depósito',
-        'Cheque',
-        'Efectivo'
-      ],
-      periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
-      incomeCategories: [
-        {
-          label: 'Nómina',
-          description: '(Salarios o sueldos fijos)'
-        },
-        {
-          label: 'Renta de propiedad',
-          description: '(Ingresos por alquiler de propiedades)'
-        },
-        {
-          label: 'Regalías',
-          description: '(Pagos por derechos de autor, música, libros, etc.)'
-        },
-        {
-          label: 'Dividendos',
-          description: '(Ganancias por acciones o inversiones)'
-        },
-        {
-          label: 'Pensión',
-          description: '(Ingresos por jubilación o retiro)'
-        },
-        {
-          label: 'Contratos de servicios',
-          description: '(Mantenimiento o soporte técnico)'
-        },
-        {
-          label: 'Arrendamientos de equipos',
-          description: '(Maquinaria, vehículos, etc.)'
-        },
-        {
-          label: 'Ingresos por franquicias',
-          description: '(Pagos regulares de franquiciados)'
-        },
-        {
-          label: 'Rendimientos financieros',
-          description: '(Intereses por inversiones)'
-        },
-      ],
-      outcomeCategories: [
-        {
-          label: 'Servicios',
-          description: '(Agua, luz, gas, internet, etc.)'
-        },
-        {
-          label: 'Transporte',
-          description: '(Gasolina, transporte público, mantenimiento de vehículos)'
-        },
-        {
-          label: 'Compras',
-          description: '(ropa, calzado, artículos de limpieza, etc.)'
-        },
-        {
-          label: 'Salud y bienestar',
-          description: '(Consultas médicas, medicamentos, seguros)'
-        },
-        {
-          label: 'Educación y desarrollo personal',
-          description: '(Cursos, talleres, libros, etc.)'
-        },
-        {
-          label: 'Entretenimiento',
-          description: '(Cine, teatro, conciertos, juegos, etc.)'
-        },
-        {
-          label: 'Alimentos y bebidas',
-          description: '(Supermercado, restaurantes, etc.)'
-        },
-        {
-          label: 'Otro',
-          description: '(Gastos no clasificados)'
-        },  
-      ],
-    };
-  },
-  components: {
-    PrimaryButton,
-    InputError,
-    InputLabel,
-    AppLayout,
-    Checkbox,
-    Back
-  },
-  props: {
-    type: String
-  },
-  methods: {
-    store() {
-      this.form.post(route("calendars.store"), {
-        onSuccess: () => {
-          this.$notify({
-            title: "Correcto",
-            message: "",
-            type: "success",
-          });
-        },
-      });
-    },
-    disabledDate(time) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return time.getTime() < today.getTime();
-    },
-    changeType(newVal) {
-      this.remaindType = newVal;
-      this.form.type = newVal;
-    }
-  },
-};
+function store() {
+    form.post(route('calendars.store'), { onSuccess: () => ElMessage.success('Recordatorio creado.') });
+}
 </script>
 
-<style>
-.custom-style .el-segmented {
-  --el-segmented-item-selected-color: #000;
-  --el-segmented-bg-color: #F2F2F2;
-  --el-segmented-item-selected-bg-color: #fff;
-  --el-border-radius-base: 10px;
-  --el-segmented-item-selected-border-color: #D9D9D9;
-}
-</style>
+<template>
+    <AppLayout title="Crear recordatorio">
+        <main class="py-6 px-4 md:px-8 max-w-2xl mx-auto">
+            <Back />
+            <div class="form-card mt-3">
+                <h1 class="form-title">Crear recordatorio</h1>
+                <div class="flex items-center justify-between mb-6">
+                    <el-collapse accordion class="flex-1 mr-4">
+                        <el-collapse-item :title="remaindType" :name="1">
+                            <template #title><span class="text-[#296A6B] font-bold text-base">{{ remaindType }}</span></template>
+                            <p v-if="remaindType === 'Ingreso recurrente'" class="text-sm text-gray-600 dark:text-gray-400">Los ingresos recurrentes se registran automaticamente en el sistema. Estos corresponden a entradas periodicas, como sueldos, rentas u otros pagos regulares.</p>
+                            <p v-else class="text-sm text-gray-600 dark:text-gray-400">Los gastos fijos se registran automaticamente en el sistema. Estos corresponden a salidas periodicas, pago de servicios, alimentos y otros pagos regulares.</p>
+                        </el-collapse-item>
+                    </el-collapse>
+                    <el-segmented v-model="remaindType" :options="options" block @change="changeType" />
+                </div>
 
+                <el-form :model="form" label-position="top" @submit.prevent="store">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <el-form-item :label="remaindType === 'Ingreso recurrente' ? 'Nombre del ingreso' : 'Nombre del gasto'" required class="md:col-span-2">
+                            <el-input v-model="form.title" maxlength="80" :placeholder="remaindType === 'Ingreso recurrente' ? 'Ej. Pago de nomina' : 'Ej. Compra de despensa'" show-word-limit />
+                            <InputError :message="form.errors.title" />
+                        </el-form-item>
+                        <el-form-item label="Fecha de inicio" required>
+                            <el-date-picker v-model="form.date" type="date" placeholder="Selecciona la fecha de inicio" class="!w-full" />
+                            <InputError :message="form.errors.date" />
+                        </el-form-item>
+                        <el-form-item label="Monto" required>
+                            <el-input v-model="form.amount" placeholder="Ej. 2,000" :formatter="(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')" :parser="(v) => v.replace(/\$\s?|(,*)/g, '')"><template #prepend>$</template></el-input>
+                            <InputError :message="form.errors.amount" />
+                        </el-form-item>
+                        <el-form-item label="Categoria">
+                            <el-select v-model="form.category" filterable placeholder="Seleccione" class="!w-full">
+                                <el-option v-for="cat in currentCategories" :key="cat.label" :label="cat.label" :value="cat.label"><span>{{ cat.label }}</span><span class="text-gray-400 text-xs ml-2">{{ cat.description }}</span></el-option>
+                            </el-select>
+                            <InputError :message="form.errors.category" />
+                        </el-form-item>
+                        <el-form-item label="Metodo de pago">
+                            <el-select v-model="form.payment_method" filterable placeholder="Seleccione" class="!w-full"><el-option v-for="pm in paymentMethods" :key="pm" :label="pm" :value="pm" /></el-select>
+                            <InputError :message="form.errors.payment_method" />
+                        </el-form-item>
+                        <el-form-item label="Frecuencia" required>
+                            <el-select v-model="form.periodicity" filterable placeholder="Seleccione" class="!w-full"><el-option v-for="p in periodicities" :key="p" :label="p" :value="p" /></el-select>
+                            <InputError :message="form.errors.periodicity" />
+                        </el-form-item>
+                    </div>
+                    <el-form-item label="Descripcion">
+                        <el-input v-model="form.description" maxlength="255" placeholder="Agrega una breve descripcion (opcional)" show-word-limit type="textarea" :rows="3" />
+                        <InputError :message="form.errors.description" />
+                    </el-form-item>
+                    <div class="flex justify-end mt-6">
+                        <el-button type="primary" :loading="form.processing" @click="store">Crear</el-button>
+                    </div>
+                </el-form>
+            </div>
+        </main>
+    </AppLayout>
+</template>

@@ -1,0 +1,221 @@
+/* ============================================
+   Income / Outcome module — shared styles
+   ============================================ */
+
+/* Page header */
+.page-header {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2B3232;
+    margin-bottom: 20px;
+}
+
+/* Form card */
+.form-card {
+    background: #FFFFFF;
+    border: 1px solid #DCE3E3;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(26, 31, 31, 0.06), 0 1px 2px rgba(26, 31, 31, 0.04);
+}
+
+.form-card .form-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2B3232;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #EDF1F1;
+}
+
+/* Table section */
+.table-section {
+    margin: 0 auto;
+    max-width: 100%;
+    padding: 0 8px;
+}
+
+.table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Income amount in tables */
+.amount-cell {
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+    font-feature-settings: 'tnum' 1;
+    font-weight: 600;
+    color: #2F9E5B;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Row actions dropdown */
+.row-actions-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9AA8A8;
+    transition: all 150ms ease;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.row-actions-btn:hover {
+    background: #EDF1F1;
+    color: #3F4949;
+}
+
+/* Detail modal content */
+.detail-row {
+    display: flex;
+    padding: 6px 0;
+}
+
+.detail-label {
+    width: 160px;
+    color: #728282;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.detail-value {
+    color: #2B3232;
+    font-size: 14px;
+}
+
+/* Recurring badge */
+.recurring-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    background: #EAF7EF;
+    color: #247A47;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Inactive row */
+.el-table .inactive-row {
+    background-color: #FEF2F2 !important;
+}
+
+/* Search bar */
+.search-bar .el-input__wrapper {
+    border-radius: 9999px;
+    padding-left: 12px;
+}
+
+/* Tabs overrides for income */
+.income-tabs .el-tabs__header {
+    margin-bottom: 0;
+}
+
+.income-tabs .el-tabs__nav-wrap::after {
+    background-color: #EDF1F1;
+}
+
+.income-tabs .el-tabs__item {
+    font-weight: 500;
+    color: #728282;
+}
+
+.income-tabs .el-tabs__item.is-active {
+    color: #296A6B;
+    font-weight: 600;
+}
+
+/* Pagination overrides */
+.income-table-section .el-pagination {
+    justify-content: center;
+    padding: 16px 0;
+}
+
+/* Massive edit modal */
+.massive-edit-hint {
+    color: #566363;
+    font-size: 13px;
+    margin-top: 16px;
+    padding: 10px 14px;
+    background: #F7F9F9;
+    border-radius: 8px;
+}
+
+.massive-edit-hint strong {
+    color: #296A6B;
+    font-weight: 600;
+}
+
+/* ============================================
+   DARK MODE — Income/Outcome overrides
+   ============================================ */
+.dark .page-header {
+    color: var(--color-gray-800, #EDF1F1);
+}
+
+.dark .form-card {
+    background: var(--color-white, #1E2424);
+    border-color: var(--color-gray-200, #3F4949);
+}
+
+.dark .form-card .form-title {
+    color: var(--color-gray-800, #EDF1F1);
+    border-bottom-color: var(--color-gray-100, #2B3232);
+}
+
+.dark .amount-cell {
+    color: var(--color-success-600, #3BB970) !important;
+}
+
+.dark .row-actions-btn {
+    color: var(--color-gray-400, #728282);
+}
+
+.dark .row-actions-btn:hover {
+    background: var(--color-gray-100, #2B3232);
+    color: var(--color-gray-600, #C2CDCD);
+}
+
+.dark .detail-label {
+    color: var(--color-gray-500, #9AA8A8);
+}
+
+.dark .detail-value {
+    color: var(--color-gray-800, #EDF1F1);
+}
+
+.dark .income-tabs .el-tabs__nav-wrap::after {
+    background-color: var(--color-gray-200, #3F4949);
+}
+
+.dark .income-tabs .el-tabs__item {
+    color: var(--color-gray-500, #9AA8A8);
+}
+
+.dark .income-tabs .el-tabs__item.is-active {
+    color: var(--color-primary-600, #B0D1D1);
+}
+
+.dark .massive-edit-hint {
+    color: var(--color-gray-600, #C2CDCD);
+    background: var(--color-gray-50, #1A1F1F);
+}
+
+.dark .massive-edit-hint strong {
+    color: var(--color-primary-600, #B0D1D1);
+}
+
+.dark .el-table .inactive-row {
+    background-color: #2A1A1A !important;
+}

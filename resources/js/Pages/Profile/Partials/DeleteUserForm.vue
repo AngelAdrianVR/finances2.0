@@ -2,11 +2,7 @@
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import ActionSection from '@/Components/ActionSection.vue';
-import DangerButton from '@/Components/DangerButton.vue';
-import DialogModal from '@/Components/DialogModal.vue';
 import InputError from '@/Components/InputError.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
 
 const confirmingUserDeletion = ref(false);
 const passwordInput = ref(null);
@@ -48,56 +44,34 @@ const closeModal = () => {
         </template>
 
         <template #content>
-            <div class="max-w-xl text-sm text-gray-600">
+            <div class="max-w-xl text-sm text-gray-600 dark:text-gray-400">
                 Una vez que se elimine su cuenta, todos sus recursos y datos se eliminarán de forma permanente. Antes de eliminar su cuenta, descargue todos los datos o la información que desee conservar.
             </div>
 
             <div class="mt-5">
-                <DangerButton @click="confirmUserDeletion">
-                    Eliminar cuenta
-                </DangerButton>
+                <el-button type="danger" @click="confirmUserDeletion">Eliminar cuenta</el-button>
             </div>
 
-            <!-- Eliminar cuenta Confirmation Modal -->
-            <DialogModal :show="confirmingUserDeletion" @close="closeModal">
-                <template #title>
-                    Eliminar cuenta
-                </template>
-
-                <template #content>
+            <el-dialog v-model="confirmingUserDeletion" title="Eliminar cuenta" width="480px">
                     ¿Está seguro de que desea eliminar su cuenta? Una vez que se elimine su cuenta, todos sus recursos y datos se eliminarán de forma permanente. Ingrese su contraseña para confirmar que desea eliminar su cuenta de forma permanente.
 
-                    <div class="mt-4">
-                        <TextInput
-                            ref="passwordInput"
-                            v-model="form.password"
-                            type="password"
-                            class="mt-1 block w-3/4"
-                            placeholder="Contraseña"
-                            autocomplete="current-password"
-                            @keyup.enter="deleteUser"
-                            :errorMessage="form.errors.password"
-                        />
-
-                        <!-- <InputError :message="form.errors.password" class="mt-2" /> -->
-                    </div>
-                </template>
+                 <el-form-item label="Contrasena">
+                    <el-input
+                        ref="passwordInput"
+                        v-model="form.password"
+                        type="password"
+                        placeholder="Contrasena"
+                        autocomplete="current-password"
+                        @keyup.enter="deleteUser"
+                    />
+                    <InputError :message="form.errors.password" />
+                </el-form-item>
 
                 <template #footer>
-                    <SecondaryButton @click="closeModal">
-                        Cancelar
-                    </SecondaryButton>
-
-                    <DangerButton
-                        class="ms-3"
-                        :disabled="form.processing"
-                        @click="deleteUser"
-                    >
-                    <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
-                        Eliminar cuenta
-                    </DangerButton>
+                    <el-button @click="closeModal">Cancelar</el-button>
+                    <el-button type="danger" :loading="form.processing" @click="deleteUser">Eliminar cuenta</el-button>
                 </template>
-            </DialogModal>
+            </el-dialog>
         </template>
     </ActionSection>
 </template>

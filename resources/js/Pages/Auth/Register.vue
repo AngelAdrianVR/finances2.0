@@ -133,11 +133,11 @@ const submit = () => {
                             <svg viewBox="0 0 64 64" height="2em" width="2em">
                                 <path d="M 0 16 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 16 L 32 48 L 64 16 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 16" pathLength="575.0541381835938" class="path"></path>
                             </svg>
-                            <div class="ms-2">
+                            <div class="ms-2 dark:text-gray-400">
                                 Estoy de acuerdo con <a target="_blank" :href="route('dashboard')"
-                                class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 Términos de servicio</a> y <a target="_blank" :href="route('dashboard')" 
-                                class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 Política de privacidad</a>
                             </div>
                         </label>
@@ -147,7 +147,7 @@ const submit = () => {
             </div>
 
             <div class="flex items-center justify-end mt-4">
-                <Link :href="route('login')" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md">
+                <Link :href="route('login')" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 rounded-md">
                     ¿Ya tienes una cuenta?
                 </Link>
 
@@ -158,9 +158,9 @@ const submit = () => {
             </div>
         </form>
 
-        <div class="mt-32 text-sm lg:flex justify-between">
+        <div class="mt-32 text-sm lg:flex justify-between dark:text-gray-400">
             <p>copyright 2024 Finanzas. Todos los derechos reservados.</p>
-            <p><a class="text-primary hover:underline cursor-pointer" href="">Política de privacidad</a> • <a class="text-primary hover:underline cursor-pointer" href="">Términos y condiciones</a></p>
+            <p><a class="text-primary dark:text-primary-400 hover:underline cursor-pointer" href="">Política de privacidad</a> • <a class="text-primary dark:text-primary-400 hover:underline cursor-pointer" href="">Términos y condiciones</a></p>
         </div>
     </AuthenticationCard>
 </template>

@@ -1,189 +1,156 @@
+<script setup>
+import { ref, watch, onMounted } from 'vue';
+import { useForm, Link } from '@inertiajs/vue3';
+import { format } from 'date-fns';
+import { InfoFilled } from '@element-plus/icons-vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import InputError from '@/Components/InputError.vue';
+import Back from '@/Components/MyComponents/Back.vue';
+import axios from 'axios';
+
+const form = useForm({
+    amount: null, category: null, concept: null,
+    created_at: format(new Date(), 'yyyy-MM-dd'), payment_method: null,
+    is_recurring_outcome: false, periodicity: null, description: null,
+    split_enabled: false,
+    split_with: [],
+});
+
+const shortcuts = [
+    { text: 'Hoy', value: new Date() },
+    { text: 'Ayer', value: () => { const d = new Date(); d.setTime(d.getTime() - 86400000); return d; } },
+    { text: 'Hace una semana', value: () => { const d = new Date(); d.setTime(d.getTime() - 86400000 * 7); return d; } },
+];
+
+const categories = ['Transporte', 'Compras', 'Salud y bienestar', 'Entretenimiento', 'Alimentos y bebidas', 'Servicios', 'Educacion y desarrollo personal', 'Otro'];
+const paymentMethods = ['Efectivo', 'Transferencia', 'Deposito', 'Cheque'];
+const periodicities = ['Todos los dias', 'Semanal', 'Mensual', 'Anual'];
+
+// Linked users for split
+const linkedUsers = ref([]);
+
+async function fetchLinkedUsers() {
+    try {
+        const response = await axios.get(route('outcomes.get-linked-users'));
+        linkedUsers.value = response.data.linked_users;
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+onMounted(() => fetchLinkedUsers());
+
+// Computed split amount per person
+import { computed } from 'vue';
+const splitAmount = computed(() => {
+    if (!form.split_enabled || !form.split_with?.length || !form.amount) return null;
+    const totalPeople = form.split_with.length + 1; // +1 for self
+    return form.amount / totalPeople;
+});
+
+watch(() => form.is_recurring_outcome, (val) => { if (!val) form.periodicity = null; });
+
+function store() {
+    form.post(route('outcomes.store'), {
+        onSuccess: () => ElMessage.success('Gasto registrado correctamente.'),
+    });
+}
+</script>
+
 <template>
-    <AppLayout title="Registrar gasto">
-        <main class="px-3 md:px-16 py-8">
+    <AppLayout title="Crear gasto">
+        <main class="py-6 px-4 md:px-8 max-w-2xl mx-auto">
             <Back />
-            <form @submit.prevent="store" class="rounded-xl border border-grayD9 lg:p-5 p-3 lg:w-2/3 xl:w-1/2 mx-auto mt-2 lg:grid lg:grid-cols-2 gap-3 shadow-lg">
-                <h1 class="font-bold ml-2 col-span-full mb-4">Registrar gasto</h1>
-                
-                <div>
-                    <InputLabel value="Concepto*" class="ml-3 mb-1" />
-                    <el-input
-                        v-model="form.concept"
-                        maxlength="50"
-                        placeholder="Ej. Pago de internet"
-                        show-word-limit
-                        type="text"
-                    />
-                    <InputError :message="form.errors.concept" />
-                </div>
-                <div>
-                    <InputLabel value="Fecha*" class="ml-3 mb-1" />
-                    <el-date-picker
-                        class="!w-full"
-                        v-model="form.created_at"
-                        type="date"
-                        placeholder="Selecciona la fecha"
-                        :shortcuts="shortcuts"
-                    />
-                    <InputError :message="form.errors.created_at" />
-                </div>
+            <div class="form-card mt-3">
+                <h1 class="form-title">Registrar gasto</h1>
+                <el-form :model="form" label-position="top" @submit.prevent="store">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <el-form-item label="Concepto" required>
+                            <el-input v-model="form.concept" maxlength="50" placeholder="Ej. Compra de supermercado" show-word-limit />
+                            <InputError :message="form.errors.concept" />
+                        </el-form-item>
+                        <el-form-item label="Fecha" required>
+                            <el-date-picker v-model="form.created_at" type="date" placeholder="Selecciona la fecha" :shortcuts="shortcuts" class="!w-full" />
+                            <InputError :message="form.errors.created_at" />
+                        </el-form-item>
+                        <el-form-item label="Monto" required>
+                            <el-input v-model="form.amount" placeholder="Ej. 500"
+                                :formatter="(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+                                :parser="(v) => v.replace(/\$\s?|(,*)/g, '')">
+                                <template #prepend>$</template>
+                            </el-input>
+                            <InputError :message="form.errors.amount" />
+                        </el-form-item>
+                        <el-form-item label="Categoria">
+                            <el-select v-model="form.category" filterable placeholder="Seleccione" class="!w-full">
+                                <el-option v-for="cat in categories" :key="cat" :label="cat" :value="cat" />
+                            </el-select>
+                            <InputError :message="form.errors.category" />
+                        </el-form-item>
+                        <el-form-item label="Metodo de pago">
+                            <el-select v-model="form.payment_method" filterable placeholder="Seleccione" class="!w-full">
+                                <el-option v-for="pm in paymentMethods" :key="pm" :label="pm" :value="pm" />
+                            </el-select>
+                            <InputError :message="form.errors.payment_method" />
+                        </el-form-item>
+                    </div>
 
-                <div>
-                    <InputLabel value="Monto*" class="ml-3 mb-1" />
-                    <el-input
-                        v-model="form.amount"
-                        placeholder="Ej. $500"
-                        :formatter="(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
-                        :parser="(value) => value.replace(/\$\s?|(,*)/g, '')"
-                    >
-                        <template #prepend>
-                            <span>$</span>
-                        </template>   
-                    </el-input>
-                    <InputError :message="form.errors.amount" />
-                </div>
+                    <!-- Split expense -->
+                    <div v-if="linkedUsers.length" class="mt-4 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <el-checkbox v-model="form.split_enabled" label="Dividir gasto en partes iguales" size="small" />
+                            <el-tooltip content="El monto se dividira en partes iguales entre ti y los usuarios seleccionados" placement="right">
+                                <el-icon :size="14" color="#296A6B"><InfoFilled /></el-icon>
+                            </el-tooltip>
+                        </div>
+                        <div v-if="form.split_enabled">
+                            <el-form-item label="Dividir con:">
+                                <el-select v-model="form.split_with" filterable multiple placeholder="Selecciona usuarios vinculados" class="!w-full">
+                                    <el-option v-for="user in linkedUsers" :key="user.id" :label="user.name" :value="user.id">
+                                        <div class="flex items-center gap-2">
+                                            <img :src="user.profile_photo_url" class="size-5 rounded-full" />
+                                            <span>{{ user.name }}</span>
+                                            <span class="text-xs text-gray-400">{{ user.email }}</span>
+                                        </div>
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <div v-if="splitAmount && form.split_with?.length" class="flex items-center gap-2 mt-2 text-sm">
+                                <span class="text-gray-500 dark:text-gray-400">
+                                    {{ form.split_with.length + 1 }} personas:
+                                </span>
+                                <span class="font-mono font-semibold text-[#D64545] dark:text-[#F05A5A]">
+                                    ${{ splitAmount.toFixed(2) }} c/u
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                        <Link :href="route('settings.index')" class="text-primary dark:text-primary-400 hover:underline">Vincula usuarios</Link> en Configuraciones para poder dividir gastos.
+                    </div>
 
-                <div>
-                    <InputLabel value="Categoría" class="ml-3 mb-1" />
-                    <el-select class="!w-full" filterable v-model="form.category"
-                        placeholder="Seleccione" no-data-text="No hay opciones registradas"
-                        no-match-text="No se encontraron coincidencias">
-                        <el-option v-for="category in categories" :key="category" :label="category" :value="category">
-                            <p class="flex items-center justify-between">
-                                <span>{{ category }}</span>
-                            </p>
-                        </el-option>
-                    </el-select>
-                    <InputError :message="form.errors.category" />
-                </div>
-
-                <div>
-                    <InputLabel value="Método de pago" class="ml-3 mb-1" />
-                    <el-select class="!w-full" filterable v-model="form.payment_method"
-                        placeholder="Seleccione" no-data-text="No hay opciones registradas"
-                        no-match-text="No se encontraron coincidencias">
-                        <el-option v-for="item in payment_methods" :key="item" :label="item" :value="item" />
-                    </el-select>
-                    <InputError :message="form.errors.payment_method" />
-                </div>
-                
-                <div class="flex items-center space-x-2 col-span-full">
-                    <el-checkbox @change="handleChecked()" v-model="form.is_recurring_outcome" label="Gasto recurrente" border size="small" />
-                    <el-tooltip effect="dark" content="Selecciona esta opción para registrar el gasto automáticamente" placement="right">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-primary">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                        </svg>
-                    </el-tooltip>
-                </div>
-
-                <div v-if="form.is_recurring_outcome">
-                    <InputLabel value="Recurrencia del gasto*" class="ml-3 mb-1" />
-                    <el-select class="!w-full" filterable v-model="form.periodicity"
-                        placeholder="Seleccione" no-data-text="No hay opciones registradas"
-                        no-match-text="No se encontraron coincidencias">
-                        <el-option v-for="item in periodicities" :key="item" :label="item" :value="item" />
-                    </el-select>
-                    <InputError :message="form.errors.periodicity" />
-                </div>
-
-                <div class="col-span-full">
-                    <InputLabel value="Descripción" class="ml-3 mb-1" />
-                    <el-input
-                        v-model="form.description"
-                        maxlength="255"
-                        placeholder="Descripción del pago (opcional)"
-                        show-word-limit
-                        type="textarea"
-                    />
-                    <InputError :message="form.errors.description" />
-                </div>
-
-                <div class="col-span-full space-x-4 text-right mt-7">
-                    <PrimaryButton :disabled="form.processing">
-                        <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
-                        Registrar gasto
-                    </PrimaryButton>
-                </div>
-            </form>
+                    <div class="flex items-center gap-2 my-4">
+                        <el-checkbox v-model="form.is_recurring_outcome" label="Gasto recurrente" border size="small" />
+                        <el-tooltip content="Selecciona esta opcion para registrar el gasto automaticamente" placement="right">
+                            <el-icon color="#296A6B" :size="16"><InfoFilled /></el-icon>
+                        </el-tooltip>
+                    </div>
+                    <el-form-item v-if="form.is_recurring_outcome" label="Recurrencia del gasto" required>
+                        <el-select v-model="form.periodicity" filterable placeholder="Seleccione" class="!w-full">
+                            <el-option v-for="p in periodicities" :key="p" :label="p" :value="p" />
+                        </el-select>
+                        <InputError :message="form.errors.periodicity" />
+                    </el-form-item>
+                    <el-form-item label="Descripcion">
+                        <el-input v-model="form.description" maxlength="255" placeholder="Descripcion del gasto (opcional)" show-word-limit type="textarea" :rows="3" />
+                        <InputError :message="form.errors.description" />
+                    </el-form-item>
+                    <div class="flex justify-end mt-6">
+                        <el-button type="danger" :loading="form.processing" @click="store">Registrar gasto</el-button>
+                    </div>
+                </el-form>
+            </div>
         </main>
     </AppLayout>
 </template>
-
-<script>
-import AppLayout from '@/Layouts/AppLayout.vue';
-import InputLabel from "@/Components/InputLabel.vue";
-import InputError from "@/Components/InputError.vue";
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import Back from "@/Components/MyComponents/Back.vue";
-import { useForm } from "@inertiajs/vue3";
-import { format} from "date-fns";
-
-export default {
-data() {
-    const form = useForm({
-        amount: null,
-        category: null,
-        concept: null,
-        created_at: format(new Date(), "yyyy-MM-dd"), // Establece la fecha de hoy por defecto
-        payment_method: null,
-        is_recurring_outcome: false,
-        periodicity: null,
-        description: null,
-    });
-
-    return {
-        form,
-        shortcuts: [
-            {
-                text: 'Hoy',
-                value: new Date(),
-            },
-            {
-                text: 'Ayer',
-                value: () => {
-                    const date = new Date();
-                    date.setTime(date.getTime() - 3600 * 1000 * 24);
-                    return date;
-                },
-            },
-            {
-                text: 'Hace una semana',
-                value: () => {
-                    const date = new Date();
-                    date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
-                    return date;
-                },
-            },
-        ],
-        categories: ['Servicios', 'Transporte', 'Compras', 'Salud y bienestar', 'Educación y desarrollo personal', 'Entretenimiento', 'Alimentos y bebidas', 'Otro'],
-        payment_methods: ['Efectivo', 'Transferencia', 'Depósito', 'Pago con tarjeta'],
-        periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
-    }
-},
-components:{
-    PrimaryButton,
-    InputLabel,
-    InputError,
-    AppLayout,
-    Back
-},
-methods:{
-    store() {
-        this.form.post(route("outcomes.store"), {
-            onSuccess: () => {
-                // message
-                this.$message({
-                    type: 'success',
-                    message: 'Gasto registrado'
-                });
-            },
-        });
-    },
-    handleChecked() {
-        if ( !this.form.is_recurring_outcome ) {
-            this.form.periodicity = null;
-        }
-    }
-}
-}
-</script>

@@ -2,263 +2,128 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Calendar;
+use App\Actions\Outcomes\CreateOutcomeAction;
+use App\Actions\Outcomes\DeleteOutcomeAction;
+use App\Actions\Outcomes\MassUpdateOutcomeAction;
+use App\Actions\Outcomes\UpdateOutcomeAction;
+use App\Http\Requests\Outcomes\MassiveDeleteOutcomeRequest;
+use App\Http\Requests\Outcomes\StoreOutcomeRequest;
+use App\Http\Requests\Outcomes\UpdateOutcomeRequest;
 use App\Models\Outcome;
 use App\Models\RecurringOutcome;
-use Carbon\Carbon;
+use App\Services\SearchService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Response as InertiaResponse;
 
 class OutcomeController extends Controller
 {
-    public function index()
+    public function __construct(
+        private readonly CreateOutcomeAction $createOutcomeAction,
+        private readonly UpdateOutcomeAction $updateOutcomeAction,
+        private readonly DeleteOutcomeAction $deleteOutcomeAction,
+        private readonly MassUpdateOutcomeAction $massUpdateOutcomeAction,
+        private readonly SearchService $searchService,
+    ) {}
+
+    // ========================
+    // Views
+    // ========================
+
+    public function index(): InertiaResponse
     {
-        $outcomes = Outcome::where('user_id', auth()->id())->latest('id')->paginate(50);
-        $recurring_outcomes = RecurringOutcome::where('user_id', auth()->id())->latest('id')->paginate(50);
+        $outcomes = Outcome::forUser()->latest('id')->paginate(50);
+        $recurring_outcomes = RecurringOutcome::forUser()->latest('id')->paginate(50);
 
         return inertia('Outcome/Index', compact('outcomes', 'recurring_outcomes'));
     }
 
-    public function create()
+    public function create(): InertiaResponse
     {
         return inertia('Outcome/Create');
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'amount' => 'required|numeric|min:0|max:999999',
-            'category' => 'nullable|string',
-            'payment_method' => 'nullable|string',
-            'concept' => 'required|string|max:50',
-            'created_at' => 'required',
-            'periodicity' => $request->is_recurring_outcome ? 'required' : 'nullable',
-            'description' => 'nullable',
-        ]);
-
-        $outcome = Outcome::create($request->all() + ['user_id' => auth()->id()]);
-
-        //resta la cantidad del gasto a el total global
-        $user = auth()->user();
-
-        //si el dinero total es menor al gasto se queda en 0 para no tener números negativos
-        if ($user->total_money < $outcome->amount) {
-            $user->total_money = 0;
-        } else {
-            $user->total_money -= $outcome->amount;
-        }
-        $user->save();
-
-        // Registrar en gasto fijo si se seleccionó el check.
-        if ($request->is_recurring_outcome) {
-            RecurringOutcome::create($request->all() + ['user_id' => auth()->id()]);
-
-            //agregar a calendario el gasto fijo con la frecuencia indicada ---------------------
-            $startDate = Carbon::parse($request->created_at);
-            $endDate = Carbon::now()->endOfYear(); // Limitar a este año
-            $dates = [];
-
-            switch ($request->periodicity) {
-                case 'Todos los días':
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addDay();
-                    }
-                    break;
-
-                case 'Semanal':
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addWeek();
-                    }
-                    break;
-
-                case 'Mensual':
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addMonth();
-                    }
-                    break;
-
-                case 'Anual':
-                    $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addYear();
-                    }
-                    break;
-            }
-
-            foreach ($dates as $date) {
-                Calendar::create([
-                    'type' => 'Gasto fijo',
-                    'title' => $request->concept,
-                    'date' => $date->toDateString(),
-                    'amount' => $request->amount,
-                    'category' => $request->category,
-                    'description' => $request->description,
-                    'periodicity' => $request->periodicity,
-                    'payment_method' => $request->payment_method,
-                    'user_id' => auth()->id(),
-                ]);
-            }
-        }
-
-        return to_route('outcomes.index');
-    }
-
-    public function show(Outcome $outcome)
-    {
-        //
-    }
-
-    public function edit(Outcome $outcome)
+    public function edit(Outcome $outcome): InertiaResponse
     {
         return inertia('Outcome/Edit', compact('outcome'));
     }
 
-    public function update(Request $request, Outcome $outcome)
+    // ========================
+    // CRUD
+    // ========================
+
+    public function show(Outcome $outcome): InertiaResponse
     {
-        $request->validate([
-            'amount' => 'required|numeric|min:0|max:999999',
-            'category' => 'nullable|string',
-            'payment_method' => 'nullable|string',
-            'concept' => 'required|string|max:50',
-            'created_at' => 'required',
-            'periodicity' => $request->is_recurring_outcome ? 'required' : 'nullable',
-            'description' => 'nullable',
-        ]);
+        return inertia('Outcome/Show', compact('outcome'));
+    }
 
-        if ($request->is_recurring_outcome) {
-            //eliminar todos los registros del calendario con el nombre del gasto fijo editado.
-            Calendar::where('title', $outcome->concept)->delete();
-
-            //elimina el gasto fijo de la tabla de recurring outcomes
-            RecurringOutcome::where('concept', $outcome->concept)->delete();
-        }
-
-        //suma la cantidad del gasto a el total global para restar la cantidad actualizada
-        $user = auth()->user();
-        $user->total_money += $outcome->amount;
-
-        $outcome->update($request->all());
-
-        //si el dinero total es menor al gasto se queda en 0 para no tener números negativos
-        if ($user->total_money < $outcome->amount) {
-            $user->total_money = 0;
-        } else {
-            $user->total_money -= $outcome->amount;
-        }
-        $user->save();
-
-        // Registrar en gasto fijo si se seleccionó el check.
-        if ($request->is_recurring_outcome) {
-
-            //vuelve a crear el gasto fijo nuevo
-            RecurringOutcome::create($request->all() + ['user_id' => auth()->id()]);
-
-            //agregar a calendario el gasto fijo con la frecuencia indicada ---------------------
-            $startDate = Carbon::parse($request->created_at);
-            $endDate = Carbon::now()->endOfYear(); // Limitar a este año
-            $dates = [];
-
-            switch ($request->periodicity) {
-                case 'Todos los días':
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addDay();
-                    }
-                    break;
-
-                case 'Semanal':
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addWeek();
-                    }
-                    break;
-
-                case 'Mensual':
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addMonth();
-                    }
-                    break;
-
-                case 'Anual':
-                    $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addYear();
-                    }
-                    break;
-            }
-
-            foreach ($dates as $date) {
-                Calendar::create([
-                    'type' => 'Gasto fijo',
-                    'title' => $request->concept,
-                    'date' => $date->toDateString(),
-                    'amount' => $request->amount,
-                    'category' => $request->category,
-                    'description' => $request->description,
-                    'periodicity' => $request->periodicity,
-                    'payment_method' => $request->payment_method,
-                    'user_id' => auth()->id(),
-                ]);
-            }
-        }
+    public function store(StoreOutcomeRequest $request): RedirectResponse
+    {
+        $this->createOutcomeAction->execute($request->validated());
 
         return to_route('outcomes.index');
     }
 
-    public function destroy(Outcome $outcome)
+    public function update(UpdateOutcomeRequest $request, Outcome $outcome): RedirectResponse
     {
-        //
+        $this->updateOutcomeAction->execute($outcome, $request->validated());
+
+        return to_route('outcomes.index');
     }
 
-    public function massiveDelete(Request $request)
-    {   
-        $user = auth()->user();
+    public function destroy(Outcome $outcome): RedirectResponse
+    {
+        $this->deleteOutcomeAction->execute($outcome);
 
-        foreach ($request->outcomes as $outcome) {
-            $outcome = Outcome::find($outcome['id']);
-            $outcome?->delete();
-
-            //Agrega la cantidad del egreso eliminado al dinero total
-            $user->total_money += $outcome->amount;
-        }
-
-        //guarda los cambios en el dinero total del usuario
-        $user->save();
+        return to_route('outcomes.index');
     }
 
-    public function massiveUpdate(Request $request)
+    // ========================
+    // Massive operations
+    // ========================
+
+    public function massiveDelete(MassiveDeleteOutcomeRequest $request): RedirectResponse
     {
-        foreach ($request->selections as $outcome) {
-            $outcome = Outcome::find($outcome['id']);
-            $outcome?->update([
-                'category' => $request->category,
-                'payment_method' => $request->payment_method,
-            ]);
-        }
+        $this->deleteOutcomeAction->executeBulk($request->validated()['ids']);
+
+        return to_route('outcomes.index');
     }
 
-    public function getMatches(Request $request)
+    public function massiveUpdate(Request $request): RedirectResponse
     {
-        $query = $request->input('query');
+        $ids = array_column($request->input('selections', []), 'id');
+        $this->massUpdateOutcomeAction->execute($ids, $request->only(['category', 'payment_method']));
 
-        // Realiza la búsqueda
-        $outcomes = Outcome::where('user_id', auth()->id())
-        ->where(function ($q) use ($query) {
-            $q->where('id', 'like', "%{$query}%")
-                ->orWhere('concept', 'like', "%{$query}%")
-                ->orWhere('amount', 'like', "%{$query}%")
-                ->orWhere('category', 'like', "%{$query}%")
-                ->orWhere('created_at', 'like', "%{$query}%")
-                ->orWhere('payment_method', 'like', "%{$query}%");
-        })
-            ->paginate(200);
+        return to_route('outcomes.index');
+    }
 
-        // Devuelve los items encontrados
-        return response()->json(['items' => $outcomes], 200);
+    // ========================
+    // Search & helpers
+    // ========================
+
+    public function getMatches(Request $request): JsonResponse
+    {
+        $query = $request->input('query', '');
+
+        $items = $this->searchService->searchForUser(
+            Outcome::class,
+            $query,
+            ['id', 'concept', 'amount', 'category', 'created_at', 'payment_method']
+        );
+
+        return response()->json(['items' => $items]);
+    }
+
+    public function getLinkedUsers(): JsonResponse
+    {
+        $linkedUsers = auth()->user()->linkedUsers()->map(fn ($user) => [
+            'id'                => $user->id,
+            'name'              => $user->name,
+            'email'             => $user->email,
+            'profile_photo_url' => $user->profile_photo_url,
+        ]);
+
+        return response()->json(['linked_users' => $linkedUsers]);
     }
 }
