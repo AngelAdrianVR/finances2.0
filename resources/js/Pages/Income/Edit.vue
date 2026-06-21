@@ -1,191 +1,123 @@
+<script setup>
+import { ref, watch } from 'vue';
+import { useForm } from '@inertiajs/vue3';
+import { InfoFilled } from '@element-plus/icons-vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import InputError from '@/Components/InputError.vue';
+import Back from '@/Components/MyComponents/Back.vue';
+
+const props = defineProps({
+    income: Object,
+});
+
+const form = useForm({
+    amount: props.income.amount,
+    category: props.income.category,
+    concept: props.income.concept,
+    created_at: props.income.created_at,
+    payment_method: props.income.payment_method,
+    is_recurring_income: false,
+    periodicity: null,
+    description: props.income.description,
+});
+
+const shortcuts = [
+    { text: 'Hoy', value: new Date() },
+    { text: 'Ayer', value: () => { const d = new Date(); d.setTime(d.getTime() - 86400000); return d; } },
+    { text: 'Hace una semana', value: () => { const d = new Date(); d.setTime(d.getTime() - 86400000 * 7); return d; } },
+];
+
+const categories = ['Ventas', 'Intereses', 'Nómina', 'Prestación de servicios', 'Comision', 'Renta', 'Otro'];
+const paymentMethods = ['Efectivo', 'Transferencia', 'Depósito', 'Cheque'];
+const periodicities = ['Todos los días', 'Semanal', 'Mensual', 'Anual'];
+
+watch(() => form.is_recurring_income, (val) => {
+    if (!val) form.periodicity = null;
+});
+
+function update() {
+    form.put(route('incomes.update', props.income.id), {
+        onSuccess: () => {
+            ElMessage.success('Ingreso editado correctamente.');
+        },
+    });
+}
+</script>
+
 <template>
     <AppLayout title="Editar ingreso">
-        <main class="px-3 md:px-16 py-8">
+        <main class="py-6 px-4 md:px-8 max-w-2xl mx-auto">
             <Back />
-            <form @submit.prevent="update" class="rounded-xl border border-grayD9 lg:p-5 p-3 lg:w-2/3 xl:w-1/2 mx-auto mt-2 lg:grid lg:grid-cols-2 gap-3 shadow-lg">
-                <h1 class="font-bold ml-2 col-span-full mb-4">Editar ingreso</h1>
-                
-                <div>
-                    <InputLabel value="Concepto*" class="ml-3 mb-1" />
-                    <el-input
-                        v-model="form.concept"
-                        maxlength="50"
-                        placeholder="Ej. Venta de ropa"
-                        show-word-limit
-                        type="text"
-                    />
-                    <InputError :message="form.errors.concept" />
-                </div>
-                <div>
-                    <InputLabel value="Fecha*" class="ml-3 mb-1" />
-                    <el-date-picker
-                        class="!w-full"
-                        v-model="form.created_at"
-                        type="date"
-                        placeholder="Selecciona la fecha"
-                        :shortcuts="shortcuts"
-                    />
-                    <InputError :message="form.errors.created_at" />
-                </div>
 
-                <div>
-                    <InputLabel value="Monto*" class="ml-3 mb-1" />
-                    <el-input
-                        v-model="form.amount"
-                        placeholder="Ej. $500"
-                        :formatter="(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
-                        :parser="(value) => value.replace(/\$\s?|(,*)/g, '')"
-                    >
-                        <template #prepend>
-                            <span>$</span>
-                        </template>   
-                    </el-input>
-                    <InputError :message="form.errors.amount" />
-                </div>
+            <div class="form-card mt-3">
+                <h1 class="form-title">Editar ingreso</h1>
 
-                <div>
-                    <InputLabel value="Categoría" class="ml-3 mb-1" />
-                    <el-select class="!w-full" filterable v-model="form.category"
-                        placeholder="Seleccione" no-data-text="No hay opciones registradas"
-                        no-match-text="No se encontraron coincidencias">
-                        <el-option v-for="category in categories" :key="category" :label="category" :value="category">
-                            <p class="flex items-center justify-between">
-                                <span>{{ category }}</span>
-                            </p>
-                        </el-option>
-                    </el-select>
-                    <InputError :message="form.errors.category" />
-                </div>
+                <el-form :model="form" label-position="top" @submit.prevent="update">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <el-form-item label="Concepto" required>
+                            <el-input v-model="form.concept" maxlength="50" placeholder="Ej. Venta de ropa" show-word-limit />
+                            <InputError :message="form.errors.concept" />
+                        </el-form-item>
 
-                <div>
-                    <InputLabel value="Método de pago" class="ml-3 mb-1" />
-                    <el-select class="!w-full" filterable v-model="form.payment_method"
-                        placeholder="Seleccione" no-data-text="No hay opciones registradas"
-                        no-match-text="No se encontraron coincidencias">
-                        <el-option v-for="item in payment_methods" :key="item" :label="item" :value="item" />
-                    </el-select>
-                    <InputError :message="form.errors.payment_method" />
-                </div>
-                
-                <div class="flex items-center space-x-2 col-span-full">
-                    <el-checkbox @change="handleChecked()" v-model="form.is_recurring_income" label="Ingreso recurrente" border size="small" />
-                    <el-tooltip effect="dark" content="Selecciona esta opción para registrar el ingreso automáticamente" placement="right">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-primary">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                        </svg>
-                    </el-tooltip>
-                </div>
+                        <el-form-item label="Fecha" required>
+                            <el-date-picker v-model="form.created_at" type="date" placeholder="Selecciona la fecha"
+                                :shortcuts="shortcuts" class="!w-full" />
+                            <InputError :message="form.errors.created_at" />
+                        </el-form-item>
 
-                <div v-if="form.is_recurring_income">
-                    <InputLabel value="Recurrencia del ingreso*" class="ml-3 mb-1" />
-                    <el-select class="!w-full" filterable v-model="form.periodicity"
-                        placeholder="Seleccione" no-data-text="No hay opciones registradas"
-                        no-match-text="No se encontraron coincidencias">
-                        <el-option v-for="item in periodicities" :key="item" :label="item" :value="item" />
-                    </el-select>
-                    <InputError :message="form.errors.periodicity" />
-                </div>
+                        <el-form-item label="Monto" required>
+                            <el-input v-model="form.amount" placeholder="Ej. 500"
+                                :formatter="(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+                                :parser="(v) => v.replace(/\$\s?|(,*)/g, '')"
+                            >
+                                <template #prepend>$</template>
+                            </el-input>
+                            <InputError :message="form.errors.amount" />
+                        </el-form-item>
 
-                <div class="col-span-full">
-                    <InputLabel value="Descripción" class="ml-3 mb-1" />
-                    <el-input
-                        v-model="form.description"
-                        maxlength="255"
-                        placeholder="Descripción del ingreso (opcional)"
-                        show-word-limit
-                        type="textarea"
-                    />
-                    <InputError :message="form.errors.description" />
-                </div>
+                        <el-form-item label="Categoria">
+                            <el-select v-model="form.category" filterable placeholder="Seleccione" class="!w-full">
+                                <el-option v-for="cat in categories" :key="cat" :label="cat" :value="cat" />
+                            </el-select>
+                            <InputError :message="form.errors.category" />
+                        </el-form-item>
 
-                <div class="col-span-full space-x-4 text-right mt-7">
-                    <PrimaryButton :disabled="form.processing">
-                        <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
-                        Guardar cambios
-                    </PrimaryButton>
-                </div>
-            </form>
+                        <el-form-item label="Metodo de pago">
+                            <el-select v-model="form.payment_method" filterable placeholder="Seleccione" class="!w-full">
+                                <el-option v-for="pm in paymentMethods" :key="pm" :label="pm" :value="pm" />
+                            </el-select>
+                            <InputError :message="form.errors.payment_method" />
+                        </el-form-item>
+                    </div>
+
+                    <div class="flex items-center gap-2 my-4">
+                        <el-checkbox v-model="form.is_recurring_income" label="Ingreso recurrente" border size="small" />
+                        <el-tooltip content="Selecciona esta opcion para registrar el ingreso automaticamente" placement="right">
+                            <el-icon color="#296A6B" :size="16"><InfoFilled /></el-icon>
+                        </el-tooltip>
+                    </div>
+
+                    <el-form-item v-if="form.is_recurring_income" label="Recurrencia del ingreso" required>
+                        <el-select v-model="form.periodicity" filterable placeholder="Seleccione" class="!w-full">
+                            <el-option v-for="p in periodicities" :key="p" :label="p" :value="p" />
+                        </el-select>
+                        <InputError :message="form.errors.periodicity" />
+                    </el-form-item>
+
+                    <el-form-item label="Descripcion">
+                        <el-input v-model="form.description" maxlength="255" placeholder="Descripcion del ingreso (opcional)"
+                            show-word-limit type="textarea" :rows="3" />
+                        <InputError :message="form.errors.description" />
+                    </el-form-item>
+
+                    <div class="flex justify-end mt-6">
+                        <el-button type="primary" :loading="form.processing" @click="update">
+                            Guardar cambios
+                        </el-button>
+                    </div>
+                </el-form>
+            </div>
         </main>
     </AppLayout>
 </template>
-
-<script>
-import AppLayout from '@/Layouts/AppLayout.vue';
-import InputLabel from "@/Components/InputLabel.vue";
-import InputError from "@/Components/InputError.vue";
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import Back from "@/Components/MyComponents/Back.vue";
-import { useForm } from "@inertiajs/vue3";
-
-export default {
-data() {
-    const form = useForm({
-        amount: this.income.amount,
-        category: this.income.category,
-        concept: this.income.concept,
-        created_at: this.income.created_at,
-        payment_method: this.income.payment_method,
-        is_recurring_income: false,
-        periodicity: null,
-        description: this.income.description,
-    });
-
-    return {
-        form,
-        shortcuts: [
-            {
-                text: 'Hoy',
-                value: new Date(),
-            },
-            {
-                text: 'Ayer',
-                value: () => {
-                    const date = new Date();
-                    date.setTime(date.getTime() - 3600 * 1000 * 24);
-                    return date;
-                },
-            },
-            {
-                text: 'Hace una semana',
-                value: () => {
-                    const date = new Date();
-                    date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
-                    return date;
-                },
-            },
-        ],
-        categories: ['Ventas', 'Intereses', 'Nómina', 'Prestación de servicios', 'Comision', 'Renta', 'Otro'],
-        payment_methods: ['Efectivo', 'Transferencia', 'Depósito' , 'Cheque'],
-        periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
-    }
-},
-components:{
-    PrimaryButton,
-    InputLabel,
-    InputError,
-    AppLayout,
-    Back
-},
-props:{
-    income: Object
-},
-methods:{
-    update() {
-        this.form.put(route("incomes.update", this.income.id), {
-            onSuccess: () => {
-                // message
-                this.$message({
-                    type: 'success',
-                    message: 'Ingreso editado'
-                });
-            },
-        });
-    },
-    handleChecked() {
-        if ( !this.form.is_recurring_income ) {
-            this.form.periodicity = null;
-        }
-    }
-}
-}
-</script>

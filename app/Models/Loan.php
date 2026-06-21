@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,37 +10,78 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Loan extends Model
 {
     protected $fillable = [
-        'profitability_period',
-        'payment_periodicity',
-        'profitability_type',
-        'profitability_mode',
+        'type',
         'beneficiary_name',
-        'profitability',
-        'expired_date',
-        'description',
         'lender_name',
-        'is_for_me',
-        'loan_date',
-        'automatic', // para registrar ingreso o gasto automatico al abonar
-        'user_id',
         'amount',
         'status',
-        'type',
-    ];
-    
-    protected $casts = [
-        'expired_date' => 'date',
-        'loan_date' => 'date',
+        'loan_date',
+        'expired_date',
+        'profitability',
+        'profitability_type',
+        'profitability_mode',
+        'profitability_period',
+        'payment_periodicity',
+        'description',
+        'automatic',
+        'is_for_me',
+        'user_id',
     ];
 
-    //relationships
-    public function user() :BelongsTo
+    protected $casts = [
+        'amount'        => 'float',
+        'profitability' => 'float',
+        'automatic'     => 'boolean',
+        'is_for_me'     => 'boolean',
+        'loan_date'     => 'datetime',
+        'expired_date'  => 'datetime',
+    ];
+
+    // ========================
+    // Relationships
+    // ========================
+
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function payments() :HasMany
+    public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
+
+    // ========================
+    // Scopes
+    // ========================
+
+    public function scopeForUser(Builder $query, ?int $userId = null): Builder
+    {
+        return $query->where('user_id', $userId ?? auth()->id());
+    }
+
+    public function scopeByType(Builder $query, string $type): Builder
+    {
+        return $query->where('type', $type);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', 'En curso');
+    }
+
+    // ========================
+    // Accessors / Helpers
+    // ========================
+
+    /**
+     * Get the remaining balance of this loan based on the latest payment.
+     */
+    public function getRemainingAttribute(): float
+    {
+        $lastPayment = $this->payments()->latest('id')->first();
+
+        return $lastPayment ? (float) $lastPayment->remaining : (float) $this->amount;
+    }
 }
+

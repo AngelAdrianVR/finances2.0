@@ -2,254 +2,117 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Calendar;
+use App\Actions\Incomes\CreateIncomeAction;
+use App\Actions\Incomes\DeleteIncomeAction;
+use App\Actions\Incomes\MassUpdateIncomeAction;
+use App\Actions\Incomes\UpdateIncomeAction;
+use App\Http\Requests\Incomes\MassiveDeleteIncomeRequest;
+use App\Http\Requests\Incomes\MassiveUpdateIncomeRequest;
+use App\Http\Requests\Incomes\StoreIncomeRequest;
+use App\Http\Requests\Incomes\UpdateIncomeRequest;
 use App\Models\Income;
 use App\Models\RecurringIncome;
-use Carbon\Carbon;
+use App\Services\SearchService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Response as InertiaResponse;
 
 class IncomeController extends Controller
 {
-    public function index()
+    public function __construct(
+        private readonly CreateIncomeAction $createIncomeAction,
+        private readonly UpdateIncomeAction $updateIncomeAction,
+        private readonly DeleteIncomeAction $deleteIncomeAction,
+        private readonly MassUpdateIncomeAction $massUpdateIncomeAction,
+        private readonly SearchService $searchService,
+    ) {}
+
+    // ========================
+    // Views
+    // ========================
+
+    public function index(): InertiaResponse
     {
-        $incomes = Income::where('user_id', auth()->id())->latest('id')->paginate(50);
-        $recurring_incomes = RecurringIncome::where('user_id', auth()->id())->latest('id')->paginate(50);
+        $incomes = Income::forUser()->latest('id')->paginate(50);
+        $recurring_incomes = RecurringIncome::forUser()->latest('id')->paginate(50);
 
         return inertia('Income/Index', compact('incomes', 'recurring_incomes'));
     }
 
-    public function create()
+    public function create(): InertiaResponse
     {
         return inertia('Income/Create');
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'amount' => 'required|numeric|min:0|max:999999',
-            'category' => 'nullable|string',
-            'payment_method' => 'nullable|string',
-            'concept' => 'required|string|max:50',
-            'created_at' => 'required',
-            'periodicity' => $request->is_recurring_income ? 'required' : 'nullable',
-            'description' => 'nullable',
-        ]);
-
-        $income = Income::create($request->all() + ['user_id' => auth()->id()]);
-
-        //sumar la cantidad del ingreso al total global
-        $user = auth()->user();
-        $user->total_money += $income->amount;
-        $user->save();
-
-        // Registrar en ingresos recurrentes si se seleccionó el check.
-        if ($request->is_recurring_income) {
-            RecurringIncome::create($request->all() + ['user_id' => auth()->id()]);
-
-            //agregar a calendario el ingreso recurrente con la frecuencia indicada ---------------------
-            $startDate = Carbon::parse($request->created_at);
-            $endDate = Carbon::now()->endOfYear(); // Limitar a este año
-            $dates = [];
-
-            switch ($request->periodicity) {
-                case 'Todos los días':
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addDay();
-                    }
-                    break;
-
-                case 'Semanal':
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addWeek();
-                    }
-                    break;
-
-                case 'Mensual':
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addMonth();
-                    }
-                    break;
-
-                case 'Anual':
-                    $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addYear();
-                    }
-                    break;
-            }
-
-            foreach ($dates as $date) {
-                Calendar::create([
-                    'type' => 'Ingreso recurrente',
-                    'title' => $request->concept,
-                    'date' => $date->toDateString(),
-                    'amount' => $request->amount,
-                    'category' => $request->category,
-                    'description' => $request->description,
-                    'periodicity' => $request->periodicity,
-                    'payment_method' => $request->payment_method,
-                    'user_id' => auth()->id(),
-                ]);
-            }
-        }
-
-        return to_route('incomes.index');
-    }
-
-    public function show(Income $income)
-    {
-        //
-    }
-
-    public function edit(Income $income)
+    public function edit(Income $income): InertiaResponse
     {
         return inertia('Income/Edit', compact('income'));
     }
 
-    public function update(Request $request, Income $income)
+    // ========================
+    // CRUD
+    // ========================
+
+    public function show(Income $income): InertiaResponse
     {
-        $request->validate([
-            'amount' => 'required|numeric|min:0|max:999999',
-            'category' => 'nullable|string',
-            'payment_method' => 'nullable|string',
-            'concept' => 'required|string|max:50',
-            'created_at' => 'required',
-            'periodicity' => $request->is_recurring_income ? 'required' : 'nullable',
-            'description' => 'nullable',
-        ]);
+        return inertia('Income/Show', compact('income'));
+    }
 
-        if ($request->is_recurring_income) {
-            //eliminar todos los registros del calendario con el nombre del ingreso recurrente editado.
-            Calendar::where('title', $income->concept)->delete();
-
-            //elimina el ingreso recurrente de la tabla de recurring incomes
-            RecurringIncome::where('concept', $income->concept)->delete();
-        }
-
-        //resta el ingreso al total global para sumar el actualizado
-        $user = auth()->user();
-        $user->total_money -= $income->amount;
-        $user->save();
-
-        //actualizar el ingreso
-        $income->update($request->all());
-
-        //sumar la cantidad del ingreso editado a el total global
-        $user->total_money += $income->amount;
-        $user->save();
-
-        // Registrar en ingresos recurrentes si se seleccionó el check.
-        if ($request->is_recurring_income) {
-            //vuelve a crear el ingreso recurrente nuevo
-            RecurringIncome::create($request->all() + ['user_id' => auth()->id()]);
-
-            //agregar a calendario el ingreso recurrente con la frecuencia indicada ---------------------
-            $startDate = Carbon::parse($request->created_at);
-            $endDate = Carbon::now()->endOfYear(); // Limitar a este año
-            $dates = [];
-
-            switch ($request->periodicity) {
-                case 'Todos los días':
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addDay();
-                    }
-                    break;
-
-                case 'Semanal':
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addWeek();
-                    }
-                    break;
-
-                case 'Mensual':
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addMonth();
-                    }
-                    break;
-
-                case 'Anual':
-                    $endDate = Carbon::parse($request->created_at)->addYears(3); // 3 años posteriores
-                    while ($startDate->lte($endDate)) {
-                        $dates[] = $startDate->copy();
-                        $startDate->addYear();
-                    }
-                    break;
-            }
-
-            foreach ($dates as $date) {
-                Calendar::create([
-                    'type' => 'Ingreso recurrente',
-                    'title' => $request->concept,
-                    'date' => $date->toDateString(),
-                    'amount' => $request->amount,
-                    'category' => $request->category,
-                    'description' => $request->description,
-                    'periodicity' => $request->periodicity,
-                    'payment_method' => $request->payment_method,
-                    'user_id' => auth()->id(),
-                ]);
-            }
-        }
+    public function store(StoreIncomeRequest $request): RedirectResponse
+    {
+        $this->createIncomeAction->execute($request->validated());
 
         return to_route('incomes.index');
     }
 
-    public function destroy(Income $income)
+    public function update(UpdateIncomeRequest $request, Income $income): RedirectResponse
     {
-        //
+        $this->updateIncomeAction->execute($income, $request->validated());
+
+        return to_route('incomes.index');
     }
 
-    public function massiveDelete(Request $request)
+    public function destroy(Income $income): RedirectResponse
     {
-        $user = auth()->user();
-        
-        foreach ($request->incomes as $income) {
-            $income = Income::find($income['id']);
-            $income?->delete();
+        $this->deleteIncomeAction->execute($income);
 
-            //descuenta la cantidad del ingreso del dinero total
-            $user->total_money -= $income->amount;
-        }
-        
-        //guarda los cambios en el dinero total del usuario
-        $user->save();
-    }
-    
-    public function massiveUpdate(Request $request)
-    {
-        foreach ($request->selections as $income) {
-            $income = Income::find($income['id']);
-            $income?->update([
-                'category' => $request->category,
-                'payment_method' => $request->payment_method,
-            ]);
-        }
+        return to_route('incomes.index');
     }
 
-    public function getMatches(Request $request)
+    // ========================
+    // Massive operations
+    // ========================
+
+    public function massiveDelete(MassiveDeleteIncomeRequest $request): RedirectResponse
     {
-        $query = $request->input('query');
+        $this->deleteIncomeAction->executeBulk($request->validated()['ids']);
 
-        // Realiza la búsqueda correctamente
-        $incomes = Income::where('user_id', auth()->id())
-            ->where(function ($q) use ($query) {
-                $q->where('id', 'like', "%{$query}%")
-                ->orWhere('concept', 'like', "%{$query}%")
-                ->orWhere('amount', 'like', "%{$query}%")
-                ->orWhere('category', 'like', "%{$query}%")
-                ->orWhere('created_at', 'like', "%{$query}%")
-                ->orWhere('payment_method', 'like', "%{$query}%");
-            })
-            ->paginate(200);
+        return to_route('incomes.index');
+    }
 
-        // Devuelve los items encontrados
-        return response()->json(['items' => $incomes], 200);
+    public function massiveUpdate(MassiveUpdateIncomeRequest $request): RedirectResponse
+    {
+        $ids = array_column($request->validated()['selections'], 'id');
+        $this->massUpdateIncomeAction->execute($ids, $request->validated());
+
+        return to_route('incomes.index');
+    }
+
+    // ========================
+    // Search
+    // ========================
+
+    public function getMatches(Request $request): JsonResponse
+    {
+        $query = $request->input('query', '');
+
+        $items = $this->searchService->searchForUser(
+            Income::class,
+            $query,
+            ['id', 'concept', 'amount', 'category', 'created_at', 'payment_method']
+        );
+
+        return response()->json(['items' => $items]);
     }
 }

@@ -1,50 +1,85 @@
-<template>
-  <div v-if="pagination?.links?.length > 3" class="overflow-x-auto flex items-center justify-between my-1">
-    <!-- <div class="flex flex-1 justify-between sm:hidden">
-    <a href="#" class="relative inline-flex items-center rounded-md border border-indigo-600 bg-gray-300 px-4 py-2 text-sm font-medium text-black hover:bg-gray-50">Anterior</a>
-    <a href="#" class="relative ml-3 inline-flex items-center rounded-md border border-indigo-600 bg-gray-300 px-4 py-2 text-sm font-medium text-black hover:bg-gray-50">Siguiente</a>
-  </div> -->
-    <div class="flex flex-1 items-center justify-between">
-      <div>
-        <nav class="isolate inline-flex -space-x-px rounded-lg text-[11px] shadow-md" aria-label="Pagination">
-          <template v-for="(link, key) in pagination?.links">
-              <!-- Si el enlace no tiene URL (es una elipsis o inactivo) -->
-              <div :key="key" v-if="link.url == null"
-                  class="rounded-md relative inline-flex items-center border bg-gray-200 px-3 py-1 text-[11px] font-medium text-gray-500 border-gray-300 cursor-not-allowed"
-                  v-html="link.label">
-              </div>
+<script setup>
+import { computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
+import { ArrowLeftBold, ArrowRightBold, MoreFilled } from '@element-plus/icons-vue';
 
-              <!-- Links de paginación activos e inactivos -->
-              <Link :key="'link-' + key" v-else :href="link?.url" v-html="link?.label"
-                  class="relative inline-flex items-center px-3 py-1 text-[11px] lg:text-md rounded-md transition-all duration-300 ease-in-out"
-                  :class="link.active 
-                      ? 'z-10 bg-primary text-white font-bold border-primary shadow-lg' 
-                      : 'bg-white text-gray-700 border-gray-300 hover:bg-primary hover:text-white hover:shadow-md'" />
-          </template>
-          <!-- Current: "z-10 bg-indigo-50 border-indigo-500 text-indigo-600", Default: "bg-white border-gray-300 text-gray-500 hover:bg-gray-50" -->
-          <!-- <a href="#" v-html="link.label" class="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-20">2</a> -->
-        </nav>
-      </div>
-    </div>
-  </div>
-</template>
-
-    
-<script>
-import { Link } from "@inertiajs/vue3";
-
-export default {
-  data() {
-    return {
-
-    }
-  },
-  props: {
+const props = defineProps({
     pagination: Object,
+});
 
-  },
-  components: {
-    Link,
-  },
+const showPagination = computed(() =>
+    props.pagination?.links?.length > 3
+);
+
+// Detect prev/next links by looking for chevron in label
+function isPrev(label) {
+    return typeof label === 'string' && (label.includes('&laquo;') || label.toLowerCase().includes('previous') || label.includes('Anterior'));
+}
+
+function isNext(label) {
+    return typeof label === 'string' && (label.includes('&raquo;') || label.toLowerCase().includes('next') || label.includes('Siguiente'));
+}
+
+// Decode HTML entities for clean display
+function formatLabel(label) {
+    if (!label) return '';
+    const txt = document.createElement('textarea');
+    txt.innerHTML = label;
+    return txt.value || label;
 }
 </script>
+
+<template>
+    <div v-if="showPagination" class="flex items-center justify-center gap-1 py-3">
+        <template v-for="(link, key) in pagination.links" :key="key">
+            <!-- Prev nav arrow -->
+            <component
+                :is="link.url ? Link : 'span'"
+                v-if="isPrev(link.label)"
+                :href="link.url || undefined"
+                class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150"
+                :class="link.url
+                    ? 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer'
+                    : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'"
+            >
+                <el-icon :size="16">
+                    <ArrowLeftBold />
+                </el-icon>
+            </component>
+
+            <!-- Next nav arrow -->
+            <component
+                :is="link.url ? Link : 'span'"
+                v-else-if="isNext(link.label)"
+                :href="link.url || undefined"
+                class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150"
+                :class="link.url
+                    ? 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer'
+                    : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'"
+            >
+                <el-icon :size="16">
+                    <ArrowRightBold />
+                </el-icon>
+            </component>
+
+            <!-- Ellipsis -->
+            <span
+                v-else-if="!link.url"
+                class="inline-flex items-center justify-center w-8 h-8 text-gray-400 dark:text-gray-500"
+            >
+                <el-icon :size="14"><MoreFilled /></el-icon>
+            </span>
+
+            <!-- Numeric page button -->
+            <Link
+                v-else
+                :href="link.url"
+                class="inline-flex items-center justify-center min-w-[32px] h-8 px-2 rounded-lg text-sm font-medium transition-all duration-150"
+                :class="link.active
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-200'"
+                v-text="formatLabel(link.label)"
+            />
+        </template>
+    </div>
+</template>

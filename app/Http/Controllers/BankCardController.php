@@ -3,86 +3,71 @@
 namespace App\Http\Controllers;
 
 use App\Models\BankCard;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class BankCardController extends Controller
 {
-    public function index()
-    {
-        //
-    }
+    // ========================
+    // CRUD
+    // ========================
 
-    public function create()
+    public function store(Request $request): RedirectResponse
     {
-        //
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:100',
-            'owner_name' => 'nullable|string|max:100',
-            'bank_name' => 'required|string|max:100',
-            'type' => 'nullable',
-            'notes' => 'nullable|string|max:255',
-            'is_active' => 'required',
+        $validated = $request->validate([
+            'name'       => ['required', 'string', 'max:100'],
+            'owner_name' => ['nullable', 'string', 'max:100'],
+            'bank_name'  => ['required', 'string', 'max:100'],
+            'type'       => ['nullable', 'string'],
+            'notes'      => ['nullable', 'string', 'max:255'],
+            'is_active'  => ['required', 'boolean'],
         ]);
 
-        BankCard::create($request->all() + ['user_id' => auth()->id()]);
+        BankCard::create($validated + ['user_id' => auth()->id()]);
+
+        return to_route('settings.index');
     }
 
-    public function show(BankCard $bank_card)
+    public function update(Request $request, BankCard $bank_card): RedirectResponse
     {
-        //
-    }
-
-    public function edit(BankCard $bank_card)
-    {
-        //
-    }
-
-    public function update(Request $request, BankCard $bank_card)
-    {
-        $request->validate([
-            'name' => 'required|string|max:100',
-            'owner_name' => 'nullable|string|max:100',
-            'bank_name' => 'required|string|max:100',
-            'type' => 'nullable',
-            'notes' => 'nullable|string|max:255',
-            'is_active' => 'required',
+        $validated = $request->validate([
+            'name'       => ['required', 'string', 'max:100'],
+            'owner_name' => ['nullable', 'string', 'max:100'],
+            'bank_name'  => ['required', 'string', 'max:100'],
+            'type'       => ['nullable', 'string'],
+            'notes'      => ['nullable', 'string', 'max:255'],
+            'is_active'  => ['required', 'boolean'],
         ]);
 
-        $bank_card->update($request->all());
+        $bank_card->update($validated);
+
+        return to_route('settings.index');
     }
 
-    public function destroy(BankCard $bank_card)
+    public function destroy(BankCard $bank_card): RedirectResponse
     {
-        //
+        $bank_card->delete();
+
+        return to_route('settings.index');
     }
 
-    public function massiveDelete(Request $request)
+    // ========================
+    // Massive & toggle
+    // ========================
+
+    public function massiveDelete(Request $request): JsonResponse
     {
-        foreach ($request->bankCards as $bank_card) {
-            $bank_card = BankCard::find($bank_card['id']);
-            $bank_card?->delete();
-        }
+        $ids = array_column($request->input('bankCards', []), 'id');
+        BankCard::forUser()->whereIn('id', $ids)->delete();
 
         return response()->json(['message' => 'Cuenta(s) eliminada(s)']);
     }
 
-    public function toogleStatus(BankCard $bank_card)
+    public function toogleStatus(BankCard $bank_card): JsonResponse
     {
-        //si la cuenta esta activa, la desactiva y viceversa
-        if ( $bank_card->is_active ) {
-            $bank_card->update([
-                'is_active' => false
-            ]);
-        } else {
-            $bank_card->update([
-                'is_active' => true
-            ]);
-        }
+        $bank_card->toggle();
 
-        $bank_card->save();
+        return response()->json(['is_active' => $bank_card->is_active]);
     }
 }

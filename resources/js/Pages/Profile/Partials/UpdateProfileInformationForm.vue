@@ -5,8 +5,6 @@ import ActionMessage from '@/Components/ActionMessage.vue';
 import FormSection from '@/Components/FormSection.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 
 const props = defineProps({
@@ -112,18 +110,9 @@ const clearPhotoFileInput = () => {
                     />
                 </div>
 
-                <SecondaryButton class="mt-2 me-2" type="button" @click.prevent="selectNewPhoto">
-                    Selecciona una nueva foto
-                </SecondaryButton>
+                <el-button class="mt-2 me-2" @click.prevent="selectNewPhoto">Selecciona una nueva foto</el-button>
 
-                <SecondaryButton
-                    v-if="user.profile_photo_path"
-                    type="button"
-                    class="mt-2"
-                    @click.prevent="deletePhoto"
-                >
-                    Eliminar foto
-                </SecondaryButton>
+                <el-button v-if="user.profile_photo_path" class="mt-2" @click.prevent="deletePhoto">Eliminar foto</el-button>
 
                 <InputError :message="form.errors.photo" class="mt-2" />
             </div>
@@ -184,10 +173,8 @@ const clearPhotoFileInput = () => {
                 Guardado.
             </ActionMessage>
 
-            <PrimaryButton class="flex items-center space-x-2" :disabled="form.processing">
-                <i v-if="form.processing" class="fa-sharp fa-solid fa-circle-notch fa-spin mr-2 text-white"></i>
-                Guardar
-            </PrimaryButton>
+            <ActionMessage :on="form.recentlySuccessful" class="me-3">Guardado.</ActionMessage>
+            <el-button type="primary" :loading="form.processing" @click="updateProfileInformation">Guardar</el-button>
         </template>
     </FormSection>
 </template>

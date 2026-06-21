@@ -2,8 +2,8 @@
     <AppLayout title="Editar ingreso recurrente">
         <main class="px-3 md:px-16 py-8">
             <Back />
-            <form @submit.prevent="update" class="rounded-xl border border-grayD9 lg:p-5 p-3 lg:w-2/3 xl:w-1/2 mx-auto mt-2 lg:grid lg:grid-cols-2 gap-3">
-                <h1 class="font-bold ml-2 col-span-full mb-4">Editar ingreso recurrente</h1>
+            <form @submit.prevent="update" class="rounded-xl border border-grayD9 dark:border-gray-600 dark:bg-[#1E2424] lg:p-5 p-3 lg:w-2/3 xl:w-1/2 mx-auto mt-2 lg:grid lg:grid-cols-2 gap-3">
+                <h1 class="font-bold ml-2 col-span-full mb-4 dark:text-gray-200">Editar ingreso recurrente</h1>
                 
                 <div>
                     <InputLabel value="Concepto*" class="ml-3 mb-1" />
