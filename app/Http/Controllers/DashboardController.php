@@ -70,25 +70,32 @@ class DashboardController extends Controller
         $userId = auth()->id();
         $periodicity = $request->input('periodicity', 'Mensual');
 
+        // Use the provided period date, or default to today
+        $date = $request->period ? Carbon::parse($request->period) : now();
+
         [$currentStart, $currentEnd, $prevStart, $prevEnd] = match ($periodicity) {
             'Por día' => [
-                now()->startOfDay(), now()->endOfDay(),
-                now()->subDay()->startOfDay(), now()->subDay()->endOfDay(),
+                $date->copy()->startOfDay(), $date->copy()->endOfDay(),
+                $date->copy()->subDay()->startOfDay(), $date->copy()->subDay()->endOfDay(),
             ],
             'Semanal' => [
-                now()->startOfWeek(), now()->endOfWeek(),
-                now()->subWeek()->startOfWeek(), now()->subWeek()->endOfWeek(),
+                $date->copy()->startOfWeek(Carbon::SUNDAY)->addDay(),
+                $date->copy()->endOfWeek(Carbon::SUNDAY)->addDay(),
+                $date->copy()->subWeek()->startOfWeek(Carbon::SUNDAY)->addDay(),
+                $date->copy()->subWeek()->endOfWeek(Carbon::SUNDAY)->addDay(),
             ],
             'Mensual' => [
-                now()->startOfMonth(), now()->endOfMonth(),
-                now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth(),
+                $date->copy()->startOfMonth(), $date->copy()->endOfMonth(),
+                $date->copy()->subMonth()->startOfMonth(), $date->copy()->subMonth()->endOfMonth(),
             ],
             'Anual' => [
-                now()->startOfYear(), now()->endOfYear(),
-                now()->subYear()->startOfYear(), now()->subYear()->endOfYear(),
+                $date->copy()->startOfYear(), $date->copy()->endOfYear(),
+                $date->copy()->subYear()->startOfYear(), $date->copy()->subYear()->endOfYear(),
             ],
-            default => [now()->startOfMonth(), now()->endOfMonth(),
-                        now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()],
+            default => [
+                $date->copy()->startOfMonth(), $date->copy()->endOfMonth(),
+                $date->copy()->subMonth()->startOfMonth(), $date->copy()->subMonth()->endOfMonth(),
+            ],
         };
 
         $current_income = Income::where('user_id', $userId)
@@ -113,13 +120,17 @@ class DashboardController extends Controller
     /**
      * Promedios mensuales del año en curso y otros indicadores clave.
      */
-    public function fetchYearlyAverages()
+    public function fetchYearlyAverages(Request $request)
     {
         $userId = auth()->id();
-        $yearStart = now()->startOfYear();
-        $yearEnd = now()->endOfYear();
+        $year = (int) ($request->input('year') ?: now()->year);
 
-        // Ingresos y egresos del año en curso
+        $yearStart = Carbon::createFromDate($year, 1, 1)->startOfDay();
+        $yearEnd = Carbon::createFromDate($year, 12, 31)->endOfDay();
+
+        $isCurrentYear = $year === now()->year;
+
+        // Ingresos y egresos del año
         $yearTotalIncome = Income::where('user_id', $userId)
             ->whereBetween('created_at', [$yearStart, $yearEnd])
             ->sum('amount');
@@ -128,8 +139,8 @@ class DashboardController extends Controller
             ->whereBetween('created_at', [$yearStart, $yearEnd])
             ->sum('amount');
 
-        // Meses transcurridos en el año (mínimo 1 para evitar división por cero)
-        $monthsElapsed = max(now()->month, 1);
+        // Meses transcurridos: 12 para años pasados/futuros, mes actual para el año en curso
+        $monthsElapsed = $isCurrentYear ? max(now()->month, 1) : 12;
 
         // Promedios mensuales
         $avgMonthlyIncome = round($yearTotalIncome / $monthsElapsed, 2);
@@ -138,13 +149,21 @@ class DashboardController extends Controller
         // Balance del año (neto)
         $yearNet = $yearTotalIncome - $yearTotalOutcome;
 
-        // Mes actual
+        // "Mes actual": si es el año en curso, el mes actual; si no, el último mes con datos (diciembre)
+        if ($isCurrentYear) {
+            $currentMonthStart = now()->startOfMonth();
+            $currentMonthEnd = now()->endOfMonth();
+        } else {
+            $currentMonthStart = Carbon::createFromDate($year, 12, 1)->startOfDay();
+            $currentMonthEnd = Carbon::createFromDate($year, 12, 31)->endOfDay();
+        }
+
         $currentMonthIncome = Income::where('user_id', $userId)
-            ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+            ->whereBetween('created_at', [$currentMonthStart, $currentMonthEnd])
             ->sum('amount');
 
         $currentMonthOutcome = Outcome::where('user_id', $userId)
-            ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+            ->whereBetween('created_at', [$currentMonthStart, $currentMonthEnd])
             ->sum('amount');
 
         // Proyección de fin de año (basado en el promedio mensual)
