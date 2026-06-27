@@ -1,10 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { Top, Bottom } from '@element-plus/icons-vue';
 import axios from 'axios';
 
 const props = defineProps({
     periodicity: String,
+    period: { type: [String, Date, null], default: null },
 });
 
 const loading = ref(true);
@@ -37,6 +38,7 @@ async function fetchDataComparison() {
         loading.value = true;
         const response = await axios.post(route('dashboard.fetch-data-comparison'), {
             periodicity: props.periodicity,
+            period: props.period,
         });
         if (response.status === 200) {
             currentIncome.value = response.data.current_income;
@@ -51,7 +53,9 @@ async function fetchDataComparison() {
     }
 }
 
-onMounted(() => fetchDataComparison());
+watch(() => [props.periodicity, props.period], () => fetchDataComparison());
+
+fetchDataComparison();
 </script>
 
 <template>
