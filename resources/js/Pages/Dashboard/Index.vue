@@ -201,7 +201,7 @@ fetchDataForPeriod();
             <article v-else class="lg:flex lg:space-x-6 space-y-6 lg:space-y-0">
                 <!-- Left column (70%) -->
                 <section class="lg:w-[70%] space-y-6">
-                    <TotalBalance :periodicity="periodicity" />
+                    <TotalBalance :periodicity="periodicity" :period="period" />
                     <Outcomes :outcomes="outcomes" />
                     <Incomes :incomes="incomes" />
                     <Statistics :outcomes="outcomes" :incomes="incomes" />
@@ -209,7 +209,7 @@ fetchDataForPeriod();
 
                 <!-- Right column (30%) -->
                 <section class="lg:w-[30%] space-y-6">
-                    <YearlySummary />
+                    <YearlySummary :periodicity="periodicity" :period="period" />
                     <LoanStatus :loans="loans" />
                 </section>
             </article>

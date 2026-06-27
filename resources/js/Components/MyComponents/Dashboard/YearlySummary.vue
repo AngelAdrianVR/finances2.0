@@ -1,10 +1,23 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { TrendCharts, Coin, Wallet } from '@element-plus/icons-vue';
 import axios from 'axios';
 
+const props = defineProps({
+    periodicity: String,
+    period: { type: [String, Date, null], default: null },
+});
+
 const loading = ref(true);
 const data = ref(null);
+
+// Extract the year from the period when periodicity is 'Anual', otherwise use current year
+const selectedYear = computed(() => {
+    if (props.periodicity === 'Anual' && props.period) {
+        return new Date(props.period).getFullYear();
+    }
+    return new Date().getFullYear();
+});
 
 const avgMonthlyIncome = computed(() => data.value?.avg_monthly_income ?? 0);
 const avgMonthlyOutcome = computed(() => data.value?.avg_monthly_outcome ?? 0);
@@ -39,7 +52,9 @@ function formatMoney(val) {
 async function fetchData() {
     try {
         loading.value = true;
-        const response = await axios.post(route('dashboard.fetch-yearly-averages'));
+        const response = await axios.post(route('dashboard.fetch-yearly-averages'), {
+            year: selectedYear.value,
+        });
         if (response.status === 200) {
             data.value = response.data;
         }
@@ -50,7 +65,9 @@ async function fetchData() {
     }
 }
 
-onMounted(() => fetchData());
+watch(selectedYear, () => fetchData());
+
+fetchData();
 </script>
 
 <template>
@@ -83,7 +100,7 @@ onMounted(() => fetchData());
     <div v-else class="dashboard-card">
         <div class="flex items-center gap-2 mb-5">
             <el-icon :size="18" color="#296A6B"><TrendCharts /></el-icon>
-            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Resumen del año {{ new Date().getFullYear() }}</h2>
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Resumen del año {{ selectedYear }}</h2>
         </div>
 
         <div class="space-y-4">
