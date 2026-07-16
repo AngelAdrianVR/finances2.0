@@ -57,7 +57,8 @@ function openEditPayment(payment) {
 
 function storeOrUpdatePayment() {
     const url = editingPayment.value ? route('payments.update', selectedPayment.value.id) : route('payments.store');
-    (editingPayment.value ? form.put : form.post)(url, {
+    const method = editingPayment.value ? 'put' : 'post';
+    form[method](url, {
         onSuccess: () => {
             ElMessage.success(editingPayment.value ? 'Abono editado.' : 'Abono registrado.');
             showPaymentModal.value = false; editingPayment.value = false; selectedPayment.value = null;

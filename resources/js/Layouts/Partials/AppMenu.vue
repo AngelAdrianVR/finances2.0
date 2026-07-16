@@ -24,6 +24,10 @@ function toggleCollapsed() {
     localStorage.setItem('app_menu_collapsed', collapsed.value);
 }
 
+function logout() {
+    router.post(route('logout'));
+}
+
 // ==========================================
 // SINGLE MENU DEFINITION (source of truth)
 // ==========================================

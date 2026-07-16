@@ -25,7 +25,7 @@ const shortcuts = [
 ];
 
 const categories = ['Transporte', 'Compras', 'Salud y bienestar', 'Entretenimiento', 'Alimentos y bebidas', 'Servicios', 'Educacion y desarrollo personal', 'Otro'];
-const paymentMethods = ['Efectivo', 'Transferencia', 'Deposito', 'Cheque'];
+const paymentMethods = ['Efectivo', 'Transferencia', 'Deposito', 'Cheque', 'Pago con tarjeta'];
 const periodicities = ['Todos los dias', 'Semanal', 'Mensual', 'Anual'];
 
 // Linked users for split
