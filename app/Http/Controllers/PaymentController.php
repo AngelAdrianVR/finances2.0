@@ -7,7 +7,7 @@ use App\Actions\Payments\DeletePaymentAction;
 use App\Actions\Payments\UpdatePaymentAction;
 use App\Http\Requests\Payments\StorePaymentRequest;
 use App\Models\Payment;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -22,14 +22,14 @@ class PaymentController extends Controller
     // CRUD
     // ========================
 
-    public function store(StorePaymentRequest $request): JsonResponse
+    public function store(StorePaymentRequest $request): RedirectResponse
     {
         $this->createPaymentAction->execute($request->validated());
 
-        return response()->json(['message' => 'Abono registrado correctamente.']);
+        return redirect()->back()->with('success', 'Abono registrado correctamente.');
     }
 
-    public function update(Request $request, Payment $payment): JsonResponse
+    public function update(Request $request, Payment $payment): RedirectResponse
     {
         $validated = $request->validate([
             'amount'         => ['required', 'numeric', 'min:1'],
@@ -40,13 +40,13 @@ class PaymentController extends Controller
 
         $this->updatePaymentAction->execute($payment, $validated);
 
-        return response()->json(['message' => 'Abono actualizado correctamente.']);
+        return redirect()->back()->with('success', 'Abono actualizado correctamente.');
     }
 
-    public function destroy(Payment $payment): JsonResponse
+    public function destroy(Payment $payment): RedirectResponse
     {
         $this->deletePaymentAction->execute($payment);
 
-        return response()->json(['message' => 'Abono eliminado correctamente.']);
+        return redirect()->back()->with('success', 'Abono eliminado correctamente.');
     }
 }
