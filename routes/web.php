@@ -4,6 +4,7 @@ use App\Http\Controllers\BankCardController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IncomeController;
+use App\Http\Controllers\InvestmentController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\OutcomeController;
 use App\Http\Controllers\PaymentController;
@@ -51,6 +52,12 @@ Route::resource('incomes', IncomeController::class)->middleware('auth');
 Route::post('incomes/massive-delete', [IncomeController::class, 'massiveDelete'])->name('incomes.massive-delete');
 Route::post('incomes/massive-update', [IncomeController::class, 'massiveUpdate'])->name('incomes.massive-update');
 Route::post('incomes/get-matches', [IncomeController::class, 'getMatches'])->name('incomes.get-matches');
+
+
+// Investment routes -------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------
+Route::resource('investments', InvestmentController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('auth');
+Route::post('investments/projection', [InvestmentController::class, 'projection'])->middleware('auth')->name('investments.projection');
 
 
 // Recurring Income routes -------------------------------------------------------------------------------------

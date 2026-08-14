@@ -44,7 +44,7 @@ function massiveUpdate() {
 async function deleteSelections() {
     try {
         await ElMessageBox.confirm('Estas seguro que deseas eliminar los gastos seleccionados?', 'Confirmar eliminacion', { confirmButtonText: 'Si, eliminar', cancelButtonText: 'Cancelar', type: 'warning' });
-        const response = await axios.post(route('outcomes.massive-delete'), { outcomes: selectedRows.value });
+        const response = await axios.post(route('outcomes.massive-delete'), { ids: selectedRows.value.map(r => r.id) });
         if (response.status === 200) {
             ElMessage.success('Gastos eliminados correctamente.');
             const ids = new Set(selectedRows.value.map(r => r.id));

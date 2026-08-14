@@ -8,6 +8,8 @@ import Incomes from '@/Components/MyComponents/Dashboard/Incomes.vue';
 import Statistics from '@/Components/MyComponents/Dashboard/Statistics.vue';
 import LoanStatus from '@/Components/MyComponents/Dashboard/LoanStatus.vue';
 import YearlySummary from '@/Components/MyComponents/Dashboard/YearlySummary.vue';
+import InvestmentPortfolio from '@/Components/MyComponents/Dashboard/InvestmentPortfolio.vue';
+import InvestmentProjection from '@/Components/MyComponents/Dashboard/InvestmentProjection.vue';
 import axios from 'axios';
 
 const loading = ref(false);
@@ -16,6 +18,11 @@ const periodicity = ref('Por día');
 const outcomes = ref(null);
 const incomes = ref(null);
 const loans = ref(null);
+const investmentRefreshKey = ref(0);
+
+function onInvestmentsChanged() {
+    investmentRefreshKey.value++;
+}
 
 const options = ['Por día', 'Semanal', 'Mensual', 'Anual'];
 
@@ -202,6 +209,7 @@ fetchDataForPeriod();
                 <!-- Left column (70%) -->
                 <section class="lg:w-[70%] space-y-6">
                     <TotalBalance :periodicity="periodicity" :period="period" />
+                    <InvestmentPortfolio @changed="onInvestmentsChanged" />
                     <Outcomes :outcomes="outcomes" />
                     <Incomes :incomes="incomes" />
                     <Statistics :outcomes="outcomes" :incomes="incomes" />
@@ -210,6 +218,7 @@ fetchDataForPeriod();
                 <!-- Right column (30%) -->
                 <section class="lg:w-[30%] space-y-6">
                     <YearlySummary :periodicity="periodicity" :period="period" />
+                    <InvestmentProjection :refresh-key="investmentRefreshKey" />
                     <LoanStatus :loans="loans" />
                 </section>
             </article>

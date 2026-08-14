@@ -94,7 +94,7 @@ async function deleteSelections() {
         );
 
         const response = await axios.post(route('incomes.massive-delete'), {
-            incomes: selectedRows.value,
+            ids: selectedRows.value.map(r => r.id),
         });
 
         if (response.status === 200) {

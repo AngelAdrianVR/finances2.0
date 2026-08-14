@@ -191,7 +191,7 @@ fetchData();
             <div class="border-t border-gray-200 dark:border-gray-600 pt-4 grid grid-cols-2 gap-4">
                 <div>
                     <p class="text-xs text-gray-400 dark:text-gray-400 mb-0.5">Total ingresos del año</p>
-                    <p class="font-mono text-sm font-semibold text-gray-800">
+                    <p class="font-mono text-sm font-bold text-gray-800 dark:text-gray-100">
                         ${{ formatMoney(yearTotalIncome) }}
                     </p>
                 </div>
