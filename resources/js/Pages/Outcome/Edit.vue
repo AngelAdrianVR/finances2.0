@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue';
 import { useForm, Link } from '@inertiajs/vue3';
+import { format } from 'date-fns';
 import { InfoFilled } from '@element-plus/icons-vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -16,6 +17,8 @@ const form = useForm({
     is_recurring_outcome: false, periodicity: null, description: props.outcome.description,
     split_enabled: props.outcome.split_enabled || false,
     split_with: props.outcome.split_with || [],
+    is_credit: props.outcome.is_credit || false,
+    payment_due_date: props.outcome.payment_due_date ? String(props.outcome.payment_due_date).slice(0, 10) : null,
 });
 
 const shortcuts = [
@@ -49,6 +52,15 @@ const splitAmount = computed(() => {
 });
 
 watch(() => form.is_recurring_outcome, (val) => { if (!val) form.periodicity = null; });
+
+// Al desmarcar "a credito", la fecha de pago se limpia.
+watch(() => form.is_credit, (val) => { if (!val) form.payment_due_date = null; });
+
+// Etiqueta legible de la fecha de pago para el mensaje de recordatorio.
+const paymentDueDateLabel = computed(() => {
+    if (!form.payment_due_date) return '';
+    return format(new Date(`${form.payment_due_date}T00:00:00`), 'dd/MM/yyyy');
+});
 
 function update() {
     form.put(route('outcomes.update', props.outcome.id), {
@@ -93,6 +105,44 @@ function update() {
                             </el-select>
                             <InputError :message="form.errors.payment_method" />
                         </el-form-item>
+                    </div>
+
+                    <!-- Gasto a credito -->
+                    <div class="mt-4 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <el-checkbox v-model="form.is_credit" label="A credito" size="small" />
+                            <el-tooltip content="Selecciona esta opcion si pagaras este gasto en una fecha posterior" placement="right">
+                                <el-icon :size="14" color="#296A6B"><InfoFilled /></el-icon>
+                            </el-tooltip>
+                        </div>
+
+                        <template v-if="form.is_credit">
+                            <el-form-item label="Fecha de pago (opcional)">
+                                <el-date-picker
+                                    v-model="form.payment_due_date"
+                                    type="date"
+                                    value-format="YYYY-MM-DD"
+                                    placeholder="Selecciona la fecha de pago"
+                                    :shortcuts="shortcuts"
+                                    class="!w-full"
+                                />
+                                <InputError :message="form.errors.payment_due_date" />
+                            </el-form-item>
+
+                            <div v-if="form.payment_due_date"
+                                class="mt-1 flex items-start gap-2 rounded-md bg-teal-50 dark:bg-teal-900/30 border border-teal-200 dark:border-teal-800 px-3 py-2 text-xs text-teal-800 dark:text-teal-200">
+                                <el-icon :size="14" class="mt-0.5 shrink-0"><InfoFilled /></el-icon>
+                                <p class="leading-relaxed">
+                                    El sistema te recordara por correo 2 dias antes de la fecha de pago ({{ paymentDueDateLabel }})
+                                    y cada dia hasta el vencimiento, es decir <strong>3 avisos</strong>.
+                                    Puedes desactivar o cambiar los dias del recordatorio desde
+                                    <Link :href="route('settings.index')" class="underline font-medium">Configuraciones</Link>.
+                                </p>
+                            </div>
+                            <p v-else class="text-xs text-gray-400 dark:text-gray-500">
+                                La fecha es opcional; si no la ingresas no se programaran recordatorios.
+                            </p>
+                        </template>
                     </div>
 
                     <!-- Split expense -->

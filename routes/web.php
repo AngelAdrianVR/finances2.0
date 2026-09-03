@@ -12,13 +12,12 @@ use App\Http\Controllers\RecurringIncomeController;
 use App\Http\Controllers\RecurringOutcomeController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Laravel\Jetstream\Agent;
 
 Route::get('/', function () {
-    $agent = new Agent();
+    $agent = new Agent;
 
     if ($agent->isDesktop() || $agent->isLaptop()) {
         return inertia('Welcome');
@@ -45,7 +44,6 @@ Route::post('/dashboard-fetch-data-for-period', [DashboardController::class, 'fe
 Route::post('/dashboard-fetch-data-comparison', [DashboardController::class, 'fetchDataComparison'])->middleware('auth')->name('dashboard.fetch-data-comparison');
 Route::post('/dashboard-fetch-yearly-averages', [DashboardController::class, 'fetchYearlyAverages'])->middleware('auth')->name('dashboard.fetch-yearly-averages');
 
-
 // Income routes -------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
 Route::resource('incomes', IncomeController::class)->middleware('auth');
@@ -53,12 +51,10 @@ Route::post('incomes/massive-delete', [IncomeController::class, 'massiveDelete']
 Route::post('incomes/massive-update', [IncomeController::class, 'massiveUpdate'])->name('incomes.massive-update');
 Route::post('incomes/get-matches', [IncomeController::class, 'getMatches'])->name('incomes.get-matches');
 
-
 // Investment routes -------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
 Route::resource('investments', InvestmentController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('auth');
 Route::post('investments/projection', [InvestmentController::class, 'projection'])->middleware('auth')->name('investments.projection');
-
 
 // Recurring Income routes -------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
@@ -66,7 +62,6 @@ Route::resource('recurring-incomes', RecurringIncomeController::class)->middlewa
 Route::post('recurring-incomes/massive-delete', [RecurringIncomeController::class, 'massiveDelete'])->name('recurring-incomes.massive-delete');
 Route::post('recurring-incomes/get-matches', [RecurringIncomeController::class, 'getMatches'])->name('recurring-incomes.get-matches');
 Route::get('recurring-incomes/toggle-status/{recurring_income}', [RecurringIncomeController::class, 'toggleStatus'])->name('recurring-incomes.toggle-status');
-
 
 // Outcome routes -------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
@@ -77,14 +72,12 @@ Route::post('outcomes/massive-delete', [OutcomeController::class, 'massiveDelete
 Route::post('outcomes/massive-update', [OutcomeController::class, 'massiveUpdate'])->name('outcomes.massive-update');
 Route::post('outcomes/get-matches', [OutcomeController::class, 'getMatches'])->name('outcomes.get-matches');
 
-
 // Recurring Outcome routes -------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
 Route::resource('recurring-outcomes', RecurringOutcomeController::class)->middleware('auth');
 Route::post('recurring-outcomes/massive-delete', [RecurringOutcomeController::class, 'massiveDelete'])->name('recurring-outcomes.massive-delete');
 Route::post('recurring-outcomes/get-matches', [RecurringOutcomeController::class, 'getMatches'])->name('recurring-outcomes.get-matches');
 Route::get('recurring-outcomes/toggle-status/{recurring_outcome}', [RecurringOutcomeController::class, 'toggleStatus'])->name('recurring-outcomes.toggle-status');
-
 
 // Loan routes ---------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
@@ -97,17 +90,14 @@ Route::get('loans/external-view/{encrypted_id}', [LoanController::class, 'extern
 Route::post('loans/massive-delete', [LoanController::class, 'massiveDelete'])->name('loans.massive-delete');
 Route::post('loans/get-matches', [LoanController::class, 'getMatches'])->name('loans.get-matches');
 
-
 // Payment routes -------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
 Route::resource('payments', PaymentController::class)->middleware('auth');
-
 
 // calendar routes -------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
 Route::get('calendars/fetch-month-reminders', [CalendarController::class, 'fetchMonthReminders'])->middleware('auth')->name('calendars.fetch-month-reminders');
 Route::resource('calendars', CalendarController::class)->middleware('auth');
-
 
 // setting routes -------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
@@ -115,7 +105,7 @@ Route::resource('settings', SettingController::class)->middleware('auth');
 Route::post('settings/link-by-code', [SettingController::class, 'linkByCode'])->middleware('auth')->name('settings.link-by-code');
 Route::post('settings/accept-link/{userLink}', [SettingController::class, 'acceptLink'])->middleware('auth')->name('settings.accept-link');
 Route::delete('settings/remove-link/{userLink}', [SettingController::class, 'removeLink'])->middleware('auth')->name('settings.remove-link');
-
+Route::post('settings/update-payment-reminders', [SettingController::class, 'updatePaymentReminderPreferences'])->middleware('auth')->name('settings.update-payment-reminders');
 
 // bankcards routes -------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
@@ -123,21 +113,21 @@ Route::resource('bank-cards', BankCardController::class)->middleware('auth');
 Route::post('users/massive-delete', [BankCardController::class, 'massiveDelete'])->name('bank-cards.massive-delete');
 Route::get('bank-cards-toogle-status/{bank_card}', [BankCardController::class, 'toogleStatus'])->name('bank-cards.toogle-status')->middleware('auth');
 
-
 // rutas de usuarios
 Route::get('users-get-notifications', [UserController::class, 'getNotifications'])->middleware('auth')->name('users.get-notifications');
 Route::post('users-read-notifications', [UserController::class, 'readNotifications'])->middleware('auth')->name('users.read-user-notifications');
 Route::post('users-delete-notification', [UserController::class, 'deleteNotifications'])->middleware('auth')->name('users.delete-user-notification');
 
-
 // comandos artisan
 Route::get('/storage-link', function () {
     Artisan::call('storage:link');
+
     return 'cleared.';
 });
 
 Route::get('/calendar-schedule', function () {
     Artisan::call('calendar:process-scheduled');
+
     return 'comando de calendario ejecutado';
 });
 
@@ -146,5 +136,6 @@ Route::get('/clear-all', function () {
     Artisan::call('config:clear');
     Artisan::call('route:clear');
     Artisan::call('view:clear');
+
     return 'cleared.';
 });

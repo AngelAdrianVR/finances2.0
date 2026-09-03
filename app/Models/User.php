@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -25,6 +24,8 @@ class User extends Authenticatable
         'password',
         'total_money',
         'link_code',
+        'payment_reminder_enabled',
+        'payment_reminder_days_before',
     ];
 
     protected $hidden = [
@@ -42,8 +43,10 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
-            'total_money'       => 'float',
+            'password' => 'hashed',
+            'total_money' => 'float',
+            'payment_reminder_enabled' => 'boolean',
+            'payment_reminder_days_before' => 'integer',
         ];
     }
 
@@ -140,4 +143,3 @@ class User extends Authenticatable
             ->sum(fn (Loan $loan) => $loan->remaining);
     }
 }
-

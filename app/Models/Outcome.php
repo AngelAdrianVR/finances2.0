@@ -18,15 +18,21 @@ class Outcome extends Model
         'automatically_created',
         'split_enabled',
         'split_with',
+        'is_credit',
+        'payment_due_date',
+        'reminder_last_sent_date',
         'user_id',
     ];
 
     protected $casts = [
-        'amount'                => 'float',
+        'amount' => 'float',
         'automatically_created' => 'boolean',
-        'split_enabled'         => 'boolean',
-        'split_with'            => 'array',
-        'created_at'            => 'datetime',
+        'split_enabled' => 'boolean',
+        'split_with' => 'array',
+        'is_credit' => 'boolean',
+        'payment_due_date' => 'date',
+        'reminder_last_sent_date' => 'date',
+        'created_at' => 'datetime',
     ];
 
     // ========================
@@ -62,4 +68,3 @@ class Outcome extends Model
         return $query->where('split_enabled', true);
     }
 }
-

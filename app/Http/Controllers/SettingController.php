@@ -4,21 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\BankCard;
 use App\Models\Setting;
-use App\Models\UserLink;
 use App\Models\User;
+use App\Models\UserLink;
 use Illuminate\Http\Request;
 
 class SettingController extends Controller
 {
     public function index()
-    {   
+    {
         $bankCards = BankCard::where('user_id', auth()->id())->paginate(20);
 
         // User links data
         $user = auth()->user();
 
         // Ensure user has a link_code
-        if (!$user->link_code) {
+        if (! $user->link_code) {
             $user->link_code = User::generateUniqueLinkCode();
             $user->save();
         }
@@ -28,11 +28,18 @@ class SettingController extends Controller
         $pendingSent = $user->sentLinks()->where('status', 'pending')->with('linkedUser')->get();
         $pendingReceived = $user->receivedLinks()->where('status', 'pending')->with('user')->get();
 
+        // Preferencias de recordatorios de gastos a crédito
+        $paymentReminder = [
+            'enabled' => (bool) $user->payment_reminder_enabled,
+            'days_before' => (int) ($user->payment_reminder_days_before ?? 2),
+        ];
+
         return inertia('Setting/Index', compact(
             'bankCards',
             'linkedUsers',
             'pendingSent',
-            'pendingReceived'
+            'pendingReceived',
+            'paymentReminder'
         ));
     }
 
@@ -57,10 +64,10 @@ class SettingController extends Controller
         // Check if already linked
         $existingLink = UserLink::where(function ($q) use ($currentUser, $targetUser) {
             $q->where('user_id', $currentUser->id)
-              ->where('linked_user_id', $targetUser->id);
+                ->where('linked_user_id', $targetUser->id);
         })->orWhere(function ($q) use ($currentUser, $targetUser) {
             $q->where('user_id', $targetUser->id)
-              ->where('linked_user_id', $currentUser->id);
+                ->where('linked_user_id', $currentUser->id);
         })->first();
 
         if ($existingLink) {
@@ -72,15 +79,15 @@ class SettingController extends Controller
             }
             // If rejected, reactivate
             $existingLink->update([
-                'status'         => 'pending',
-                'user_id'        => $currentUser->id,
+                'status' => 'pending',
+                'user_id' => $currentUser->id,
                 'linked_user_id' => $targetUser->id,
             ]);
         } else {
             UserLink::create([
-                'user_id'        => $currentUser->id,
+                'user_id' => $currentUser->id,
                 'linked_user_id' => $targetUser->id,
-                'status'         => 'accepted',
+                'status' => 'accepted',
             ]);
         }
 
@@ -103,7 +110,7 @@ class SettingController extends Controller
     public function removeLink(UserLink $userLink)
     {
         $currentUserId = auth()->id();
-        
+
         if ($userLink->user_id !== $currentUserId && $userLink->linked_user_id !== $currentUserId) {
             abort(403);
         }
@@ -111,6 +118,21 @@ class SettingController extends Controller
         $userLink->delete();
 
         return back()->with('success', 'Vinculación eliminada.');
+    }
+
+    /**
+     * Guarda las preferencias de recordatorios de gastos a crédito del usuario.
+     */
+    public function updatePaymentReminderPreferences(Request $request)
+    {
+        $validated = $request->validate([
+            'payment_reminder_enabled' => ['required', 'boolean'],
+            'payment_reminder_days_before' => ['required', 'integer', 'min:0', 'max:30'],
+        ]);
+
+        auth()->user()->update($validated);
+
+        return back()->with('success', 'Preferencias de recordatorio guardadas correctamente.');
     }
 
     public function create()

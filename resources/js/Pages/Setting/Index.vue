@@ -11,6 +11,7 @@ const props = defineProps({
     linkedUsers: Array,
     pendingSent: Array,
     pendingReceived: Array,
+    paymentReminder: Object,
 });
 
 const activeTab = ref('links');
@@ -26,6 +27,19 @@ function linkByCode() {
         onSuccess: () => {
             linkForm.reset();
         },
+    });
+}
+
+// Payment reminders preferences
+const reminderForm = useForm({
+    payment_reminder_enabled: props.paymentReminder?.enabled ?? true,
+    payment_reminder_days_before: props.paymentReminder?.days_before ?? 2,
+});
+
+function savePaymentReminders() {
+    reminderForm.post(route('settings.update-payment-reminders'), {
+        preserveScroll: true,
+        onSuccess: () => ElMessage.success('Preferencias de recordatorio guardadas correctamente.'),
     });
 }
 
@@ -204,6 +218,45 @@ onMounted(() => {
                         <div class="empty-state py-8">
                             <p class="empty-state-title">Tarjetas bancarias</p>
                             <p class="empty-state-text">Administra tus tarjetas bancarias aqu\u00ed</p>
+                        </div>
+                    </div>
+                </el-tab-pane>
+
+                <!-- Tab: Recordatorios de pago -->
+                <el-tab-pane label="Recordatorios de pago" name="reminders">
+                    <div class="space-y-6 mt-4">
+                        <div class="dashboard-card">
+                            <h2 class="dashboard-card-title">Recordatorios de gastos a crédito</h2>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                Cuando registres un gasto a crédito con una fecha de pago, el sistema te enviará recordatorios por correo antes del vencimiento.
+                            </p>
+
+                            <el-form :model="reminderForm" label-position="top" @submit.prevent="savePaymentReminders">
+                                <div class="flex items-center justify-between gap-4 border border-gray-100 dark:border-gray-700 rounded-lg p-4 mb-4">
+                                    <div>
+                                        <p class="font-medium text-gray-800 dark:text-gray-200">Activar recordatorios</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Están activados por defecto para todos los usuarios.</p>
+                                    </div>
+                                    <el-switch v-model="reminderForm.payment_reminder_enabled" />
+                                </div>
+
+                                <el-form-item :error="reminderForm.errors?.payment_reminder_days_before">
+                                    <template #label>
+                                        <span>Días antes de la fecha de pago para empezar a recordar</span>
+                                    </template>
+                                    <div class="flex items-center gap-3">
+                                        <el-input-number v-model="reminderForm.payment_reminder_days_before" :min="0" :max="30" :disabled="!reminderForm.payment_reminder_enabled" />
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">días</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        Con {{ reminderForm.payment_reminder_days_before }} día(s) recibirás el primer aviso esa cantidad de días antes y luego cada día hasta la fecha de pago ({{ reminderForm.payment_reminder_days_before + 1 }} avisos en total). Con 0 solo se avisa el mismo día del vencimiento.
+                                    </p>
+                                </el-form-item>
+
+                                <div class="flex justify-end">
+                                    <el-button type="primary" :loading="reminderForm.processing" @click="savePaymentReminders">Guardar cambios</el-button>
+                                </div>
+                            </el-form>
                         </div>
                     </div>
                 </el-tab-pane>

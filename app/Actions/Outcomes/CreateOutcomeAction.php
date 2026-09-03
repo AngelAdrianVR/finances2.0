@@ -20,6 +20,13 @@ class CreateOutcomeAction
         $isRecurring = ! empty($data['is_recurring_outcome']);
         $isSplit = ! empty($data['split_enabled']) && ! empty($data['split_with']);
 
+        // Crédito: si no es a crédito, nunca debe guardarse una fecha de pago.
+        $isCredit = ! empty($data['is_credit']);
+        $data['is_credit'] = $isCredit;
+        if (! $isCredit) {
+            $data['payment_due_date'] = null;
+        }
+
         if ($isSplit) {
             $data['split_with'] = array_map('intval', $data['split_with']);
             $data = $this->handleSplit($data);
@@ -36,15 +43,15 @@ class CreateOutcomeAction
             RecurringOutcome::create($data);
 
             $this->calendarService->generateRecurringEvents([
-                'type'           => 'Gasto fijo',
-                'title'          => $data['concept'],
-                'amount'         => $data['amount'],
-                'category'       => $data['category'] ?? null,
-                'description'    => $data['description'] ?? null,
-                'periodicity'    => $data['periodicity'],
+                'type' => 'Gasto fijo',
+                'title' => $data['concept'],
+                'amount' => $data['amount'],
+                'category' => $data['category'] ?? null,
+                'description' => $data['description'] ?? null,
+                'periodicity' => $data['periodicity'],
                 'payment_method' => $data['payment_method'] ?? null,
-                'user_id'        => $data['user_id'],
-                'created_at'     => $data['created_at'],
+                'user_id' => $data['user_id'],
+                'created_at' => $data['created_at'],
             ]);
         }
 
@@ -64,15 +71,17 @@ class CreateOutcomeAction
         $data['amount'] = $proportionalAmount;
 
         $baseData = [
-            'amount'                => $proportionalAmount,
-            'concept'               => $data['concept'],
-            'category'              => $data['category'] ?? null,
-            'payment_method'        => $data['payment_method'] ?? null,
-            'description'           => $data['description'] ?? null,
-            'created_at'            => $data['created_at'] ?? now(),
+            'amount' => $proportionalAmount,
+            'concept' => $data['concept'],
+            'category' => $data['category'] ?? null,
+            'payment_method' => $data['payment_method'] ?? null,
+            'description' => $data['description'] ?? null,
+            'created_at' => $data['created_at'] ?? now(),
             'automatically_created' => true,
-            'split_enabled'         => false,
-            'split_with'            => null,
+            'split_enabled' => false,
+            'split_with' => null,
+            'is_credit' => $data['is_credit'] ?? false,
+            'payment_due_date' => $data['payment_due_date'] ?? null,
         ];
 
         foreach ($splitUserIds as $userId) {
