@@ -121,33 +121,7 @@ data() {
         created_at: null,
     });
 
-    return {
-        form,
-        categories: ['Servicios', 'Transporte', 'Compras', 'Salud y bienestar', 'Educación y desarrollo personal', 'Entretenimiento', 'Alimentos y bebidas', 'Otro'],
-        payment_methods: ['Efectivo', 'Transferencia', 'Depósito', 'Pago con tarjeta'],
-        periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
-    }
-},
-components:{
-    PrimaryButton,
-    InputLabel,
-    InputError,
-    AppLayout,
-    Back
-},
-methods:{
-    store() {
-        this.form.post(route("recurring-outcomes.store"), {
-            onSuccess: () => {
-                // message
-                this.$message({
-                    type: 'success',
-                    message: 'Ingreso recurrente registrado'
-                });
-            },
-        });
-    },
-    shortcuts: [
+    const shortcuts = [
         {
             text: 'Hoy',
             value: new Date(),
@@ -168,7 +142,35 @@ methods:{
                 return date;
             },
         },
-    ],
+    ];
+
+    return {
+        form,
+        categories: ['Servicios', 'Transporte', 'Compras', 'Salud y bienestar', 'Educación y desarrollo personal', 'Entretenimiento', 'Alimentos y bebidas', 'Otro'],
+        payment_methods: ['Efectivo', 'Transferencia', 'Depósito', 'Pago con tarjeta'],
+        periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
+        shortcuts,
+    }
+},
+components:{
+    PrimaryButton,
+    InputLabel,
+    InputError,
+    AppLayout,
+    Back
+},
+methods:{
+    store() {
+        this.form.post(route("recurring-outcomes.store"), {
+            onSuccess: () => {
+                // message
+                this.$message({
+                    type: 'success',
+                    message: 'Gasto recurrente registrado'
+                });
+            },
+        });
+    },
 }
 }
 </script>

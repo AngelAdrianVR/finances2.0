@@ -31,6 +31,17 @@ class TotalMoneyService
     }
 
     /**
+     * Set the user's total money to an absolute amount.
+     * Used when the user manually adjusts their available balance.
+     * Prevents the balance from going negative (floor at 0).
+     */
+    public function set(User $user, float $amount): void
+    {
+        $user->total_money = round(max(0, $amount), 2);
+        $user->save();
+    }
+
+    /**
      * Adjust the balance: reverses the old amount then applies the new one.
      * Useful when updating an income or outcome record.
      *

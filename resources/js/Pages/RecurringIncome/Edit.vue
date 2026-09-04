@@ -121,36 +121,7 @@ data() {
         created_at: this.recurring_income.created_at,
     });
 
-    return {
-        form,
-        categories: ['Ventas', 'Intereses', 'Nómina', 'Prestación de servicios', 'Comision', 'Renta', 'Otro'],
-        payment_methods: ['Efectivo', 'Transferencia', 'Depósito', 'Cheque'],
-        periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
-    }
-},
-components:{
-    PrimaryButton,
-    InputLabel,
-    InputError,
-    AppLayout,
-    Back
-},
-props:{
-    recurring_income: Object
-},
-methods:{
-    update() {
-        this.form.put(route("recurring-incomes.update", this.recurring_income.id), {
-            onSuccess: () => {
-                // message
-                this.$message({
-                    type: 'success',
-                    message: 'Ingreso recurrente registrado'
-                });
-            },
-        });
-    },
-    shortcuts: [
+    const shortcuts = [
         {
             text: 'Hoy',
             value: new Date(),
@@ -171,7 +142,38 @@ methods:{
                 return date;
             },
         },
-    ],
+    ];
+
+    return {
+        form,
+        categories: ['Ventas', 'Intereses', 'Nómina', 'Prestación de servicios', 'Comision', 'Renta', 'Otro'],
+        payment_methods: ['Efectivo', 'Transferencia', 'Depósito', 'Cheque'],
+        periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
+        shortcuts,
+    }
+},
+components:{
+    PrimaryButton,
+    InputLabel,
+    InputError,
+    AppLayout,
+    Back
+},
+props:{
+    recurring_income: Object
+},
+methods:{
+    update() {
+        this.form.put(route("recurring-incomes.update", this.recurring_income.id), {
+            onSuccess: () => {
+                // message
+                this.$message({
+                    type: 'success',
+                    message: 'Ingreso recurrente actualizado'
+                });
+            },
+        });
+    },
 }
 }
 </script>

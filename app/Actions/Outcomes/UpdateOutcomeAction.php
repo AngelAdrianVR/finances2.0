@@ -48,7 +48,7 @@ class UpdateOutcomeAction
             RecurringOutcome::where('concept', $outcome->concept)
                 ->where('user_id', auth()->id())
                 ->delete();
-            $this->calendarService->removeByTitle($outcome->concept);
+            $this->calendarService->removeByTitle($outcome->concept, 'Gasto fijo', auth()->id(), now()->toDateString());
         }
 
         $outcome->update($data);
@@ -56,7 +56,7 @@ class UpdateOutcomeAction
         $this->totalMoneyService->adjust(auth()->user(), $oldAmount, $outcome->amount);
 
         if ($isRecurring) {
-            $this->calendarService->removeByTitle($outcome->concept);
+            $this->calendarService->removeByTitle($outcome->concept, 'Gasto fijo', auth()->id(), now()->toDateString());
 
             RecurringOutcome::updateOrCreate(
                 ['concept' => $data['concept'], 'user_id' => auth()->id()],
@@ -73,7 +73,7 @@ class UpdateOutcomeAction
                 'payment_method' => $data['payment_method'] ?? null,
                 'user_id' => auth()->id(),
                 'created_at' => $data['created_at'] ?? $outcome->created_at,
-            ]);
+            ], true);
         }
 
         return $outcome->fresh();

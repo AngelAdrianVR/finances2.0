@@ -212,16 +212,6 @@ onMounted(() => {
                     </div>
                 </el-tab-pane>
 
-                <!-- Tab: Tarjetas -->
-                <el-tab-pane label="Tarjetas" name="cards">
-                    <div class="mt-4">
-                        <div class="empty-state py-8">
-                            <p class="empty-state-title">Tarjetas bancarias</p>
-                            <p class="empty-state-text">Administra tus tarjetas bancarias aqu\u00ed</p>
-                        </div>
-                    </div>
-                </el-tab-pane>
-
                 <!-- Tab: Recordatorios de pago -->
                 <el-tab-pane label="Recordatorios de pago" name="reminders">
                     <div class="space-y-6 mt-4">

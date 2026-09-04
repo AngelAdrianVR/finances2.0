@@ -29,21 +29,21 @@ class UpdateCalendarEventAction
         }
 
         // Delete old calendar events by title
-        $this->calendarService->removeByTitle($oldTitle);
+        $this->calendarService->removeByTitle($oldTitle, $calendar->type, auth()->id());
 
         // Update the representative event
         $calendar->update($data);
 
         // Re-create recurring record
         $recurringData = [
-            'concept'        => $data['title'],
-            'periodicity'    => $data['periodicity'],
-            'amount'         => $data['amount'],
+            'concept' => $data['title'],
+            'periodicity' => $data['periodicity'],
+            'amount' => $data['amount'],
             'payment_method' => $data['payment_method'] ?? null,
-            'description'    => $data['description'] ?? null,
-            'category'       => $data['category'] ?? null,
-            'created_at'     => $data['date'],
-            'user_id'        => auth()->id(),
+            'description' => $data['description'] ?? null,
+            'category' => $data['category'] ?? null,
+            'created_at' => $data['date'],
+            'user_id' => auth()->id(),
         ];
 
         if ($data['type'] === 'Ingreso recurrente') {
@@ -60,16 +60,16 @@ class UpdateCalendarEventAction
 
         // Regenerate future occurrences
         $this->calendarService->generateRecurringEvents([
-            'type'           => $data['type'],
-            'title'          => $data['title'],
-            'amount'         => $data['amount'],
-            'category'       => $data['category'] ?? null,
-            'description'    => $data['description'] ?? null,
-            'periodicity'    => $data['periodicity'],
+            'type' => $data['type'],
+            'title' => $data['title'],
+            'amount' => $data['amount'],
+            'category' => $data['category'] ?? null,
+            'description' => $data['description'] ?? null,
+            'periodicity' => $data['periodicity'],
             'payment_method' => $data['payment_method'] ?? null,
-            'user_id'        => auth()->id(),
-            'created_at'     => $data['date'],
-        ]);
+            'user_id' => auth()->id(),
+            'created_at' => $data['date'],
+        ], true);
 
         return $calendar->fresh();
     }

@@ -31,7 +31,7 @@ class DeleteIncomeAction
         RecurringIncome::where('concept', $concept)
             ->where('user_id', auth()->id())
             ->delete();
-        $this->calendarService->removeByTitle($concept);
+        $this->calendarService->removeByTitle($concept, 'Ingreso recurrente', auth()->id(), now()->toDateString());
     }
 
     /**
@@ -64,7 +64,7 @@ class DeleteIncomeAction
             RecurringIncome::where('concept', $concept)
                 ->where('user_id', $user->id)
                 ->delete();
-            $this->calendarService->removeByTitle($concept);
+            $this->calendarService->removeByTitle($concept, 'Ingreso recurrente', $user->id, now()->toDateString());
         }
 
         return $totalDeducted;

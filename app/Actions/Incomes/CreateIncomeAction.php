@@ -29,16 +29,16 @@ class CreateIncomeAction
             RecurringIncome::create($data);
 
             $this->calendarService->generateRecurringEvents([
-                'type'           => 'Ingreso recurrente',
-                'title'          => $data['concept'],
-                'amount'         => $data['amount'],
-                'category'       => $data['category'] ?? null,
-                'description'    => $data['description'] ?? null,
-                'periodicity'    => $data['periodicity'],
+                'type' => 'Ingreso recurrente',
+                'title' => $data['concept'],
+                'amount' => $data['amount'],
+                'category' => $data['category'] ?? null,
+                'description' => $data['description'] ?? null,
+                'periodicity' => $data['periodicity'],
                 'payment_method' => $data['payment_method'] ?? null,
-                'user_id'        => $data['user_id'],
-                'created_at'     => $data['created_at'],
-            ]);
+                'user_id' => $data['user_id'],
+                'created_at' => $data['created_at'],
+            ], true);
         }
 
         return $income;

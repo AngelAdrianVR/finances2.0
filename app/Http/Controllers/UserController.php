@@ -2,11 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Users\UpdateAvailableMoneyRequest;
 use App\Http\Resources\NotificationResource;
+use App\Services\TotalMoneyService;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    public function __construct(
+        private readonly TotalMoneyService $totalMoneyService,
+    ) {}
+
+    /**
+     * Update the authenticated user's available money (total_money).
+     */
+    public function updateAvailableMoney(UpdateAvailableMoneyRequest $request)
+    {
+        $this->totalMoneyService->set($request->user(), (float) $request->validated('total_money'));
+
+        return response()->json([
+            'message' => 'Monto disponible actualizado correctamente.',
+            'total_money' => round((float) $request->user()->total_money, 2),
+        ]);
+    }
+
     public function getNotifications()
     {
         $items = NotificationResource::collection(auth()->user()->notifications);

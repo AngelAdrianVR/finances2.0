@@ -31,7 +31,7 @@ class DeleteOutcomeAction
         RecurringOutcome::where('concept', $concept)
             ->where('user_id', auth()->id())
             ->delete();
-        $this->calendarService->removeByTitle($concept);
+        $this->calendarService->removeByTitle($concept, 'Gasto fijo', auth()->id(), now()->toDateString());
     }
 
     /**
@@ -60,7 +60,7 @@ class DeleteOutcomeAction
             RecurringOutcome::where('concept', $concept)
                 ->where('user_id', $user->id)
                 ->delete();
-            $this->calendarService->removeByTitle($concept);
+            $this->calendarService->removeByTitle($concept, 'Gasto fijo', $user->id, now()->toDateString());
         }
 
         return $totalRestored;

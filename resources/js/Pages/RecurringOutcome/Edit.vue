@@ -121,36 +121,7 @@ data() {
         created_at: this.recurring_outcome.created_at,
     });
 
-    return {
-        form,
-        categories: ['Servicios', 'Comida', 'Transporte', 'Deuda', 'Renta', 'Otro'],
-        payment_methods: ['Efectivo', 'Transferencia', 'Depósito', 'Pago con tarjeta'],
-        periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
-    }
-},
-components:{
-    PrimaryButton,
-    InputLabel,
-    InputError,
-    AppLayout,
-    Back
-},
-props:{
-    recurring_outcome: Object
-},
-methods:{
-    update() {
-        this.form.put(route("recurring-outcomes.update", this.recurring_outcome.id), {
-            onSuccess: () => {
-                // message
-                this.$message({
-                    type: 'success',
-                    message: 'Gasto recurrente registrado'
-                });
-            },
-        });
-    },
-    shortcuts: [
+    const shortcuts = [
         {
             text: 'Hoy',
             value: new Date(),
@@ -171,7 +142,38 @@ methods:{
                 return date;
             },
         },
-    ],
+    ];
+
+    return {
+        form,
+        categories: ['Servicios', 'Transporte', 'Compras', 'Salud y bienestar', 'Educación y desarrollo personal', 'Entretenimiento', 'Alimentos y bebidas', 'Otro'],
+        payment_methods: ['Efectivo', 'Transferencia', 'Depósito', 'Pago con tarjeta'],
+        periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
+        shortcuts,
+    }
+},
+components:{
+    PrimaryButton,
+    InputLabel,
+    InputError,
+    AppLayout,
+    Back
+},
+props:{
+    recurring_outcome: Object
+},
+methods:{
+    update() {
+        this.form.put(route("recurring-outcomes.update", this.recurring_outcome.id), {
+            onSuccess: () => {
+                // message
+                this.$message({
+                    type: 'success',
+                    message: 'Gasto recurrente actualizado'
+                });
+            },
+        });
+    },
 }
 }
 </script>

@@ -34,7 +34,13 @@ class IncomeController extends Controller
 
     public function index(): InertiaResponse
     {
-        $incomes = Income::forUser()->latest('id')->paginate(50);
+        // Tamaño de página configurable (10, 20, 50 o 100).
+        $perPage = request()->integer('per_page', 50);
+        if (! in_array($perPage, [10, 20, 50, 100], true)) {
+            $perPage = 50;
+        }
+
+        $incomes = Income::forUser()->latest('id')->paginate($perPage)->withQueryString();
         $recurring_incomes = RecurringIncome::forUser()->latest('id')->paginate(50);
 
         return inertia('Income/Index', compact('incomes', 'recurring_incomes'));
@@ -47,6 +53,8 @@ class IncomeController extends Controller
 
     public function edit(Income $income): InertiaResponse
     {
+        $this->authorizeOwner($income);
+
         return inertia('Income/Edit', compact('income'));
     }
 
@@ -56,6 +64,8 @@ class IncomeController extends Controller
 
     public function show(Income $income): InertiaResponse
     {
+        $this->authorizeOwner($income);
+
         return inertia('Income/Show', compact('income'));
     }
 
@@ -68,6 +78,8 @@ class IncomeController extends Controller
 
     public function update(UpdateIncomeRequest $request, Income $income): RedirectResponse
     {
+        $this->authorizeOwner($income);
+
         $this->updateIncomeAction->execute($income, $request->validated());
 
         return to_route('incomes.index');
@@ -75,6 +87,8 @@ class IncomeController extends Controller
 
     public function destroy(Income $income): RedirectResponse
     {
+        $this->authorizeOwner($income);
+
         $this->deleteIncomeAction->execute($income);
 
         return to_route('incomes.index');
@@ -97,6 +111,15 @@ class IncomeController extends Controller
         $this->massUpdateIncomeAction->execute($ids, $request->validated());
 
         return to_route('incomes.index');
+    }
+
+    // ========================
+    // Helpers
+    // ========================
+
+    private function authorizeOwner(Income $income): void
+    {
+        abort_if($income->user_id !== auth()->id(), 403);
     }
 
     // ========================

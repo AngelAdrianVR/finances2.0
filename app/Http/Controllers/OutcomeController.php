@@ -33,7 +33,13 @@ class OutcomeController extends Controller
 
     public function index(): InertiaResponse
     {
-        $outcomes = Outcome::forUser()->latest('id')->paginate(50);
+        // Tamaño de página configurable (10, 20, 50 o 100).
+        $perPage = request()->integer('per_page', 50);
+        if (! in_array($perPage, [10, 20, 50, 100], true)) {
+            $perPage = 50;
+        }
+
+        $outcomes = Outcome::forUser()->latest('id')->paginate($perPage)->withQueryString();
         $recurring_outcomes = RecurringOutcome::forUser()->latest('id')->paginate(50);
 
         return inertia('Outcome/Index', compact('outcomes', 'recurring_outcomes'));
@@ -46,6 +52,8 @@ class OutcomeController extends Controller
 
     public function edit(Outcome $outcome): InertiaResponse
     {
+        $this->authorizeOwner($outcome);
+
         return inertia('Outcome/Edit', compact('outcome'));
     }
 
@@ -55,6 +63,8 @@ class OutcomeController extends Controller
 
     public function show(Outcome $outcome): InertiaResponse
     {
+        $this->authorizeOwner($outcome);
+
         return inertia('Outcome/Show', compact('outcome'));
     }
 
@@ -67,6 +77,8 @@ class OutcomeController extends Controller
 
     public function update(UpdateOutcomeRequest $request, Outcome $outcome): RedirectResponse
     {
+        $this->authorizeOwner($outcome);
+
         $this->updateOutcomeAction->execute($outcome, $request->validated());
 
         return to_route('outcomes.index');
@@ -74,6 +86,8 @@ class OutcomeController extends Controller
 
     public function destroy(Outcome $outcome): RedirectResponse
     {
+        $this->authorizeOwner($outcome);
+
         $this->deleteOutcomeAction->execute($outcome);
 
         return to_route('outcomes.index');
@@ -118,12 +132,21 @@ class OutcomeController extends Controller
     public function getLinkedUsers(): JsonResponse
     {
         $linkedUsers = auth()->user()->linkedUsers()->map(fn ($user) => [
-            'id'                => $user->id,
-            'name'              => $user->name,
-            'email'             => $user->email,
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
             'profile_photo_url' => $user->profile_photo_url,
         ]);
 
         return response()->json(['linked_users' => $linkedUsers]);
+    }
+
+    // ========================
+    // Helpers
+    // ========================
+
+    private function authorizeOwner(Outcome $outcome): void
+    {
+        abort_if($outcome->user_id !== auth()->id(), 403);
     }
 }

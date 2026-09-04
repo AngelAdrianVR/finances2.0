@@ -16,7 +16,7 @@ class DeleteCalendarEventAction
     /**
      * Delete calendar events based on the deletion mode.
      *
-     * @param string $mode 'Este' | 'Este y los siguientes' | 'Todos'
+     * @param  string  $mode  'Este' | 'Este y los siguientes' | 'Todos'
      */
     public function execute(Calendar $calendar, string $mode): void
     {
@@ -28,19 +28,24 @@ class DeleteCalendarEventAction
                 break;
 
             case 'Este y los siguientes':
-                $this->calendarService->removeByTitle($title, $calendar->date->toDateString());
+                $this->calendarService->removeByTitle(
+                    $title,
+                    $calendar->type,
+                    $calendar->user_id,
+                    $calendar->date->toDateString()
+                );
                 // Also delete the representative event if it falls in range
                 $calendar->delete();
                 // Remove recurring records
-                RecurringIncome::where('concept', $title)->delete();
-                RecurringOutcome::where('concept', $title)->delete();
+                RecurringIncome::where('concept', $title)->where('user_id', $calendar->user_id)->delete();
+                RecurringOutcome::where('concept', $title)->where('user_id', $calendar->user_id)->delete();
                 break;
 
             case 'Todos':
-                $this->calendarService->removeByTitle($title);
+                $this->calendarService->removeByTitle($title, $calendar->type, $calendar->user_id);
                 // Remove recurring records
-                RecurringIncome::where('concept', $title)->delete();
-                RecurringOutcome::where('concept', $title)->delete();
+                RecurringIncome::where('concept', $title)->where('user_id', $calendar->user_id)->delete();
+                RecurringOutcome::where('concept', $title)->where('user_id', $calendar->user_id)->delete();
                 break;
         }
     }

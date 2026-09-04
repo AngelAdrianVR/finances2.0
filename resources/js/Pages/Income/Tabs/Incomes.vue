@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { Edit, Delete, MoreFilled, Refresh } from '@element-plus/icons-vue';
 import { format } from 'date-fns';
@@ -32,7 +32,49 @@ const form = useForm({
 });
 
 const categories = ['Ventas', 'Intereses', 'Nomina', 'Prestacion de servicios', 'Comision', 'Renta', 'Otro'];
-const paymentMethods = ['Efectivo', 'Transferencia', 'Deposito', 'Cheque'];
+const paymentMethods = ['Efectivo', 'Transferencia', 'Deposito', 'Cheque', 'Pago con tarjeta'];
+const perPageOptions = [10, 20, 50, 100];
+
+// Filtros locales (sobre los registros cargados en la pagina actual)
+const filters = ref({ category: null, payment_method: null });
+
+const visibleRows = computed(() =>
+    (props.incomes?.data ?? []).filter((inc) =>
+        (!filters.value.category || inc.category === filters.value.category) &&
+        (!filters.value.payment_method || inc.payment_method === filters.value.payment_method)
+    )
+);
+
+const hasActiveFilters = computed(() => Boolean(filters.value.category || filters.value.payment_method));
+
+const totalShown = computed(() => visibleRows.value.reduce((acc, inc) => acc + (Number(inc.amount) || 0), 0));
+
+const currentPerPage = computed(() => props.incomes?.per_page || 50);
+
+// Alto maximo de la tabla: ocupa lo que sobre del viewport (topbar, encabezados y controles ya restados),
+// asi la pagina no necesita scroll vertical para llegar a los controles.
+const tableMaxHeight = ref(500);
+function updateTableHeight() {
+    tableMaxHeight.value = Math.max(240, window.innerHeight - 380);
+}
+onMounted(() => {
+    updateTableHeight();
+    window.addEventListener('resize', updateTableHeight);
+});
+onUnmounted(() => window.removeEventListener('resize', updateTableHeight));
+
+function clearFilters() {
+    filters.value.category = null;
+    filters.value.payment_method = null;
+}
+
+// Cambia el numero de registros por pagina (recarga con el query param per_page)
+function changePerPage(size) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', size);
+    url.searchParams.delete('page');
+    router.get(url.pathname + url.search, {}, { preserveScroll: true });
+}
 
 function formatDate(date) {
     if (!date) return '';
@@ -147,11 +189,35 @@ function tableRowClassName({ rowIndex }) {
             </div>
         </div>
 
+        <!-- Controles: filtros + resumen + tamano de pagina (siempre visibles) -->
+        <div class="flex flex-wrap items-center justify-between gap-3 py-3 border-b border-gray-100 dark:border-gray-700">
+            <div class="flex flex-wrap items-center gap-2">
+                <el-select v-model="filters.category" clearable filterable placeholder="Filtrar por categoria" class="!w-56">
+                    <el-option v-for="cat in categories" :key="cat" :label="cat" :value="cat" />
+                </el-select>
+                <el-select v-model="filters.payment_method" clearable filterable placeholder="Filtrar por metodo de pago" class="!w-60">
+                    <el-option v-for="pm in paymentMethods" :key="pm" :label="pm" :value="pm" />
+                </el-select>
+                <el-button v-if="hasActiveFilters" size="small" text type="primary" @click="clearFilters">Limpiar filtros</el-button>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                <span class="text-gray-500 dark:text-gray-400">{{ visibleRows.length }} registro(s) mostrados</span>
+                <span class="font-semibold text-[#2F9E5B] dark:text-[#3BB970]">Total: ${{ formatMoney(totalShown) }}</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-400 dark:text-gray-500">Por pagina</span>
+                    <el-select :model-value="currentPerPage" size="small" class="!w-24" @change="changePerPage">
+                        <el-option v-for="n in perPageOptions" :key="n" :label="`${n}`" :value="n" />
+                    </el-select>
+                </div>
+            </div>
+        </div>
+
         <!-- Table -->
         <el-table
             ref="tableRef"
-            :data="incomes.data"
-            max-height="600"
+            :data="visibleRows"
+            :max-height="tableMaxHeight"
             style="width: 100%"
             @selection-change="handleSelectionChange"
             @row-click="handleRowClick"

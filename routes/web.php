@@ -58,7 +58,7 @@ Route::post('investments/projection', [InvestmentController::class, 'projection'
 
 // Recurring Income routes -------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
-Route::resource('recurring-incomes', RecurringIncomeController::class)->middleware('auth');
+Route::resource('recurring-incomes', RecurringIncomeController::class)->except(['index', 'show'])->middleware('auth');
 Route::post('recurring-incomes/massive-delete', [RecurringIncomeController::class, 'massiveDelete'])->name('recurring-incomes.massive-delete');
 Route::post('recurring-incomes/get-matches', [RecurringIncomeController::class, 'getMatches'])->name('recurring-incomes.get-matches');
 Route::get('recurring-incomes/toggle-status/{recurring_income}', [RecurringIncomeController::class, 'toggleStatus'])->name('recurring-incomes.toggle-status');
@@ -74,7 +74,7 @@ Route::post('outcomes/get-matches', [OutcomeController::class, 'getMatches'])->n
 
 // Recurring Outcome routes -------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------
-Route::resource('recurring-outcomes', RecurringOutcomeController::class)->middleware('auth');
+Route::resource('recurring-outcomes', RecurringOutcomeController::class)->except(['index', 'show'])->middleware('auth');
 Route::post('recurring-outcomes/massive-delete', [RecurringOutcomeController::class, 'massiveDelete'])->name('recurring-outcomes.massive-delete');
 Route::post('recurring-outcomes/get-matches', [RecurringOutcomeController::class, 'getMatches'])->name('recurring-outcomes.get-matches');
 Route::get('recurring-outcomes/toggle-status/{recurring_outcome}', [RecurringOutcomeController::class, 'toggleStatus'])->name('recurring-outcomes.toggle-status');
@@ -117,6 +117,7 @@ Route::get('bank-cards-toogle-status/{bank_card}', [BankCardController::class, '
 Route::get('users-get-notifications', [UserController::class, 'getNotifications'])->middleware('auth')->name('users.get-notifications');
 Route::post('users-read-notifications', [UserController::class, 'readNotifications'])->middleware('auth')->name('users.read-user-notifications');
 Route::post('users-delete-notification', [UserController::class, 'deleteNotifications'])->middleware('auth')->name('users.delete-user-notification');
+Route::patch('users/update-available-money', [UserController::class, 'updateAvailableMoney'])->middleware('auth')->name('users.update-available-money');
 
 // comandos artisan
 Route::get('/storage-link', function () {

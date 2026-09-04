@@ -121,11 +121,35 @@ data() {
         created_at: null,
     });
 
+    const shortcuts = [
+        {
+            text: 'Hoy',
+            value: new Date(),
+        },
+        {
+            text: 'Ayer',
+            value: () => {
+                const date = new Date();
+                date.setTime(date.getTime() - 3600 * 1000 * 24);
+                return date;
+            },
+        },
+        {
+            text: 'Hace una semana',
+            value: () => {
+                const date = new Date();
+                date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+                return date;
+            },
+        },
+    ];
+
     return {
         form,
         categories: ['Ventas', 'Intereses', 'Nómina', 'Prestación de servicios', 'Comision', 'Renta', 'Otro'],
         payment_methods: ['Efectivo', 'Transferencia', 'Depósito', 'Cheque'],
         periodicities: ['Todos los días', 'Semanal', 'Mensual', 'Anual'],
+        shortcuts,
     }
 },
 components:{
@@ -147,28 +171,6 @@ methods:{
             },
         });
     },
-    shortcuts: [
-        {
-            text: 'Hoy',
-            value: new Date(),
-        },
-        {
-            text: 'Ayer',
-            value: () => {
-                const date = new Date();
-                date.setTime(date.getTime() - 3600 * 1000 * 24);
-                return date;
-            },
-        },
-        {
-            text: 'Hace una semana',
-            value: () => {
-                const date = new Date();
-                date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
-                return date;
-            },
-        },
-    ],
 }
 }
 </script>

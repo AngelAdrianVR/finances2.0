@@ -28,7 +28,7 @@ class UpdateIncomeAction
             RecurringIncome::where('concept', $income->concept)
                 ->where('user_id', auth()->id())
                 ->delete();
-            $this->calendarService->removeByTitle($income->concept);
+            $this->calendarService->removeByTitle($income->concept, 'Ingreso recurrente', auth()->id(), now()->toDateString());
         }
 
         $income->update($data);
@@ -39,7 +39,7 @@ class UpdateIncomeAction
         // Re-create recurring if needed
         if ($isRecurring) {
             // Clean old calendar events for this concept
-            $this->calendarService->removeByTitle($income->concept);
+            $this->calendarService->removeByTitle($income->concept, 'Ingreso recurrente', auth()->id(), now()->toDateString());
 
             RecurringIncome::updateOrCreate(
                 [
@@ -50,16 +50,16 @@ class UpdateIncomeAction
             );
 
             $this->calendarService->generateRecurringEvents([
-                'type'           => 'Ingreso recurrente',
-                'title'          => $data['concept'],
-                'amount'         => $data['amount'],
-                'category'       => $data['category'] ?? null,
-                'description'    => $data['description'] ?? null,
-                'periodicity'    => $data['periodicity'],
+                'type' => 'Ingreso recurrente',
+                'title' => $data['concept'],
+                'amount' => $data['amount'],
+                'category' => $data['category'] ?? null,
+                'description' => $data['description'] ?? null,
+                'periodicity' => $data['periodicity'],
                 'payment_method' => $data['payment_method'] ?? null,
-                'user_id'        => auth()->id(),
-                'created_at'     => $data['created_at'] ?? $income->created_at,
-            ]);
+                'user_id' => auth()->id(),
+                'created_at' => $data['created_at'] ?? $income->created_at,
+            ], true);
         }
 
         return $income->fresh();

@@ -52,7 +52,7 @@ class CreateOutcomeAction
                 'payment_method' => $data['payment_method'] ?? null,
                 'user_id' => $data['user_id'],
                 'created_at' => $data['created_at'],
-            ]);
+            ], true);
         }
 
         return $outcome;

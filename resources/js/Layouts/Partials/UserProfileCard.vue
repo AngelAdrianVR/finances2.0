@@ -1,6 +1,9 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import { ElMessage } from 'element-plus';
+import { EditPen } from '@element-plus/icons-vue';
 
 const props = defineProps({
     size: { type: String, default: 'default' },
@@ -23,6 +26,47 @@ function formatMoney(val) {
 
 function logout() {
     router.post(route('logout'));
+}
+
+// ==========================================
+// Edit available money (Disponible)
+// ==========================================
+const editDialogVisible = ref(false);
+const savingAvailableMoney = ref(false);
+const availableMoneyDraft = ref(0);
+
+function openEditAvailableMoney() {
+    availableMoneyDraft.value = Number(user.value?.total_money ?? 0);
+    editDialogVisible.value = true;
+}
+
+async function saveAvailableMoney() {
+    const amount = Number(availableMoneyDraft.value);
+    if (!Number.isFinite(amount) || amount < 0) {
+        ElMessage.warning('Ingresa un monto válido.');
+        return;
+    }
+
+    savingAvailableMoney.value = true;
+    try {
+        const { data } = await axios.patch(route('users.update-available-money'), {
+            total_money: amount,
+        });
+
+        // Keep the shared auth.user in sync so every card updates instantly.
+        if (page.props.auth?.user) {
+            page.props.auth.user.total_money = Number(data.total_money);
+        }
+
+        editDialogVisible.value = false;
+        ElMessage.success(data.message || 'Monto disponible actualizado correctamente.');
+    } catch (error) {
+        const fieldError = error?.response?.data?.errors?.total_money?.[0];
+        ElMessage.error(fieldError || error?.response?.data?.message || 'Error al actualizar el monto disponible.');
+        console.error(error);
+    } finally {
+        savingAvailableMoney.value = false;
+    }
 }
 </script>
 
@@ -47,10 +91,21 @@ function logout() {
 
         <!-- Financial summary -->
         <div v-if="!dark" class="space-y-1.5 text-xs text-gray-600 border-t border-gray-100 dark:border-gray-200 pt-3">
-            <div class="flex justify-between">
+            <div class="flex justify-between items-center group/edit">
                 <span class="text-gray-500 dark:text-gray-400">Disponible</span>
-                <span class="font-mono font-semibold" style="color: #2F9E5B;">
-                    ${{ formatMoney($page.props.auth.user?.total_money) }}
+                <span class="flex items-center gap-1">
+                    <span class="font-mono font-semibold" style="color: #2F9E5B;">
+                        ${{ formatMoney($page.props.auth.user?.total_money) }}
+                    </span>
+                    <button
+                        type="button"
+                        title="Editar monto disponible"
+                        aria-label="Editar monto disponible"
+                        class="text-gray-300 hover:text-primary rounded p-0.5"
+                        @click="openEditAvailableMoney"
+                    >
+                        <el-icon :size="12"><EditPen /></el-icon>
+                    </button>
                 </span>
             </div>
             <div class="flex justify-between">
@@ -67,10 +122,21 @@ function logout() {
 
         <!-- Financial summary (dark mode) -->
         <div v-else class="space-y-1.5 text-xs text-[#9CACAC]">
-            <div class="flex justify-between">
+            <div class="flex justify-between items-center group/edit">
                 <span class="text-[#9CACAC]">Disponible</span>
-                <span class="font-mono font-semibold" style="color: #2F9E5B;">
-                    ${{ formatMoney($page.props.auth.user?.total_money) }}
+                <span class="flex items-center gap-1">
+                    <span class="font-mono font-semibold" style="color: #2F9E5B;">
+                        ${{ formatMoney($page.props.auth.user?.total_money) }}
+                    </span>
+                    <button
+                        type="button"
+                        title="Editar monto disponible"
+                        aria-label="Editar monto disponible"
+                        class="text-[#4F6F70] hover:text-white rounded p-0.5"
+                        @click="openEditAvailableMoney"
+                    >
+                        <el-icon :size="12"><EditPen /></el-icon>
+                    </button>
                 </span>
             </div>
             <div class="flex justify-between">
@@ -96,5 +162,34 @@ function logout() {
                 Cerrar sesion
             </button>
         </div>
+
+        <!-- Edit available money dialog -->
+        <el-dialog
+            v-model="editDialogVisible"
+            title="Editar monto disponible"
+            width="320px"
+            append-to-body
+            :close-on-click-modal="false"
+            destroy-on-close
+        >
+            <div class="space-y-4">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    Ingresa el nuevo monto que tienes disponible. Solo se modificará el campo «Disponible».
+                </p>
+                <el-input-number
+                    v-model="availableMoneyDraft"
+                    :min="0"
+                    :max="999999999999"
+                    :precision="2"
+                    controls-position="right"
+                    class="!w-full font-mono"
+                    placeholder="Monto disponible"
+                />
+                <div class="flex justify-end space-x-2">
+                    <el-button :disabled="savingAvailableMoney" @click="editDialogVisible = false">Cancelar</el-button>
+                    <el-button type="primary" :loading="savingAvailableMoney" @click="saveAvailableMoney">Guardar</el-button>
+                </div>
+            </div>
+        </el-dialog>
     </div>
 </template>
