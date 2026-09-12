@@ -73,23 +73,56 @@ function updateDrawerSize() {
     else drawerSize.value = '30%';
 }
 
-async function handleDelete() {
-    try {
-        loadingDeleted.value = true;
-        await axios.delete(route('calendars.destroy', reminderSelected.value.id), { params: { deleteOption: deleteOption.value } });
-        ElMessage.success('Eliminacion exitosa');
-        fetchMonthReminders();
-    } catch (error) { console.error(error); }
-    finally { loadingDeleted.value = false; drawer.value = false; showDeleteConfirmation.value = false; }
+// Quita localmente las ocurrencias afectadas por la eliminacion, para reflejarlo al instante.
+function applyDeleteLocally(list, target, mode) {
+    return list.filter((r) => {
+        if (r.type !== target.type || r.title !== target.title) return true;
+        if (mode === 'Este') return r.id !== target.id;
+        if (mode === 'Este y los siguientes') return new Date(r.date).getTime() < new Date(target.date).getTime();
+        return false; // 'Todos'
+    });
 }
 
-async function fetchMonthReminders() {
+async function handleDelete() {
+    if (!reminderSelected.value || !deleteOption.value) return;
+
+    const target = reminderSelected.value;
+    const mode = deleteOption.value;
+    const backup = reminders.value ? [...reminders.value] : [];
+
+    // Actualizacion optimista: desaparece de inmediato, sin recargar la pagina.
+    reminders.value = applyDeleteLocally(reminders.value || [], target, mode);
+
     try {
-        loading.value = true;
+        loadingDeleted.value = true;
+        await axios.delete(route('calendars.destroy', target.id), { params: { deleteOption: mode } });
+        ElMessage.success('Eliminacion exitosa');
+    } catch (error) {
+        if (error?.response?.status === 404) {
+            // La ocurrencia ya no existia (lista desactualizada): se sincroniza sin mostrar error.
+            ElMessage.info('El recordatorio ya no existia.');
+        } else {
+            reminders.value = backup; // restaura si fue un fallo real
+            console.error(error);
+            ElMessage.error('No se pudo eliminar el recordatorio.');
+        }
+    } finally {
+        loadingDeleted.value = false;
+        drawer.value = false;
+        showDeleteConfirmation.value = false;
+        deleteOption.value = null;
+        // Resincroniza con el servidor sin mostrar el skeleton.
+        await fetchMonthReminders({ silent: true });
+    }
+}
+
+async function fetchMonthReminders({ silent = false } = {}) {
+    try {
+        if (!silent) loading.value = true;
         const response = await axios.post(route('calendars.fetch-month-reminders'), { month: currentMonth.value.getMonth() + 1, year: currentMonth.value.getFullYear() });
         if (response.status === 200) reminders.value = response.data.reminders;
     } catch (error) { console.error(error); }
-    finally { loading.value = false; }
+    finally { if (!silent) loading.value = false; }
 }
 
 onMounted(() => { fetchMonthReminders(); updateDrawerSize(); window.addEventListener('resize', updateDrawerSize); });

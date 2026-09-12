@@ -62,7 +62,11 @@ if (currentTabFromURL) activeTab.value = currentTabFromURL;
             <h1 class="page-header">Prestamos</h1>
             <section class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div class="flex items-center gap-3 sm:w-1/3 w-full">
-                    <el-input v-model="searchQuery" placeholder="Buscar..." :prefix-icon="Search" clearable class="search-bar w-full" @keydown.enter="handleSearch" @clear="closeTag" />
+                    <!-- Form: en moviles la tecla "Buscar/Ir" del teclado virtual dispara submit (keydown.enter no es fiable con teclados IME) -->
+                    <form @submit.prevent="handleSearch" class="flex-1 min-w-0" role="search">
+                        <el-input v-model="searchQuery" placeholder="Buscar..." :prefix-icon="Search" clearable enterkeyhint="search" class="search-bar w-full" @clear="closeTag" />
+                        <button type="submit" class="hidden" tabindex="-1" aria-hidden="true"></button>
+                    </form>
                     <el-tag v-if="searchedWord" closable type="warning" @close="closeTag">{{ searchedWord }}</el-tag>
                 </div>
                 <el-button type="warning" :icon="Plus" @click="router.get(route('loans.create'))">Nuevo prestamo</el-button>

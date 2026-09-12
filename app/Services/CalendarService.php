@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Calendar;
+use App\Models\Income;
+use App\Models\Outcome;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,24 +28,31 @@ class CalendarService
      *     user_id: int,
      *     created_at: string|Carbon,
      * } $data
-     * @param  bool  $futureOnly  Whether to skip occurrences that already happened or occur today.
-     *                            Used by interactive flows: a same-day event would never be processed
-     *                            because the scheduler runs at 00:00.
+     * @param  bool  $futureOnly  When true, skip occurrences that already passed.
+     *                            Today is always kept so the scheduler can register the same-day movement.
+     * @param  bool  $excludeStart  When true, drop the first occurrence (the start date). Used when that
+     *                              date is already covered by an immediate movement or by the
+     *                              representative calendar event, to avoid duplicates.
      * @return int Number of calendar events created.
      */
-    public function generateRecurringEvents(array $data, bool $futureOnly = false): int
+    public function generateRecurringEvents(array $data, bool $futureOnly = false, bool $excludeStart = false): int
     {
         $dates = $this->calculateDates(
             Carbon::parse($data['created_at']),
             $data['periodicity']
         );
 
+        // The start occurrence is already registered elsewhere (immediate movement / representative event).
+        if ($excludeStart && ! empty($dates)) {
+            array_shift($dates);
+        }
+
         $today = Carbon::today();
         $count = 0;
         $chunk = [];
         foreach ($dates as $date) {
-            // Keep strictly future occurrences (never re-create past or same-day events).
-            if ($futureOnly && $date->lte($today)) {
+            // Keep today and future occurrences; only skip days that already passed.
+            if ($futureOnly && $date->lt($today)) {
                 continue;
             }
 
@@ -82,7 +91,7 @@ class CalendarService
      *
      * @param  \App\Models\RecurringIncome|\App\Models\RecurringOutcome  $recurring
      */
-    public function generateRecurringEventsFromModel(Model $recurring, string $type, bool $futureOnly = false): int
+    public function generateRecurringEventsFromModel(Model $recurring, string $type, bool $futureOnly = false, bool $excludeStart = false): int
     {
         return $this->generateRecurringEvents([
             'type' => $type,
@@ -94,7 +103,97 @@ class CalendarService
             'payment_method' => $recurring->payment_method,
             'user_id' => $recurring->user_id,
             'created_at' => $recurring->created_at,
-        ], $futureOnly);
+        ], $futureOnly, $excludeStart);
+    }
+
+    /**
+     * Ensure every upcoming occurrence of a recurring item exists in the calendar
+     * without creating duplicates. Idempotent: safe to run as many times as needed.
+     *
+     * It skips dates that already have a scheduled event and, for the start date,
+     * it skips when a movement was already registered (e.g. incomes/outcomes created
+     * with the "recurring" flag register their first occurrence immediately).
+     *
+     * @param  \App\Models\RecurringIncome|\App\Models\RecurringOutcome  $recurring
+     * @return int Number of calendar events created.
+     */
+    public function ensureRecurringEventsFromModel(Model $recurring, string $type): int
+    {
+        if (empty($recurring->periodicity)) {
+            return 0;
+        }
+
+        $start = Carbon::parse($recurring->created_at)->startOfDay();
+        $today = Carbon::today();
+
+        $dates = array_values(array_filter(
+            $this->calculateDates($start, $recurring->periodicity),
+            fn (Carbon $date) => $date->gte($today)
+        ));
+
+        // Skip the first occurrence when a movement already exists for that day.
+        if (! empty($dates) && $dates[0]->isSameDay($start)) {
+            $movementModel = $type === 'Ingreso recurrente' ? Income::class : Outcome::class;
+
+            $alreadyRegistered = $movementModel::query()
+                ->where('user_id', $recurring->user_id)
+                ->where('concept', $recurring->concept)
+                ->whereDate('created_at', $start->toDateString())
+                ->exists();
+
+            if ($alreadyRegistered) {
+                array_shift($dates);
+            }
+        }
+
+        if (empty($dates)) {
+            return 0;
+        }
+
+        // Dates that already have a scheduled event for this recurring item.
+        $existing = Calendar::query()
+            ->where('user_id', $recurring->user_id)
+            ->where('type', $type)
+            ->where('title', $recurring->concept)
+            ->where('date', '>=', $today->toDateString())
+            ->pluck('date')
+            ->map(fn ($date) => Carbon::parse($date)->toDateString())
+            ->flip();
+
+        $count = 0;
+        $chunk = [];
+        foreach ($dates as $date) {
+            if ($existing->has($date->toDateString())) {
+                continue;
+            }
+
+            $chunk[] = [
+                'type' => $type,
+                'title' => $recurring->concept,
+                'date' => $date->toDateString(),
+                'amount' => $recurring->amount,
+                'category' => $recurring->category,
+                'description' => $recurring->description,
+                'periodicity' => $recurring->periodicity,
+                'payment_method' => $recurring->payment_method,
+                'user_id' => $recurring->user_id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            if (count($chunk) >= 200) {
+                Calendar::insert($chunk);
+                $count += count($chunk);
+                $chunk = [];
+            }
+        }
+
+        if (! empty($chunk)) {
+            Calendar::insert($chunk);
+            $count += count($chunk);
+        }
+
+        return $count;
     }
 
     /**
@@ -109,6 +208,7 @@ class CalendarService
 
         switch ($periodicity) {
             case 'Todos los días':
+            case 'Todos los dias':
                 $endDate ??= Carbon::now()->endOfYear();
                 while ($cursor->lte($endDate)) {
                     $dates[] = $cursor->copy();

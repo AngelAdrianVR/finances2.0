@@ -38,7 +38,7 @@ class CreateIncomeAction
                 'payment_method' => $data['payment_method'] ?? null,
                 'user_id' => $data['user_id'],
                 'created_at' => $data['created_at'],
-            ], true);
+            ], true, true); // el primer movimiento ya se registró arriba; solo se agendan las siguientes ocurrencias
         }
 
         return $income;

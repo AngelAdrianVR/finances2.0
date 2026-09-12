@@ -17,7 +17,7 @@ const form = useForm({
 const remainType = ref(props.calendar.type);
 const options = ['Ingreso recurrente', 'Gasto fijo'];
 const paymentMethods = ['Transferencia', 'Deposito', 'Cheque', 'Efectivo'];
-const periodicities = ['Todos los dias', 'Semanal', 'Mensual', 'Anual'];
+const periodicities = ['Todos los días', 'Semanal', 'Mensual', 'Anual'];
 
 const categories = [
     { label: 'Nomina', description: '(Salarios o sueldos fijos)' },

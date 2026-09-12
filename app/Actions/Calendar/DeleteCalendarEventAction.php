@@ -24,7 +24,9 @@ class DeleteCalendarEventAction
 
         switch ($mode) {
             case 'Este':
-                $calendar->delete();
+                // Se marca como cancelada en lugar de borrarla: asi la sincronizacion de recurrentes
+                // (calendar:sync-recurring / al abrir el calendario) no vuelve a crear esta ocurrencia.
+                $calendar->update(['status' => 'Cancelado']);
                 break;
 
             case 'Este y los siguientes':

@@ -719,7 +719,7 @@ public function massiveDelete(Request $request)
 
 ## Calendar integration
 
-When creating incomes/outcomes flagged as recurring, calendar events are generated with date ranges based on periodicity (`Todos los días`, `Semanal`, `Mensual`, `Anual`). A scheduled Artisan command (`calendar:process-scheduled`) processes these daily.
+When creating incomes/outcomes flagged as recurring, calendar events are generated with date ranges based on periodicity (`Todos los días`, `Semanal`, `Mensual`, `Anual`), starting on the same day. When the first occurrence is already registered by an immediate movement (or by the representative calendar event), that start date is skipped to avoid duplicates. The daily scheduler first runs `calendar:sync-recurring` (idempotent backfill of upcoming events for active recurring items, also triggered when the calendar page is opened) and then `calendar:process-scheduled`, which turns every pending event dated on or before today into an Income/Outcome (catch-up), dated on its scheduled day.
 
 ---
 

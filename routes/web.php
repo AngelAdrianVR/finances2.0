@@ -96,7 +96,7 @@ Route::resource('payments', PaymentController::class)->middleware('auth');
 
 // calendar routes -------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------
-Route::get('calendars/fetch-month-reminders', [CalendarController::class, 'fetchMonthReminders'])->middleware('auth')->name('calendars.fetch-month-reminders');
+Route::post('calendars/fetch-month-reminders', [CalendarController::class, 'fetchMonthReminders'])->middleware('auth')->name('calendars.fetch-month-reminders');
 Route::resource('calendars', CalendarController::class)->middleware('auth');
 
 // setting routes -------------------------------------------------------------------------------------

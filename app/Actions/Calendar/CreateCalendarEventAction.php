@@ -65,7 +65,7 @@ class CreateCalendarEventAction
             'payment_method' => $data['payment_method'] ?? null,
             'user_id' => $data['user_id'],
             'created_at' => $data['date'],
-        ], true);
+        ], true, true); // el evento representativo ya cubre la fecha de inicio
 
         return $calendar;
     }

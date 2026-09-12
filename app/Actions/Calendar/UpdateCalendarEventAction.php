@@ -69,7 +69,7 @@ class UpdateCalendarEventAction
             'payment_method' => $data['payment_method'] ?? null,
             'user_id' => auth()->id(),
             'created_at' => $data['date'],
-        ], true);
+        ], true, true); // el evento representativo ya cubre la fecha de inicio
 
         return $calendar->fresh();
     }
