@@ -5,6 +5,7 @@ namespace App\Actions\Outcomes;
 use App\Models\Outcome;
 use App\Models\RecurringOutcome;
 use App\Services\CalendarService;
+use App\Services\SharedOutcomeService;
 use App\Services\TotalMoneyService;
 
 class DeleteOutcomeAction
@@ -12,6 +13,7 @@ class DeleteOutcomeAction
     public function __construct(
         private readonly TotalMoneyService $totalMoneyService,
         private readonly CalendarService $calendarService,
+        private readonly SharedOutcomeService $sharedOutcomeService,
     ) {}
 
     /**
@@ -21,6 +23,11 @@ class DeleteOutcomeAction
     {
         $amount = $outcome->amount;
         $concept = $outcome->concept;
+
+        // Gasto compartido: devuelve su parte a cada usuario vinculado y elimina sus registros.
+        if ($outcome->split_enabled) {
+            $this->sharedOutcomeService->refund($outcome);
+        }
 
         $outcome->delete();
 
@@ -50,6 +57,11 @@ class DeleteOutcomeAction
         foreach ($outcomes as $outcome) {
             $totalRestored += $outcome->amount;
             $concepts[] = $outcome->concept;
+
+            // Gasto compartido: devuelve su parte a cada usuario vinculado y elimina sus registros.
+            if ($outcome->split_enabled) {
+                $this->sharedOutcomeService->refund($outcome);
+            }
         }
 
         Outcome::where('user_id', $user->id)->whereIn('id', $ids)->delete();

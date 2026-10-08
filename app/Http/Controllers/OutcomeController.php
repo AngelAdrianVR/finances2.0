@@ -54,6 +54,10 @@ class OutcomeController extends Controller
     {
         $this->authorizeOwner($outcome);
 
+        // El formulario necesita el monto total del gasto compartido (no solo la parte del creador)
+        // para que el reparto vuelva a calcularse sobre la misma base.
+        $outcome->append('split_total_amount');
+
         return inertia('Outcome/Edit', compact('outcome'));
     }
 

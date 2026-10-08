@@ -5,6 +5,7 @@ namespace App\Actions\Outcomes;
 use App\Models\Outcome;
 use App\Models\RecurringOutcome;
 use App\Services\CalendarService;
+use App\Services\SharedOutcomeService;
 use App\Services\TotalMoneyService;
 
 class CreateOutcomeAction
@@ -12,13 +13,15 @@ class CreateOutcomeAction
     public function __construct(
         private readonly TotalMoneyService $totalMoneyService,
         private readonly CalendarService $calendarService,
+        private readonly SharedOutcomeService $sharedOutcomeService,
     ) {}
 
     public function execute(array $data): Outcome
     {
         $data['user_id'] = auth()->id();
         $isRecurring = ! empty($data['is_recurring_outcome']);
-        $isSplit = ! empty($data['split_enabled']) && ! empty($data['split_with']);
+        $splitUserIds = $this->resolveSplitUserIds($data);
+        $isSplit = $splitUserIds !== [];
 
         // Crédito: si no es a crédito, nunca debe guardarse una fecha de pago.
         $isCredit = ! empty($data['is_credit']);
@@ -28,8 +31,9 @@ class CreateOutcomeAction
         }
 
         if ($isSplit) {
-            $data['split_with'] = array_map('intval', $data['split_with']);
-            $data = $this->handleSplit($data);
+            // El creador solo guarda su parte proporcional del gasto compartido.
+            $data['split_with'] = $splitUserIds;
+            $data['amount'] = $this->sharedOutcomeService->proportionalAmount((float) $data['amount'], $splitUserIds);
         } else {
             $data['split_enabled'] = false;
             $data['split_with'] = null;
@@ -38,6 +42,11 @@ class CreateOutcomeAction
         $outcome = Outcome::create($data);
 
         $this->totalMoneyService->decrement(auth()->user(), $outcome->amount);
+
+        // Cada usuario vinculado registra su parte y se le descuenta de su saldo disponible.
+        if ($isSplit) {
+            $this->sharedOutcomeService->distribute($outcome, $splitUserIds);
+        }
 
         if ($isRecurring) {
             RecurringOutcome::create($data);
@@ -59,35 +68,16 @@ class CreateOutcomeAction
     }
 
     /**
-     * Adjust the creator's amount to their proportional share,
-     * and create outcome records for each linked user.
+     * Linked user ids of a shared expense, normalized and without duplicates.
+     *
+     * @return array<int, int>
      */
-    private function handleSplit(array $data): array
+    private function resolveSplitUserIds(array $data): array
     {
-        $splitUserIds = $data['split_with'];
-        $totalPeople = count($splitUserIds) + 1;
-        $proportionalAmount = round($data['amount'] / $totalPeople, 2);
-
-        $data['amount'] = $proportionalAmount;
-
-        $baseData = [
-            'amount' => $proportionalAmount,
-            'concept' => $data['concept'],
-            'category' => $data['category'] ?? null,
-            'payment_method' => $data['payment_method'] ?? null,
-            'description' => $data['description'] ?? null,
-            'created_at' => $data['created_at'] ?? now(),
-            'automatically_created' => true,
-            'split_enabled' => false,
-            'split_with' => null,
-            'is_credit' => $data['is_credit'] ?? false,
-            'payment_due_date' => $data['payment_due_date'] ?? null,
-        ];
-
-        foreach ($splitUserIds as $userId) {
-            Outcome::create($baseData + ['user_id' => $userId]);
+        if (empty($data['split_enabled']) || empty($data['split_with'])) {
+            return [];
         }
 
-        return $data;
+        return array_values(array_unique(array_map('intval', $data['split_with'])));
     }
 }

@@ -11,8 +11,12 @@ import axios from 'axios';
 
 const props = defineProps({ outcome: Object });
 
+// Un gasto compartido guarda solo la parte del creador, asi que el formulario
+// se inicializa con el monto total para no volver a dividir la parte ya dividida.
+const initialAmount = props.outcome.split_total_amount ?? props.outcome.amount;
+
 const form = useForm({
-    amount: props.outcome.amount, category: props.outcome.category, concept: props.outcome.concept,
+    amount: initialAmount, category: props.outcome.category, concept: props.outcome.concept,
     created_at: props.outcome.created_at, payment_method: props.outcome.payment_method,
     is_recurring_outcome: false, periodicity: null, description: props.outcome.description,
     split_enabled: props.outcome.split_enabled || false,

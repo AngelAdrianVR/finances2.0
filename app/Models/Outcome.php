@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Outcome extends Model
 {
@@ -22,6 +23,7 @@ class Outcome extends Model
         'payment_due_date',
         'reminder_last_sent_date',
         'user_id',
+        'parent_outcome_id',
     ];
 
     protected $casts = [
@@ -42,6 +44,41 @@ class Outcome extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Shared expense that generated this outcome (only for linked users).
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Outcome::class, 'parent_outcome_id');
+    }
+
+    /**
+     * Auto-generated outcomes for the linked users of a shared expense.
+     */
+    public function linkedOutcomes(): HasMany
+    {
+        return $this->hasMany(Outcome::class, 'parent_outcome_id');
+    }
+
+    // ========================
+    // Accessors
+    // ========================
+
+    /**
+     * Total amount of a shared expense (every participant's share combined).
+     * For regular outcomes it is just the stored amount.
+     */
+    public function getSplitTotalAmountAttribute(): float
+    {
+        if (! $this->split_enabled) {
+            return round((float) $this->amount, 2);
+        }
+
+        $totalPeople = count($this->split_with ?? []) + 1;
+
+        return round((float) $this->amount * $totalPeople, 2);
     }
 
     // ========================

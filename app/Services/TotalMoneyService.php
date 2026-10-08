@@ -43,7 +43,7 @@ class TotalMoneyService
 
     /**
      * Adjust the balance: reverses the old amount then applies the new one.
-     * Useful when updating an income or outcome record.
+     * Useful when updating an income record.
      *
      * Example: old amount was 500, new amount is 300 → subtracts 200 from balance.
      */
@@ -55,6 +55,26 @@ class TotalMoneyService
             $this->increment($user, $diff);
         } elseif ($diff < 0) {
             $this->decrement($user, abs($diff));
+        }
+        // If diff is 0, no change needed.
+    }
+
+    /**
+     * Adjust the balance after editing an outcome.
+     *
+     * An expense subtracts from the balance, so the sign is inverted compared to
+     * {@see adjust()}: growing the expense decrements, shrinking it increments.
+     *
+     * Example: old amount was 100, new amount is 300 → subtracts 200 more from balance.
+     */
+    public function adjustOutcome(User $user, float $oldAmount, float $newAmount): void
+    {
+        $diff = round($newAmount - $oldAmount, 2);
+
+        if ($diff > 0) {
+            $this->decrement($user, $diff);
+        } elseif ($diff < 0) {
+            $this->increment($user, abs($diff));
         }
         // If diff is 0, no change needed.
     }
