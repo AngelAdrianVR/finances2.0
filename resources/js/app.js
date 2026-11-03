@@ -3,6 +3,8 @@ import '../css/app.css';
 import '../css/menu.css';
 import '../css/dashboard.css';
 import '../css/income.css';
+import '../css/legal.css';
+import '../css/landing.css';
 
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';

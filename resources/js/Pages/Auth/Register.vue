@@ -85,9 +85,25 @@ const submit = () => {
             >
                 <el-checkbox v-model="form.terms" name="terms">
                     Acepto los
-                    <a :href="route('dashboard')" target="_blank" class="auth-link">términos de servicio</a>
+                    <a
+                        :href="route('legal.terms')"
+                        target="_blank"
+                        rel="noopener"
+                        class="auth-link"
+                        @click.stop
+                    >
+                        términos
+                    </a>
                     y la
-                    <a :href="route('dashboard')" target="_blank" class="auth-link">política de privacidad</a>
+                    <a
+                        :href="route('legal.privacy')"
+                        target="_blank"
+                        rel="noopener"
+                        class="auth-link"
+                        @click.stop
+                    >
+                        política de privacidad
+                    </a>
                 </el-checkbox>
             </el-form-item>
 

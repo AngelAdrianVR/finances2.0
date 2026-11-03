@@ -64,8 +64,8 @@
 }
 
 .dark .auth-shell {
-    --color-primary-50: #1A3A3B;
-    --color-primary-100: #205254;
+    --color-primary-50: #11292a;
+    --color-primary-100: #173e3f;
     --color-primary-200: #296A6B;
     --color-primary-300: #357F80;
     --color-primary-400: #5B9C9D;
@@ -144,8 +144,10 @@
 }
 
 .auth-showcase__logo {
-    height: 44px;
+    height: clamp(56px, 6vw, 72px);
     width: auto;
+    max-width: 100%;
+    object-fit: contain;
     align-self: flex-start;
 }
 

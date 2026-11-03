@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { Moon, Sunny } from '@element-plus/icons-vue';
 import AuthShowcase from '@/Components/Auth/AuthShowcase.vue';
 import { useDarkMode } from '@/composables/useDarkMode';
@@ -54,9 +54,9 @@ const currentYear = new Date().getFullYear();
                 <p class="auth-legal">
                     © {{ currentYear }} Finanzas. Todos los derechos reservados.
                     <br />
-                    <a href="#" @click.prevent>Política de privacidad</a>
+                    <Link :href="route('legal.privacy')">Política de privacidad</Link>
                     &nbsp;•&nbsp;
-                    <a href="#" @click.prevent>Términos y condiciones</a>
+                    <Link :href="route('legal.terms')">Términos</Link>
                 </p>
             </div>
         </main>

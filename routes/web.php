@@ -14,19 +14,14 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
-use Laravel\Jetstream\Agent;
 
-Route::get('/', function () {
-    $agent = new Agent;
-
-    if ($agent->isDesktop() || $agent->isLaptop()) {
-        return inertia('Welcome');
-    } else {
-        return inertia('WelcomeMobile');
-    }
-});
+Route::get('/', fn () => inertia('Welcome'));
 
 // Route::redirect('/', 'login');
+
+// Legal documents
+Route::inertia('/terminos-y-condiciones', 'TermsOfService')->name('legal.terms');
+Route::inertia('/politica-de-privacidad', 'PrivacyPolicy')->name('legal.privacy');
 
 Route::middleware([
     'auth:sanctum',
