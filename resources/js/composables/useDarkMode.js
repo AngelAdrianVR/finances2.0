@@ -1,6 +1,6 @@
 import { ref, watch, onMounted } from 'vue';
 
-const isDark = ref(false);
+const isDark = ref(document.documentElement.classList.contains('dark'));
 
 export function useDarkMode() {
     onMounted(() => {

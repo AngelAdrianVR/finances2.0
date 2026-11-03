@@ -3,6 +3,8 @@ import '../css/app.css';
 import '../css/menu.css';
 import '../css/dashboard.css';
 import '../css/income.css';
+import '../css/legal.css';
+import '../css/landing.css';
 
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
@@ -15,6 +17,7 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import locale from 'element-plus/dist/locale/es.mjs';
 import 'element-plus/theme-chalk/dark/css-vars.css';
+import '../css/auth.css';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
