@@ -38,6 +38,7 @@ Route::middleware([
 Route::post('/dashboard-fetch-data-for-period', [DashboardController::class, 'fetchDataForPeriod'])->middleware('auth')->name('dashboard.fetch-data-for-period');
 Route::post('/dashboard-fetch-data-comparison', [DashboardController::class, 'fetchDataComparison'])->middleware('auth')->name('dashboard.fetch-data-comparison');
 Route::post('/dashboard-fetch-yearly-averages', [DashboardController::class, 'fetchYearlyAverages'])->middleware('auth')->name('dashboard.fetch-yearly-averages');
+Route::post('/dashboard-fetch-overview', [DashboardController::class, 'fetchOverview'])->middleware('auth')->name('dashboard.fetch-overview');
 
 // Income routes -------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------

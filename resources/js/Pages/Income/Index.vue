@@ -1,65 +1,105 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Plus, Search, ArrowDown, Refresh } from '@element-plus/icons-vue';
+import { Plus, Search, ArrowDown, Refresh, Wallet, TrendCharts, Coin } from '@element-plus/icons-vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Incomes from './Tabs/Incomes.vue';
 import RecurringIncomes from './Tabs/RecurringIncomes.vue';
-import axios from 'axios';
 
 const props = defineProps({
     incomes: Object,
     recurring_incomes: Object,
+    summary: { type: Object, default: () => ({}) },
+    filters: { type: Object, default: () => ({ q: '', category: null, payment_method: null }) },
+    filtered: { type: Object, default: () => ({ count: 0, total: 0 }) },
 });
 
-// Tab state
 const activeTab = ref('1');
+const searchQuery = ref(props.filters?.q ?? '');
 
-// Search state
-const searchQuery = ref('');
-const searchedWord = ref(null);
-const loading = ref(false);
+let searchTimer = null;
 
-// Filtered data
-const filteredIncomes = ref(props.incomes);
-const filteredRecurringIncomes = ref(props.recurring_incomes);
+function applySearch(term) {
+    const params = { page: 1 };
 
-// Button label
-const createButtonLabel = computed(() =>
-    activeTab.value === '1' ? 'Nuevo ingreso' : 'Nuevo ingreso recurrente'
-);
+    if (term) params.q = term;
+    if (props.filters?.category) params.category = props.filters.category;
+    if (props.filters?.payment_method) params.payment_method = props.filters.payment_method;
+    if (props.incomes?.per_page) params.per_page = props.incomes.per_page;
 
-// Search
-async function handleSearch() {
-    loading.value = true;
-    searchedWord.value = searchQuery.value;
-    searchQuery.value = '';
-
-    try {
-        if (!searchedWord.value) {
-            filteredIncomes.value = props.incomes;
-            filteredRecurringIncomes.value = props.recurring_incomes;
-        } else {
-            if (activeTab.value === '1') {
-                const response = await axios.post(route('incomes.get-matches', { query: searchedWord.value }));
-                if (response.status === 200) filteredIncomes.value = response.data.items;
-            } else {
-                const response = await axios.post(route('recurring-incomes.get-matches', { query: searchedWord.value }));
-                if (response.status === 200) filteredRecurringIncomes.value = response.data.items;
-            }
-        }
-    } catch (error) {
-        console.error(error);
-        ElMessage.error('Error al buscar');
-    } finally {
-        loading.value = false;
-    }
+    router.get(route('incomes.index'), params, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
 }
 
+function onSearchInput() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => applySearch(searchQuery.value?.trim() ?? ''), 450);
+}
+
+function handleSearch() {
+    clearTimeout(searchTimer);
+    applySearch(searchQuery.value?.trim() ?? '');
+}
+
+function clearSearch() {
+    searchQuery.value = '';
+    applySearch('');
+}
+
+const createButtonLabel = computed(() =>
+    activeTab.value === '1' ? 'Nuevo ingreso' : 'Nuevo recurrente'
+);
+
+const currency = new Intl.NumberFormat('es-MX', {
+    style: 'currency',
+    currency: 'MXN',
+    minimumFractionDigits: 2,
+});
+
+const statCards = computed(() => [
+    {
+        key: 'total',
+        label: 'Total acumulado',
+        value: currency.format(Number(props.summary?.total ?? 0)),
+        hint: `${props.summary?.count ?? 0} ingresos registrados`,
+        icon: Wallet,
+        tone: 'success',
+        delta: null,
+    },
+    {
+        key: 'month',
+        label: 'Este mes',
+        value: currency.format(Number(props.summary?.current_month ?? 0)),
+        hint: props.summary?.month_label ?? '',
+        icon: TrendCharts,
+        tone: 'info',
+        delta: Number(props.summary?.month_change ?? 0),
+    },
+    {
+        key: 'average',
+        label: 'Promedio por ingreso',
+        value: currency.format(Number(props.summary?.average ?? 0)),
+        hint: 'Monto medio histórico',
+        icon: Coin,
+        tone: 'accent',
+        delta: null,
+    },
+    {
+        key: 'recurring',
+        label: 'Ingresos recurrentes',
+        value: currency.format(Number(props.summary?.recurring_total ?? 0)),
+        hint: `${props.summary?.recurring_count ?? 0} activos`,
+        icon: Refresh,
+        tone: 'primary',
+        delta: null,
+    },
+]);
+
 function closeTag() {
-    searchedWord.value = null;
-    filteredIncomes.value = props.incomes;
-    filteredRecurringIncomes.value = props.recurring_incomes;
+    clearSearch();
 }
 
 function handleCreate() {
@@ -73,14 +113,10 @@ function handleCreate() {
 function handleTabChange(tab) {
     const url = new URL(window.location.href);
     url.searchParams.set('currentTab', tab.props.name);
-    const paginationURL = url.searchParams.get('page');
     url.searchParams.delete('page');
     window.history.replaceState({}, document.title, url.href);
-    if (paginationURL) location.reload();
-    closeTag();
 }
 
-// Restore tab from URL on mount
 const currentURL = new URL(window.location.href);
 const currentTabFromURL = currentURL.searchParams.get('currentTab');
 if (currentTabFromURL) activeTab.value = currentTabFromURL;
@@ -88,66 +124,90 @@ if (currentTabFromURL) activeTab.value = currentTabFromURL;
 
 <template>
     <AppLayout title="Ingresos">
-        <main class="py-6 px-4 md:px-8 max-w-7xl mx-auto">
-            <h1 class="page-header">Ingresos</h1>
+        <main class="page-shell">
+            <!-- Heading -->
+            <header class="page-heading">
+                <div class="page-heading__text">
+                    <p class="page-heading__eyebrow">Transacciones</p>
+                    <h1 class="page-heading__title">Ingresos</h1>
+                    <p class="page-heading__subtitle">
+                        Registra, filtra y analiza todo el dinero que entra a tus finanzas.
+                    </p>
+                </div>
 
-            <!-- Toolbar -->
-            <section class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <!-- Search -->
-                <div class="flex items-center gap-3 sm:w-1/3 w-full">
-                    <!-- Form: en moviles la tecla "Buscar/Ir" del teclado virtual dispara submit (keydown.enter no es fiable con teclados IME) -->
-                    <form @submit.prevent="handleSearch" class="flex-1 min-w-0" role="search">
+                <div class="page-heading__actions">
+                    <form class="page-search" role="search" @submit.prevent="handleSearch">
                         <el-input
                             v-model="searchQuery"
-                            placeholder="Buscar..."
+                            placeholder="Buscar ingreso…"
                             :prefix-icon="Search"
                             clearable
                             enterkeyhint="search"
-                            class="search-bar w-full"
-                            @clear="closeTag"
+                            @input="onSearchInput"
+                            @clear="clearSearch"
                         />
-                        <button type="submit" class="hidden" tabindex="-1" aria-hidden="true"></button>
                     </form>
-                    <el-tag
-                        v-if="searchedWord"
-                        closable
-                        type="primary"
-                        @close="closeTag"
-                    >
-                        {{ searchedWord }}
-                    </el-tag>
-                </div>
 
-                <!-- Create button -->
-                <el-button type="primary" :icon="Plus" @click="handleCreate">
-                    {{ createButtonLabel }}
-                </el-button>
+                    <el-button type="primary" :icon="Plus" @click="handleCreate">
+                        {{ createButtonLabel }}
+                    </el-button>
+                </div>
+            </header>
+
+            <!-- Stat cards -->
+            <section class="stat-grid">
+                <article
+                    v-for="card in statCards"
+                    :key="card.key"
+                    class="stat-card"
+                    :class="`stat-card--${card.tone}`"
+                >
+                    <div class="stat-card__head">
+                        <span class="stat-card__icon">
+                            <el-icon :size="16"><component :is="card.icon" /></el-icon>
+                        </span>
+                        <span
+                            v-if="card.delta !== null"
+                            class="stat-card__delta"
+                            :class="card.delta >= 0 ? 'is-up' : 'is-down'"
+                        >
+                            {{ card.delta >= 0 ? '▲' : '▼' }} {{ Math.abs(card.delta) }}%
+                        </span>
+                    </div>
+                    <p class="stat-card__label">{{ card.label }}</p>
+                    <p class="stat-card__value">{{ card.value }}</p>
+                    <p class="stat-card__hint">{{ card.hint }}</p>
+                </article>
             </section>
 
-            <!-- Loading skeleton -->
-            <div v-if="loading" class="space-y-4">
-                <el-skeleton animated :rows="8" />
+            <!-- Active search chip -->
+            <div v-if="filters.q" class="search-chip-row">
+                <span class="search-chip">
+                    Búsqueda: <strong>{{ filters.q }}</strong>
+                    <button type="button" class="search-chip__close" @click="closeTag">×</button>
+                </span>
             </div>
 
             <!-- Tabs -->
-            <el-tabs v-else v-model="activeTab" class="income-tabs" @tab-change="handleTabChange">
-                <el-tab-pane label="Ingresos" name="1">
+            <el-tabs v-model="activeTab" class="income-tabs" @tab-change="handleTabChange">
+                <el-tab-pane name="1">
                     <template #label>
-                        <span class="flex items-center gap-1.5">
+                        <span class="tab-label">
                             <el-icon :size="14"><ArrowDown /></el-icon>
                             Ingresos
                         </span>
                     </template>
-                    <Incomes :incomes="filteredIncomes" />
+                    <Incomes :incomes="incomes" :filters="filters" :filtered="filtered" />
                 </el-tab-pane>
-                <el-tab-pane label="Ingresos recurrentes" name="2">
+
+                <el-tab-pane name="2">
                     <template #label>
-                        <span class="flex items-center gap-1.5">
+                        <span class="tab-label">
                             <el-icon :size="14"><Refresh /></el-icon>
-                            Ingresos recurrentes
+                            Recurrentes
                         </span>
                     </template>
-                    <RecurringIncomes :recurring_incomes="filteredRecurringIncomes" />
+                    <RecurringIncomes :recurring_incomes="recurring_incomes" />
                 </el-tab-pane>
             </el-tabs>
         </main>

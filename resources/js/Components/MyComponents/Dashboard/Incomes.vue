@@ -123,7 +123,7 @@ const catIcons = {
                     <tr v-for="(item, i) in filteredIncomes" :key="i">
                         <td class="max-w-[200px] truncate">{{ item.concept }}</td>
                         <td class="amount-income monetary-amount">$ {{ formatMoney(item.amount) }}</td>
-                        <td class="text-gray-500 dark:text-gray-400 text-sm">{{ formatDate(item.created_at) }}</td>
+                        <td class="text-gray-500 dark:text-[#9AA8A8] text-sm">{{ formatDate(item.created_at) }}</td>
                     </tr>
                 </tbody>
             </table>

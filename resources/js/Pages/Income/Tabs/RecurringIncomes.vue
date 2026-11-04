@@ -99,54 +99,66 @@ function tableRowClassName({ row }) {
 </script>
 
 <template>
-    <div class="income-table-section">
-        <div class="table-toolbar">
-            <PaginationWithNoMeta :pagination="recurring_incomes" class="py-2" />
+    <section class="data-card income-table-section">
+        <header class="data-card__toolbar">
+            <div class="data-card__filters">
+                <span class="meta-item">
+                    <strong>{{ recurring_incomes?.data?.length ?? 0 }}</strong> recurrencia(s) activa(s) o pausada(s)
+                </span>
+            </div>
 
-            <el-tooltip content="Eliminar seleccionados" placement="top">
-                <el-button
-                    :disabled="disableMassiveActions"
-                    :icon="Delete"
-                    circle
-                    size="small"
-                    type="danger"
-                    @click="deleteSelections"
-                />
-            </el-tooltip>
-        </div>
+            <div class="data-card__meta">
+                <PaginationWithNoMeta :pagination="recurring_incomes" />
+                <el-tooltip content="Eliminar seleccionados" placement="top">
+                    <el-button
+                        :disabled="disableMassiveActions"
+                        :icon="Delete"
+                        circle
+                        size="small"
+                        type="danger"
+                        @click="deleteSelections"
+                    />
+                </el-tooltip>
+            </div>
+        </header>
 
         <el-table
             ref="tableRef"
             :data="recurring_incomes.data"
             max-height="600"
+            class="data-table"
             style="width: 100%"
             @selection-change="handleSelectionChange"
             @row-click="handleRowClick"
             :row-class-name="tableRowClassName"
         >
-            <el-table-column type="selection" width="40" />
+            <el-table-column type="selection" width="46" />
             <el-table-column prop="concept" label="Concepto" min-width="180" show-overflow-tooltip />
             <el-table-column label="Monto" width="140" align="right">
                 <template #default="{ row }">
-                    <span class="amount-cell">${{ formatMoney(row.amount) }}</span>
+                    <span class="amount-cell">+${{ formatMoney(row.amount) }}</span>
                 </template>
             </el-table-column>
             <el-table-column prop="periodicity" label="Recurrencia" width="140" />
-            <el-table-column prop="category" label="Categoria" width="140" />
-            <el-table-column prop="payment_method" label="Metodo" width="130">
+            <el-table-column label="Categoría" width="170">
                 <template #default="{ row }">
-                    {{ row.payment_method ?? '-' }}
+                    <span class="category-tag tone-primary">{{ row.category ?? 'Sin categoría' }}</span>
                 </template>
             </el-table-column>
-            <el-table-column label="Creado" width="170">
+            <el-table-column label="Método" width="150">
                 <template #default="{ row }">
-                    <span class="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">{{ formatDate(row.created_at) }}</span>
+                    <span class="muted-cell">{{ row.payment_method ?? '—' }}</span>
                 </template>
             </el-table-column>
-            <el-table-column align="right" width="60" fixed="right">
+            <el-table-column label="Creado" width="140">
+                <template #default="{ row }">
+                    <span class="date-cell">{{ formatDate(row.created_at) }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column align="right" width="64" fixed="right">
                 <template #default="{ row }">
                     <el-dropdown trigger="click" @command="handleCommand">
-                        <button class="row-actions-btn" @click.stop>
+                        <button type="button" class="row-actions-btn" @click.stop>
                             <el-icon :size="16"><MoreFilled /></el-icon>
                         </button>
                         <template #dropdown>
@@ -170,7 +182,7 @@ function tableRowClassName({ row }) {
                 </template>
             </el-table-column>
         </el-table>
-    </div>
+    </section>
 
     <!-- Detail dialog -->
     <el-dialog v-model="showDetail" title="Detalles del ingreso recurrente" width="500px" destroy-on-close>

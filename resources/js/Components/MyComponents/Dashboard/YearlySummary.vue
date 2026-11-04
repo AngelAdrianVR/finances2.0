@@ -100,20 +100,20 @@ fetchData();
     <div v-else class="dashboard-card">
         <div class="flex items-center gap-2 mb-5">
             <el-icon :size="18" color="#296A6B"><TrendCharts /></el-icon>
-            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Resumen del año {{ selectedYear }}</h2>
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-[#EDF1F1]">Resumen del año {{ selectedYear }}</h2>
         </div>
 
         <div class="space-y-4">
             <!-- Monthly averages row -->
             <div class="grid grid-cols-2 gap-4">
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Promedio mensual de ingresos</p>
+                <div class="bg-gray-50 dark:bg-[#252C2C] rounded-lg p-3">
+                    <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-1">Promedio mensual de ingresos</p>
                     <p class="font-mono text-lg font-bold text-[#2F9E5B]">
                         ${{ formatMoney(avgMonthlyIncome) }}
                     </p>
                 </div>
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Promedio mensual de gastos</p>
+                <div class="bg-gray-50 dark:bg-[#252C2C] rounded-lg p-3">
+                    <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-1">Promedio mensual de gastos</p>
                     <p class="font-mono text-lg font-bold text-[#D64545]">
                         ${{ formatMoney(avgMonthlyOutcome) }}
                     </p>
@@ -121,10 +121,10 @@ fetchData();
             </div>
 
             <!-- Net balance for the year -->
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+            <div class="bg-gray-50 dark:bg-[#252C2C] rounded-lg p-3">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Balance neto del año</p>
+                        <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-1">Balance neto del año</p>
                         <p
                             class="font-mono text-lg font-bold"
                             :class="yearNet >= 0 ? 'text-[#2F9E5B]' : 'text-[#D64545]'"
@@ -133,7 +133,7 @@ fetchData();
                         </p>
                     </div>
                     <div class="text-right">
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Tasa de ahorro</p>
+                        <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-1">Tasa de ahorro</p>
                         <p
                             class="font-mono font-bold"
                             :class="parseFloat(savingsRate) >= 0 ? 'text-[#2F9E5B]' : 'text-[#D64545]'"
@@ -145,13 +145,13 @@ fetchData();
             </div>
 
             <!-- Current month vs average -->
-            <div class="border-t border-gray-200 dark:border-gray-600 pt-4">
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Este mes vs promedio mensual</p>
+            <div class="border-t border-gray-200 dark:border-[#3F4949] pt-4">
+                <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-3">Este mes vs promedio mensual</p>
                 <div class="grid grid-cols-2 gap-4">
                     <!-- Income comparison -->
                     <div>
-                        <p class="text-xs text-gray-400 dark:text-gray-400 mb-0.5">Ingresos</p>
-                        <p class="font-mono text-sm font-semibold text-gray-800 dark:text-gray-200">
+                        <p class="text-xs text-gray-400 dark:text-[#9AA8A8] mb-0.5">Ingresos</p>
+                        <p class="font-mono text-sm font-semibold text-gray-800 dark:text-[#EDF1F1]">
                             ${{ formatMoney(currentMonthIncome) }}
                         </p>
                         <div class="flex items-center gap-1 mt-1">
@@ -168,8 +168,8 @@ fetchData();
                     </div>
                     <!-- Outcome comparison -->
                     <div>
-                        <p class="text-xs text-gray-400 dark:text-gray-400 mb-0.5">Gastos</p>
-                        <p class="font-mono text-sm font-semibold text-gray-800 dark:text-gray-200">
+                        <p class="text-xs text-gray-400 dark:text-[#9AA8A8] mb-0.5">Gastos</p>
+                        <p class="font-mono text-sm font-semibold text-gray-800 dark:text-[#EDF1F1]">
                             ${{ formatMoney(currentMonthOutcome) }}
                         </p>
                         <div class="flex items-center gap-1 mt-1">
@@ -188,16 +188,16 @@ fetchData();
             </div>
 
             <!-- Totals row -->
-            <div class="border-t border-gray-200 dark:border-gray-600 pt-4 grid grid-cols-2 gap-4">
+            <div class="border-t border-gray-200 dark:border-[#3F4949] pt-4 grid grid-cols-2 gap-4">
                 <div>
-                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-0.5">Total ingresos del año</p>
-                    <p class="font-mono text-sm font-bold text-gray-800 dark:text-gray-100">
+                    <p class="text-xs text-gray-400 dark:text-[#9AA8A8] mb-0.5">Total ingresos del año</p>
+                    <p class="font-mono text-sm font-bold text-gray-800 dark:text-[#EDF1F1]">
                         ${{ formatMoney(yearTotalIncome) }}
                     </p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-400 dark:text-gray-400 mb-0.5">Total gastos del año</p>
-                    <p class="font-mono text-sm font-semibold text-gray-800 dark:text-gray-200">
+                    <p class="text-xs text-gray-400 dark:text-[#9AA8A8] mb-0.5">Total gastos del año</p>
+                    <p class="font-mono text-sm font-semibold text-gray-800 dark:text-[#EDF1F1]">
                         ${{ formatMoney(yearTotalOutcome) }}
                     </p>
                 </div>

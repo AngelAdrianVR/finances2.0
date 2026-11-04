@@ -48,12 +48,12 @@ function formatMoney(val) {
             <!-- Received loans -->
             <section class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Recibidos</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">Total recibido</p>
-                    <p class="text-base font-mono font-semibold text-gray-800 dark:text-gray-200">$ {{ formatMoney(totalLoansForMe) }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Total pagado</p>
-                    <p class="text-base font-mono font-semibold text-gray-800 dark:text-gray-200">$ {{ formatMoney(totalPaidFromOthers) }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Saldo restante</p>
+                    <p class="text-sm font-semibold text-gray-700 dark:text-[#DCE3E3] mb-2">Recibidos</p>
+                    <p class="text-xs text-gray-500 dark:text-[#9AA8A8]">Total recibido</p>
+                    <p class="text-base font-mono font-semibold text-gray-800 dark:text-[#EDF1F1]">$ {{ formatMoney(totalLoansForMe) }}</p>
+                    <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mt-2">Total pagado</p>
+                    <p class="text-base font-mono font-semibold text-gray-800 dark:text-[#EDF1F1]">$ {{ formatMoney(totalPaidFromOthers) }}</p>
+                    <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mt-2">Saldo restante</p>
                     <p class="text-base font-mono font-bold text-warning-600">$ {{ formatMoney(totalLoansForMe - totalPaidFromOthers) }}</p>
                 </div>
                 <div class="flex items-center justify-center">
@@ -62,14 +62,14 @@ function formatMoney(val) {
             </section>
 
             <!-- Given loans -->
-            <section class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+            <section class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-[#3F4949]">
                 <div>
-                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Otorgados</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">Total otorgado</p>
-                    <p class="text-base font-mono font-semibold text-gray-800 dark:text-gray-200">$ {{ formatMoney(totalGivenLoans) }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Total pagado</p>
-                    <p class="text-base font-mono font-semibold text-gray-800 dark:text-gray-200">$ {{ formatMoney(totalPaidForMe) }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Saldo restante</p>
+                    <p class="text-sm font-semibold text-gray-700 dark:text-[#DCE3E3] mb-2">Otorgados</p>
+                    <p class="text-xs text-gray-500 dark:text-[#9AA8A8]">Total otorgado</p>
+                    <p class="text-base font-mono font-semibold text-gray-800 dark:text-[#EDF1F1]">$ {{ formatMoney(totalGivenLoans) }}</p>
+                    <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mt-2">Total pagado</p>
+                    <p class="text-base font-mono font-semibold text-gray-800 dark:text-[#EDF1F1]">$ {{ formatMoney(totalPaidForMe) }}</p>
+                    <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mt-2">Saldo restante</p>
                     <p class="text-base font-mono font-bold text-warning-600">$ {{ formatMoney(totalGivenLoans - totalPaidForMe) }}</p>
                 </div>
                 <div class="flex items-center justify-center">

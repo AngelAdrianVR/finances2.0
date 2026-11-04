@@ -18,13 +18,13 @@ function onNotificationsUpdate(value) {
 </script>
 
 <template>
-    <header class="h-12 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center shrink-0 transition-colors duration-200">
+    <header class="h-14 bg-white/95 dark:bg-[#1E2424] backdrop-blur border-b border-gray-200 dark:border-[#2B3232] flex items-center shrink-0 transition-colors duration-200">
         <div class="w-full max-w-full mx-auto px-4 sm:px-6 flex items-center justify-between">
             <!-- Left -->
             <div class="flex items-center space-x-2">
                 <!-- Hamburger -->
                 <button
-                    class="md:hidden size-9 flex items-center justify-center rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    class="md:hidden size-9 flex items-center justify-center rounded-lg text-gray-600 dark:text-[#C2CDCD] hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
                     @click="emit('openMobileMenu')"
                 >
                     <el-icon :size="20"><Menu /></el-icon>
@@ -46,7 +46,7 @@ function onNotificationsUpdate(value) {
                         class="rounded-full size-9 flex items-center justify-center transition-colors duration-200"
                         :class="route().current('calendars.*')
                             ? 'bg-[#EAF7EF] dark:bg-[#1a3a3b] text-[#2F9E5B] dark:text-[#3BB970]'
-                            : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'"
+                            : 'text-gray-500 dark:text-[#9AA8A8] hover:bg-gray-100 dark:hover:bg-white/10'"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                             stroke-width="1.5" stroke="currentColor" class="size-5">
@@ -56,8 +56,8 @@ function onNotificationsUpdate(value) {
                     </button>
                     <span
                         class="absolute -bottom-9 left-1/2 -translate-x-1/2 z-50 origin-bottom scale-0
-                        px-3 py-1.5 rounded-md border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-600 text-xs font-medium
-                        text-gray-700 dark:text-gray-200 shadow-sm transition-all duration-200 ease-in-out
+                        px-3 py-1.5 rounded-md border border-gray-200 bg-white dark:bg-[#2B3232] dark:border-[#3F4949] text-xs font-medium
+                        text-gray-700 dark:text-[#DCE3E3] shadow-sm transition-all duration-200 ease-in-out
                         group-hover:scale-100 whitespace-nowrap pointer-events-none"
                     >Calendario</span>
                 </Link>
@@ -68,7 +68,7 @@ function onNotificationsUpdate(value) {
                 <!-- Dark mode toggle -->
                 <button
                     @click="toggleDark"
-                    class="size-9 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    class="size-9 flex items-center justify-center rounded-full border border-transparent text-gray-500 dark:text-[#9AA8A8] hover:bg-gray-100 dark:hover:bg-white/10 hover:border-gray-200 dark:hover:border-[#3F4949] transition-colors"
                     :title="isDark ? 'Modo claro' : 'Modo oscuro'"
                 >
                     <el-icon :size="18">
@@ -79,11 +79,11 @@ function onNotificationsUpdate(value) {
 
                 <!-- Ezyventas promo -->
                 <a href="https://ezyventas.com" target="_blank"
-                    class="hidden sm:flex items-center space-x-2 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700
-                    px-3 py-1.5 rounded-full transition-colors duration-200"
+                    class="hidden sm:flex items-center space-x-2 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10
+                    border border-transparent dark:border-[#2B3232] px-3 py-1.5 rounded-full transition-colors duration-200"
                 >
                     <img class="w-6 object-contain opacity-70" src="@/../../public/images/isologoEzy.png" alt="EzyVentas">
-                    <span class="text-xs text-gray-500 dark:text-gray-400">Punto de venta para tu negocio</span>
+                    <span class="text-xs text-gray-500 dark:text-[#9AA8A8]">Punto de venta para tu negocio</span>
                 </a>
             </div>
         </div>
