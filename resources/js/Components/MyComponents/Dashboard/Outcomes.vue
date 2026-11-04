@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, computed, watch } from "vue";
 import { router } from "@inertiajs/vue3";
 import { Plus } from "@element-plus/icons-vue";
@@ -84,7 +84,7 @@ const catIcons = {
             <el-button :icon="Plus" size="small" circle @click="router.get(route('outcomes.create'))" />
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 gap-3">
             <div
                 v-for="cat in categoryDefs"
                 :key="cat.key"
@@ -125,7 +125,7 @@ const catIcons = {
                     <tr v-for="(item, i) in filteredOutcomes" :key="i">
                         <td class="max-w-[200px] truncate">{{ item.concept }}</td>
                         <td class="amount-expense monetary-amount">$ {{ formatMoney(item.amount) }}</td>
-                        <td class="text-gray-500 dark:text-gray-400 text-sm">{{ formatDate(item.created_at) }}</td>
+                        <td class="text-gray-500 dark:text-[#9AA8A8] text-sm">{{ formatDate(item.created_at) }}</td>
                     </tr>
                 </tbody>
             </table>

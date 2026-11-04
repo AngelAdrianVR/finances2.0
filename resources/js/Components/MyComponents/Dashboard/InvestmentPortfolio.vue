@@ -144,7 +144,7 @@ onMounted(fetchInvestments);
         <h2 class="dashboard-card-title">Portafolio de Inversiones</h2>
 
         <!-- Formulario para agregar -->
-        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-4 space-y-3">
+        <div class="bg-gray-50 dark:bg-[#252C2C] rounded-lg p-4 mb-4 space-y-3">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <el-input
                     v-model="form.name"
@@ -174,7 +174,7 @@ onMounted(fetchInvestments);
                 </div>
             </div>
             <div class="flex items-center justify-between">
-                <p class="text-xs text-gray-500 dark:text-gray-400">
+                <p class="text-xs text-gray-500 dark:text-[#9AA8A8]">
                     Agrega cada inversión con su monto y tasa anual (%).
                 </p>
                 <el-button type="primary" :icon="Plus" @click="addInvestment">
@@ -185,15 +185,15 @@ onMounted(fetchInvestments);
 
         <!-- Resumen -->
         <div class="grid grid-cols-2 gap-3 mb-4">
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Total invertido</p>
-                <p class="font-mono text-lg font-bold text-[#296A6B] dark:text-primary-400">
+            <div class="bg-gray-50 dark:bg-[#252C2C] rounded-lg p-3">
+                <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-1">Total invertido</p>
+                <p class="font-mono text-lg font-bold text-[#296A6B] dark:text-[#7FD3D4]">
                     ${{ formatMoney(totalInvested) }}
                 </p>
             </div>
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Tasa anual ponderada</p>
-                <p class="font-mono text-lg font-bold text-[#296A6B] dark:text-primary-400">
+            <div class="bg-gray-50 dark:bg-[#252C2C] rounded-lg p-3">
+                <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-1">Tasa anual ponderada</p>
+                <p class="font-mono text-lg font-bold text-[#296A6B] dark:text-[#7FD3D4]">
                     {{ weightedRate.toFixed(2) }}%
                 </p>
             </div>
@@ -219,7 +219,7 @@ onMounted(fetchInvestments);
             <div
                 v-for="inv in investments"
                 :key="inv.id"
-                class="border border-grayD9 dark:border-gray-600 rounded-lg p-3 flex items-center justify-between gap-3 hover:shadow-sm transition"
+                class="border border-grayD9 dark:border-[#3F4949] rounded-lg p-3 flex items-center justify-between gap-3 hover:shadow-sm transition"
             >
                 <!-- Modo edición -->
                 <template v-if="editingId === inv.id">
@@ -252,15 +252,15 @@ onMounted(fetchInvestments);
                 <!-- Modo lectura -->
                 <template v-else>
                     <div class="flex-1 min-w-0">
-                        <p class="font-medium text-sm text-gray-800 dark:text-gray-200 truncate">
+                        <p class="font-medium text-sm text-gray-800 dark:text-[#EDF1F1] truncate">
                             {{ inv.name || 'Inversión' }}
                         </p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                        <p class="text-xs text-gray-500 dark:text-[#9AA8A8]">
                             {{ Number(inv.annual_rate).toFixed(2) }}% anual
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <p class="font-mono font-semibold text-gray-800 dark:text-gray-200">
+                        <p class="font-mono font-semibold text-gray-800 dark:text-[#EDF1F1]">
                             ${{ formatMoney(inv.amount) }}
                         </p>
                         <el-button size="small" :icon="Edit" circle plain @click="startEdit(inv)" />

@@ -1,28 +1,25 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { router } from '@inertiajs/vue3';
-import { Edit, Delete, MoreFilled, Refresh } from '@element-plus/icons-vue';
+import { router, useForm } from '@inertiajs/vue3';
+import { Edit, Delete, MoreFilled, Refresh, CircleClose, ArrowDown } from '@element-plus/icons-vue';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { useForm } from '@inertiajs/vue3';
 import PaginationWithNoMeta from '@/Components/MyComponents/PaginationWithNoMeta.vue';
 import axios from 'axios';
 
 const props = defineProps({
     incomes: Object,
+    filters: { type: Object, default: () => ({ q: '', category: null, payment_method: null }) },
+    filtered: { type: Object, default: () => ({ count: 0, total: 0 }) },
 });
 
-// Table ref
 const tableRef = ref(null);
 const selectedRows = ref([]);
 const disableMassiveActions = ref(true);
 
-// Detail modal
 const showDetail = ref(false);
 const itemToShow = ref(null);
-
-// Massive edit modal
 const showMassiveEdit = ref(false);
 
 const form = useForm({
@@ -35,27 +32,49 @@ const categories = ['Ventas', 'Intereses', 'Nomina', 'Prestacion de servicios', 
 const paymentMethods = ['Efectivo', 'Transferencia', 'Deposito', 'Cheque', 'Pago con tarjeta'];
 const perPageOptions = [10, 20, 50, 100];
 
-// Filtros locales (sobre los registros cargados en la pagina actual)
-const filters = ref({ category: null, payment_method: null });
+// Filtros aplicados en servidor (query params)
+const filters = ref({
+    category: props.filters?.category ?? null,
+    payment_method: props.filters?.payment_method ?? null,
+});
 
-const visibleRows = computed(() =>
-    (props.incomes?.data ?? []).filter((inc) =>
-        (!filters.value.category || inc.category === filters.value.category) &&
-        (!filters.value.payment_method || inc.payment_method === filters.value.payment_method)
-    )
-);
+const rows = computed(() => props.incomes?.data ?? []);
 
 const hasActiveFilters = computed(() => Boolean(filters.value.category || filters.value.payment_method));
 
-const totalShown = computed(() => visibleRows.value.reduce((acc, inc) => acc + (Number(inc.amount) || 0), 0));
+const totalShown = computed(() => Number(props.filtered?.total ?? 0));
+const filteredCount = computed(() => Number(props.filtered?.count ?? 0));
 
 const currentPerPage = computed(() => props.incomes?.per_page || 50);
 
-// Alto maximo de la tabla: ocupa lo que sobre del viewport (topbar, encabezados y controles ya restados),
-// asi la pagina no necesita scroll vertical para llegar a los controles.
+function requestFilters() {
+    const params = { per_page: currentPerPage.value, page: 1 };
+
+    if (props.filters?.q) params.q = props.filters.q;
+    if (filters.value.category) params.category = filters.value.category;
+    if (filters.value.payment_method) params.payment_method = filters.value.payment_method;
+
+    router.get(route('incomes.index'), params, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
+}
+
+function onFilterChange() {
+    requestFilters();
+}
+
+function clearFilters() {
+    filters.value = { category: null, payment_method: null };
+    requestFilters();
+}
+
 const tableMaxHeight = ref(500);
+const viewportWidth = ref(window.innerWidth);
 function updateTableHeight() {
-    tableMaxHeight.value = Math.max(240, window.innerHeight - 380);
+    tableMaxHeight.value = Math.max(240, window.innerHeight - 470);
+    viewportWidth.value = window.innerWidth;
 }
 onMounted(() => {
     updateTableHeight();
@@ -63,12 +82,9 @@ onMounted(() => {
 });
 onUnmounted(() => window.removeEventListener('resize', updateTableHeight));
 
-function clearFilters() {
-    filters.value.category = null;
-    filters.value.payment_method = null;
-}
+const showPaymentColumn = computed(() => viewportWidth.value >= 1200);
+const showDateColumn = computed(() => viewportWidth.value >= 1024);
 
-// Cambia el numero de registros por pagina (recarga con el query param per_page)
 function changePerPage(size) {
     const url = new URL(window.location.href);
     url.searchParams.set('per_page', size);
@@ -78,11 +94,28 @@ function changePerPage(size) {
 
 function formatDate(date) {
     if (!date) return '';
-    return format(new Date(date), 'dd MMMM yyyy', { locale: es });
+    return format(new Date(date), 'dd MMM yyyy', { locale: es });
 }
 
 function formatMoney(val) {
-    return val?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return Number(val || 0).toLocaleString('es-MX', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+}
+
+const categoryTones = {
+    Ventas: 'tone-primary',
+    Intereses: 'tone-info',
+    Nomina: 'tone-success',
+    'Prestacion de servicios': 'tone-accent',
+    Comision: 'tone-warning',
+    Renta: 'tone-neutral',
+    Otro: 'tone-neutral',
+};
+
+function categoryTone(category) {
+    return categoryTones[category] ?? 'tone-neutral';
 }
 
 function handleSelectionChange(val) {
@@ -130,126 +163,137 @@ function massiveUpdate() {
 async function deleteSelections() {
     try {
         await ElMessageBox.confirm(
-            'Estas seguro que deseas eliminar los ingresos seleccionados?',
-            'Confirmar eliminacion',
-            { confirmButtonText: 'Si, eliminar', cancelButtonText: 'Cancelar', type: 'warning' }
+            '¿Estás seguro que deseas eliminar los ingresos seleccionados?',
+            'Confirmar eliminación',
+            { confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar', type: 'warning' }
         );
 
         const response = await axios.post(route('incomes.massive-delete'), {
-            ids: selectedRows.value.map(r => r.id),
+            ids: selectedRows.value.map((r) => r.id),
         });
 
         if (response.status === 200) {
             ElMessage.success('Ingresos eliminados correctamente.');
-            const deletedIds = new Set(selectedRows.value.map(r => r.id));
-            props.incomes.data = props.incomes.data.filter(d => !deletedIds.has(d.id));
+            const deletedIds = new Set(selectedRows.value.map((r) => r.id));
+            props.incomes.data = props.incomes.data.filter((d) => !deletedIds.has(d.id));
             tableRef.value?.clearSelection();
             selectedRows.value = [];
             disableMassiveActions.value = true;
         }
     } catch (err) {
         if (err !== 'cancel') {
-            ElMessage.error('Algo salio mal.');
+            ElMessage.error('Algo salió mal.');
             console.error(err);
         }
     }
 }
-
-function tableRowClassName({ rowIndex }) {
-    return 'cursor-pointer';
-}
 </script>
 
 <template>
-    <div class="income-table-section">
+    <section class="data-card income-table-section">
         <!-- Toolbar -->
-        <div class="table-toolbar">
-            <PaginationWithNoMeta :pagination="incomes" class="py-2" />
-
-            <div class="flex items-center gap-2">
-                <el-tooltip content="Editar seleccionados" placement="top">
-                    <el-button
-                        :disabled="disableMassiveActions"
-                        :icon="Edit"
-                        circle
-                        size="small"
-                        @click="openMassiveEdit"
-                    />
-                </el-tooltip>
-                <el-tooltip content="Eliminar seleccionados" placement="top">
-                    <el-button
-                        :disabled="disableMassiveActions"
-                        :icon="Delete"
-                        circle
-                        size="small"
-                        type="danger"
-                        @click="deleteSelections"
-                    />
-                </el-tooltip>
-            </div>
-        </div>
-
-        <!-- Controles: filtros + resumen + tamano de pagina (siempre visibles) -->
-        <div class="flex flex-wrap items-center justify-between gap-3 py-3 border-b border-gray-100 dark:border-gray-700">
-            <div class="flex flex-wrap items-center gap-2">
-                <el-select v-model="filters.category" clearable filterable placeholder="Filtrar por categoria" class="!w-56">
+        <header class="data-card__toolbar">
+            <div class="data-card__filters">
+                <el-select
+                    v-model="filters.category"
+                    clearable
+                    filterable
+                    placeholder="Categoría"
+                    class="filter-select"
+                    @change="onFilterChange"
+                >
                     <el-option v-for="cat in categories" :key="cat" :label="cat" :value="cat" />
                 </el-select>
-                <el-select v-model="filters.payment_method" clearable filterable placeholder="Filtrar por metodo de pago" class="!w-60">
+                <el-select
+                    v-model="filters.payment_method"
+                    clearable
+                    filterable
+                    placeholder="Método de pago"
+                    class="filter-select"
+                    @change="onFilterChange"
+                >
                     <el-option v-for="pm in paymentMethods" :key="pm" :label="pm" :value="pm" />
                 </el-select>
-                <el-button v-if="hasActiveFilters" size="small" text type="primary" @click="clearFilters">Limpiar filtros</el-button>
+                <button v-if="hasActiveFilters" type="button" class="filter-clear" @click="clearFilters">
+                    <el-icon :size="13"><CircleClose /></el-icon>
+                    Limpiar filtros
+                </button>
             </div>
 
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                <span class="text-gray-500 dark:text-gray-400">{{ visibleRows.length }} registro(s) mostrados</span>
-                <span class="font-semibold text-[#2F9E5B] dark:text-[#3BB970]">Total: ${{ formatMoney(totalShown) }}</span>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-400 dark:text-gray-500">Por pagina</span>
-                    <el-select :model-value="currentPerPage" size="small" class="!w-24" @change="changePerPage">
-                        <el-option v-for="n in perPageOptions" :key="n" :label="`${n}`" :value="n" />
-                    </el-select>
-                </div>
+            <div class="data-card__meta">
+                <span class="meta-item">
+                    <strong>{{ filteredCount }}</strong> registro(s)
+                </span>
+                <span class="meta-item meta-item--success">
+                    Total <strong>${{ formatMoney(totalShown) }}</strong>
+                </span>
+                <el-select :model-value="currentPerPage" size="small" class="per-page-select" @change="changePerPage">
+                    <el-option v-for="n in perPageOptions" :key="n" :label="`${n} / pág.`" :value="n" />
+                </el-select>
             </div>
-        </div>
+        </header>
 
         <!-- Table -->
         <el-table
             ref="tableRef"
-            :data="visibleRows"
+            :data="rows"
             :max-height="tableMaxHeight"
+            class="data-table"
             style="width: 100%"
             @selection-change="handleSelectionChange"
             @row-click="handleRowClick"
-            :row-class-name="tableRowClassName"
         >
-            <el-table-column type="selection" width="40" />
-            <el-table-column prop="concept" label="Concepto" min-width="200" show-overflow-tooltip />
-            <el-table-column label="Fecha" width="180">
+            <el-table-column type="selection" width="46" />
+
+            <el-table-column label="Concepto" min-width="170" show-overflow-tooltip>
                 <template #default="{ row }">
-                    <span class="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400">{{ formatDate(row.created_at) }}</span>
+                    <div class="concept-cell">
+                        <span class="concept-cell__icon">
+                            <el-icon :size="13"><ArrowDown /></el-icon>
+                        </span>
+                        <div class="concept-cell__text">
+                            <span class="concept-cell__name">{{ row.concept }}</span>
+                            <span v-if="row.description" class="concept-cell__hint">{{ row.description }}</span>
+                        </div>
+                    </div>
                 </template>
             </el-table-column>
-            <el-table-column label="Monto" width="150" align="right">
+
+            <el-table-column label="Categoría" width="145">
                 <template #default="{ row }">
-                    <span class="amount-cell">
-                        <el-tooltip v-if="row.automatically_created" content="Creado automaticamente" placement="top">
-                            <el-icon :size="14" color="#2F9E5B"><Refresh /></el-icon>
-                        </el-tooltip>
-                        ${{ formatMoney(row.amount) }}
+                    <span class="category-tag" :class="categoryTone(row.category)">
+                        {{ row.category ?? 'Sin categoría' }}
                     </span>
                 </template>
             </el-table-column>
-            <el-table-column prop="category" label="Categoria" width="150" />
-            <el-table-column prop="payment_method" label="Metodo de pago" width="150">
+
+            <el-table-column v-if="showPaymentColumn" label="Método de pago" width="150">
                 <template #default="{ row }">
-                    {{ row.payment_method ?? '-' }}
+                    <span class="muted-cell">{{ row.payment_method ?? '—' }}</span>
                 </template>
             </el-table-column>
-            <el-table-column align="right" width="60" fixed="right">
+
+            <el-table-column v-if="showDateColumn" label="Fecha" width="115">
+                <template #default="{ row }">
+                    <span class="date-cell">{{ formatDate(row.created_at) }}</span>
+                </template>
+            </el-table-column>
+
+            <el-table-column label="Monto" width="130" align="right">
+                <template #default="{ row }">
+                    <span class="amount-cell">
+                        <el-tooltip v-if="row.automatically_created" content="Creado automáticamente" placement="top">
+                            <el-icon :size="13" class="recurring-icon"><Refresh /></el-icon>
+                        </el-tooltip>
+                        +${{ formatMoney(row.amount) }}
+                    </span>
+                </template>
+            </el-table-column>
+
+            <el-table-column align="right" width="54" fixed="right">
                 <template #default="{ row }">
                     <el-dropdown trigger="click" @command="handleCommand">
-                        <button class="row-actions-btn" @click.stop>
+                        <button type="button" class="row-actions-btn" @click.stop>
                             <el-icon :size="16"><MoreFilled /></el-icon>
                         </button>
                         <template #dropdown>
@@ -265,8 +309,31 @@ function tableRowClassName({ rowIndex }) {
                     </el-dropdown>
                 </template>
             </el-table-column>
+
+            <template #empty>
+                <div class="empty-state py-10">
+                    <p class="empty-state-title">No hay ingresos registrados</p>
+                    <p class="empty-state-text">
+                        {{ hasActiveFilters ? 'Ajusta los filtros para ver más resultados.' : 'Registra tu primer ingreso para empezar.' }}
+                    </p>
+                </div>
+            </template>
         </el-table>
-    </div>
+
+        <!-- Footer -->
+        <footer class="data-card__footer">
+            <div class="selection-actions">
+                <template v-if="selectedRows.length">
+                    <span class="selection-chip">{{ selectedRows.length }} seleccionados</span>
+                    <el-button size="small" :icon="Edit" @click="openMassiveEdit">Editar</el-button>
+                    <el-button size="small" type="danger" plain :icon="Delete" @click="deleteSelections">Eliminar</el-button>
+                </template>
+                <span v-else class="selection-hint">Selecciona filas para acciones masivas</span>
+            </div>
+
+            <PaginationWithNoMeta :pagination="incomes" />
+        </footer>
+    </section>
 
     <!-- Detail dialog -->
     <el-dialog v-model="showDetail" title="Detalles del ingreso" width="500px" destroy-on-close>
@@ -275,9 +342,9 @@ function tableRowClassName({ rowIndex }) {
                 <div class="detail-row"><span class="detail-label">Concepto</span><span class="detail-value">{{ itemToShow.concept }}</span></div>
                 <div class="detail-row"><span class="detail-label">Fecha</span><span class="detail-value">{{ formatDate(itemToShow.created_at) }}</span></div>
                 <div class="detail-row"><span class="detail-label">Monto</span><span class="detail-value font-mono font-semibold" style="color: #2F9E5B;">${{ formatMoney(itemToShow.amount) }}</span></div>
-                <div class="detail-row"><span class="detail-label">Categoria</span><span class="detail-value">{{ itemToShow.category }}</span></div>
-                <div class="detail-row"><span class="detail-label">Metodo de pago</span><span class="detail-value">{{ itemToShow.payment_method }}</span></div>
-                <div class="detail-row"><span class="detail-label">Descripcion</span><span class="detail-value">{{ itemToShow.description ?? '-' }}</span></div>
+                <div class="detail-row"><span class="detail-label">Categoría</span><span class="detail-value">{{ itemToShow.category }}</span></div>
+                <div class="detail-row"><span class="detail-label">Método de pago</span><span class="detail-value">{{ itemToShow.payment_method }}</span></div>
+                <div class="detail-row"><span class="detail-label">Descripción</span><span class="detail-value">{{ itemToShow.description ?? '-' }}</span></div>
             </div>
             <div v-if="itemToShow.automatically_created" class="mt-3">
                 <span class="recurring-badge">
@@ -287,7 +354,7 @@ function tableRowClassName({ rowIndex }) {
             </div>
         </template>
         <template #footer>
-            <el-button @click="router.get(route('incomes.edit', itemToShow?.id))" v-if="itemToShow">Editar</el-button>
+            <el-button v-if="itemToShow" @click="router.get(route('incomes.edit', itemToShow?.id))">Editar</el-button>
             <el-button @click="showDetail = false">Cerrar</el-button>
         </template>
     </el-dialog>
@@ -295,19 +362,19 @@ function tableRowClassName({ rowIndex }) {
     <!-- Massive edit dialog -->
     <el-dialog v-model="showMassiveEdit" title="Editar ingresos masivamente" width="480px" destroy-on-close>
         <el-form :model="form" label-position="top">
-            <el-form-item label="Categoria">
+            <el-form-item label="Categoría">
                 <el-select v-model="form.category" filterable placeholder="Selecciona" class="!w-full">
                     <el-option v-for="cat in categories" :key="cat" :label="cat" :value="cat" />
                 </el-select>
             </el-form-item>
-            <el-form-item label="Metodo de pago">
+            <el-form-item label="Método de pago">
                 <el-select v-model="form.payment_method" filterable placeholder="Selecciona" class="!w-full">
                     <el-option v-for="pm in paymentMethods" :key="pm" :label="pm" :value="pm" />
                 </el-select>
             </el-form-item>
         </el-form>
         <div class="massive-edit-hint">
-            Todos los ingresos seleccionados <strong>({{ selectedRows.length }})</strong> se actualizaran con los valores establecidos.
+            Todos los ingresos seleccionados <strong>({{ selectedRows.length }})</strong> se actualizarán con los valores establecidos.
         </div>
         <template #footer>
             <el-button @click="showMassiveEdit = false">Cancelar</el-button>

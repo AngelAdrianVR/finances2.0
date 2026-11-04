@@ -2,18 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Dashboard;
 use App\Models\Income;
 use App\Models\Loan;
 use App\Models\Outcome;
+use App\Services\Dashboard\DashboardOverviewService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function __construct(private readonly DashboardOverviewService $overviewService)
     {
-        return inertia('Dashboard/Index');
+    }
+
+    public function index(Request $request)
+    {
+        return inertia('Dashboard/Index', [
+            'userName' => $request->user()->name,
+        ]);
+    }
+
+    /**
+     * Single payload with totals, comparison, trend, categories and KPIs
+     * for the requested period.
+     */
+    public function fetchOverview(Request $request)
+    {
+        return response()->json(
+            $this->overviewService->build(
+                $request->user(),
+                $request->input('periodicity'),
+                $request->input('period')
+            )
+        );
     }
 
     public function fetchDataForPeriod(Request $request)

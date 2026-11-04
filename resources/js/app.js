@@ -11,6 +11,11 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import VueApexCharts from "vue3-apexcharts";
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
+
+// Format tokens used by Element Plus date pickers follow the app locale
+dayjs.locale('es');
 
 //element plus
 import ElementPlus from 'element-plus'

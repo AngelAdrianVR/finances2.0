@@ -1,43 +1,64 @@
 <template>
-    <div id="chart">
-        <apexchart type="radialBar" height="150" :width="width" :options="chartOptions" :series="series"></apexchart>
-    </div>
+    <apexchart type="radialBar" height="150" :width="width" :options="chartOptions" :series="series" />
 </template>
 
 <script>
 export default {
+    props: {
+        series: { type: Array, default: () => [0] },
+        width: { type: String, default: undefined },
+    },
     data() {
         return {
-            // series: [70],
-            chartOptions: {
+            isDark: false,
+            observer: null,
+        };
+    },
+    computed: {
+        gradientColors() {
+            const value = Number(this.series?.[0] ?? 0);
+
+            if (value <= 30) {
+                return [
+                    { offset: 0, color: '#D64545' },
+                    { offset: 100, color: '#F08A8A' },
+                ];
+            }
+
+            if (value <= 60) {
+                return [
+                    { offset: 0, color: '#B47F1F' },
+                    { offset: 100, color: '#E8B450' },
+                ];
+            }
+
+            return [
+                { offset: 0, color: '#247A47' },
+                { offset: 100, color: '#4FC98A' },
+            ];
+        },
+        chartOptions() {
+            return {
                 chart: {
                     height: 150,
                     type: 'radialBar',
+                    background: 'transparent',
                 },
                 plotOptions: {
                     radialBar: {
-                        hollow: {
-                            size: '60%',
-                        },
+                        hollow: { size: '62%' },
                         dataLabels: {
                             value: {
-                                offsetY: -10,
-                                color: '#000', // Cambia el color de la etiqueta del porcentaje
-                                fontSize: '14px', // Puedes ajustar el tamaño si es necesario
+                                offsetY: -6,
+                                color: this.isDark ? '#EDF1F1' : '#1A1F1F',
+                                fontSize: '14px',
+                                fontWeight: 600,
                             },
                         },
                         track: {
-                            background: "#e7e7e7",
+                            background: this.isDark ? 'rgba(255, 255, 255, 0.08)' : '#EDF1F1',
                             strokeWidth: '97%',
-                            margin: 5, // margin is in pixels
-                            dropShadow: {
-                                enabled: true,
-                                top: 2,
-                                left: 0,
-                                color: '#999',
-                                opacity: 1,
-                                blur: 2
-                            }
+                            margin: 5,
                         },
                     },
                 },
@@ -50,52 +71,26 @@ export default {
                         opacityFrom: 1,
                         opacityTo: 1,
                         stops: [0, 50, 53, 91],
-                        // Colores iniciales; se actualizarán dinámicamente
-                        colorStops: []
-                    }
+                        colorStops: this.gradientColors,
+                    },
                 },
+                stroke: { lineCap: 'round' },
                 labels: [''],
-            },
-        }
-    },
-    props: {
-        series: {
-            type: Array,
-            default: 0
+            };
         },
-        width: String,
-        // chartOptions: Object,
-    },
-    computed: {
-        gradientColors() {
-            const value = this.series[0]; // Se asume que 'series' es un array con un solo valor
-            if (value <= 30) {
-                return [
-                    { offset: 0, color: '#FF0000' }, // Rojo en la parte superior
-                    { offset: 100, color: '#FF6347' } // Un rojo más claro en la parte inferior
-                ];
-            } else if (value > 30 && value <= 60) {
-                return [
-                    { offset: 0, color: '#3C6415' }, // Naranja en la parte superior
-                    { offset: 100, color: '#7ACA2B' } // Amarillo en la parte inferior
-                ];
-            } else {
-                return [
-                    { offset: 0, color: '#156448' }, // Verde en la parte superior
-                    { offset: 100, color: '#2BCA97' } // Verde más claro en la parte inferior
-                ];
-            }
-        },
-    },
-    watch: {
-        // Actualiza los colores del gradiente cuando cambie el valor de 'series'
-        gradientColors(newColors) {
-            this.chartOptions.fill.gradient.colorStops = newColors;
-        }
     },
     mounted() {
-        // Asigna el gradiente inicial al montarse el componente 
-        this.chartOptions.fill.gradient.colorStops = this.gradientColors;
+        this.syncTheme();
+        this.observer = new MutationObserver(() => this.syncTheme());
+        this.observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     },
-}
+    beforeUnmount() {
+        this.observer?.disconnect();
+    },
+    methods: {
+        syncTheme() {
+            this.isDark = document.documentElement.classList.contains('dark');
+        },
+    },
+};
 </script>
