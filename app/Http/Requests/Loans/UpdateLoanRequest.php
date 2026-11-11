@@ -22,10 +22,11 @@ class UpdateLoanRequest extends FormRequest
             'profitability_type'  => ['nullable', 'string'],
             'profitability_mode'  => ['nullable', 'string'],
             'profitability_period' => ['nullable', 'string'],
-            'expired_date'        => ['nullable', 'date', 'after:today'],
+            'expired_date'        => ['nullable', 'date'],
             'amount'              => ['required', 'numeric', 'min:0', 'max:999999'],
             'status'              => ['required', 'string'],
             'loan_date'           => ['nullable', 'date'],
+            'description'         => ['nullable', 'string', 'max:255'],
             'automatic'           => ['nullable', 'boolean'],
             'no_interest'         => ['nullable', 'boolean'],
         ];

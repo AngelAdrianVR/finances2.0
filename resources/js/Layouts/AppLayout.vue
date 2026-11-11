@@ -33,7 +33,6 @@ function onNotificationsUpdate(value) {
             <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
                 <!-- Topbar -->
                 <AppTopbar
-                    :notifications="notifications"
                     @update:notifications="onNotificationsUpdate"
                     @open-mobile-menu="mobileMenuOpen = true"
                 />

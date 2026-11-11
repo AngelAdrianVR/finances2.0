@@ -2,10 +2,7 @@
 import { ref } from 'vue';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import ActionMessage from '@/Components/ActionMessage.vue';
-import FormSection from '@/Components/FormSection.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import TextInput from '@/Components/TextInput.vue';
+import ProfileSection from '@/Components/MyComponents/ProfileSection.vue';
 
 const props = defineProps({
     user: Object,
@@ -45,7 +42,7 @@ const selectNewPhoto = () => {
 const updatePhotoPreview = () => {
     const photo = photoInput.value.files[0];
 
-    if (! photo) return;
+    if (!photo) return;
 
     const reader = new FileReader();
 
@@ -74,107 +71,100 @@ const clearPhotoFileInput = () => {
 </script>
 
 <template>
-    <FormSection @submitted="updateProfileInformation">
-        <template #title>
-            Información del perfil
-        </template>
+    <ProfileSection
+        title="Información del perfil"
+        description="Actualiza tu foto, tu nombre y la dirección de correo electrónico de tu cuenta."
+    >
+        <form class="profile-form" @submit.prevent="updateProfileInformation">
+            <input
+                id="photo"
+                ref="photoInput"
+                type="file"
+                class="hidden"
+                accept="image/*"
+                @change="updatePhotoPreview"
+            />
 
-        <template #description>
-            Actualice la información del perfil y la dirección de correo electrónico de su cuenta.
-        </template>
+            <div v-if="$page.props.jetstream.managesProfilePhotos" class="profile-photo">
+                <img
+                    v-show="!photoPreview"
+                    class="profile-photo__preview"
+                    :src="user.profile_photo_url"
+                    :alt="user.name"
+                />
+                <span
+                    v-show="photoPreview"
+                    class="profile-photo__preview"
+                    :style="{ backgroundImage: `url('${photoPreview}')` }"
+                />
 
-        <template #form>
-            <!-- Profile Photo -->
-            <div v-if="$page.props.jetstream.managesProfilePhotos" class="col-span-6 sm:col-span-4">
-                <!-- Profile Photo File Input -->
-                <input
-                    id="photo"
-                    ref="photoInput"
-                    type="file"
-                    class="hidden"
-                    @change="updatePhotoPreview"
-                >
-
-                <InputLabel for="photo" value="Foto de perfil" />
-
-                <!-- Current Profile Photo -->
-                <div v-show="! photoPreview" class="mt-2">
-                    <img :src="user.profile_photo_url" :alt="user.name" class="rounded-full h-20 w-20 object-cover">
+                <div class="profile-photo__meta">
+                    <div class="profile-photo__actions">
+                        <el-button @click.prevent="selectNewPhoto">Cambiar foto</el-button>
+                        <el-button
+                            v-if="user.profile_photo_path"
+                            type="danger"
+                            text
+                            @click.prevent="deletePhoto"
+                        >
+                            Eliminar foto
+                        </el-button>
+                    </div>
+                    <p class="profile-photo__hint">Formatos JPG, PNG o GIF. Tamaño máximo 1 MB.</p>
+                    <p v-if="form.errors.photo" class="profile-error">{{ form.errors.photo }}</p>
                 </div>
-
-                <!-- New Profile Photo Preview -->
-                <div v-show="photoPreview" class="mt-2">
-                    <span
-                        class="block rounded-full w-20 h-20 bg-cover bg-no-repeat bg-center"
-                        :style="'background-image: url(\'' + photoPreview + '\');'"
-                    />
-                </div>
-
-                <el-button class="mt-2 me-2" @click.prevent="selectNewPhoto">Selecciona una nueva foto</el-button>
-
-                <el-button v-if="user.profile_photo_path" class="mt-2" @click.prevent="deletePhoto">Eliminar foto</el-button>
-
-                <InputError :message="form.errors.photo" class="mt-2" />
             </div>
 
-            <!-- Name -->
-            <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="name" value="Nombre" />
-                <TextInput
+            <div class="profile-form__row">
+                <label class="profile-label" for="name">Nombre</label>
+                <el-input
                     id="name"
                     v-model="form.name"
-                    type="text"
-                    class="mt-1 block w-full"
-                    required
+                    size="large"
                     autocomplete="name"
-                    :errorMessage="form.errors.name"
+                    placeholder="Tu nombre"
                 />
-                <!-- <InputError :message="form.errors.name" class="mt-2" /> -->
+                <p v-if="form.errors.name" class="profile-error">{{ form.errors.name }}</p>
             </div>
 
-            <!-- Email -->
-            <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="email" value="Correo electrónico" />
-                <TextInput
+            <div class="profile-form__row">
+                <label class="profile-label" for="email">Correo electrónico</label>
+                <el-input
                     id="email"
                     v-model="form.email"
+                    size="large"
                     type="email"
-                    class="mt-1 block w-full"
-                    required
                     autocomplete="username"
-                    :errorMessage="form.errors.email"
+                    placeholder="tucorreo@ejemplo.com"
                 />
-                <!-- <InputError :message="form.errors.email" class="mt-2" /> -->
+                <p v-if="form.errors.email" class="profile-error">{{ form.errors.email }}</p>
 
-                <div v-if="$page.props.jetstream.hasEmailVerification && user.email_verified_at === null">
-                    <p class="text-sm mt-2">
-                        Tu correo electrónico no ha sido verificado
-
-                        <Link
-                            :href="route('verification.send')"
-                            method="post"
-                            as="button"
-                            class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            @click.prevent="sendEmailVerification"
-                        >
-                            Haga clic aquí para volver a enviar el correo electrónico de verificación.
-                        </Link>
+                <div
+                    v-if="$page.props.jetstream.hasEmailVerification && user.email_verified_at === null"
+                    class="profile-alert"
+                >
+                    <p>Tu correo electrónico aún no ha sido verificado.</p>
+                    <Link
+                        :href="route('verification.send')"
+                        method="post"
+                        as="button"
+                        class="profile-alert__link"
+                        @click.prevent="sendEmailVerification"
+                    >
+                        Reenviar correo de verificación
+                    </Link>
+                    <p v-show="verificationLinkSent" class="profile-alert__success">
+                        Hemos enviado un nuevo enlace de verificación a tu correo.
                     </p>
-
-                    <div v-show="verificationLinkSent" class="mt-2 font-medium text-sm text-green-600">
-                        Se ha enviado un nuevo enlace de verificación a su dirección de correo electrónico.
-                    </div>
                 </div>
             </div>
-        </template>
+        </form>
 
         <template #actions>
-            <ActionMessage :on="form.recentlySuccessful" class="me-3">
-                Guardado.
-            </ActionMessage>
-
-            <ActionMessage :on="form.recentlySuccessful" class="me-3">Guardado.</ActionMessage>
-            <el-button type="primary" :loading="form.processing" @click="updateProfileInformation">Guardar</el-button>
+            <ActionMessage :on="form.recentlySuccessful" class="profile-saved">Guardado.</ActionMessage>
+            <el-button type="primary" :loading="form.processing" @click="updateProfileInformation">
+                Guardar cambios
+            </el-button>
         </template>
-    </FormSection>
+    </ProfileSection>
 </template>

@@ -1,54 +1,108 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Plus, Search, Upload, Download } from '@element-plus/icons-vue';
+import { Plus, Search, Download, Upload, TrendCharts, Clock } from '@element-plus/icons-vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import LoansGiven from './Tabs/LoansGiven.vue';
 import LoansForMe from './Tabs/LoansForMe.vue';
-import axios from 'axios';
+import { formatCurrency } from '@/utils/loans';
 
-const props = defineProps({ loans_for_me: Object, loans_given: Object });
+const props = defineProps({
+    loans_for_me: Object,
+    loans_given: Object,
+    summary: { type: Object, default: () => ({}) },
+    filters: { type: Object, default: () => ({ q: '', per_page: 50 }) },
+});
 
 const activeTab = ref('1');
-const searchQuery = ref('');
-const searchedWord = ref(null);
-const loading = ref(false);
-const filteredLoansForMe = ref(props.loans_for_me);
-const filteredLoansGiven = ref(props.loans_given);
+const searchQuery = ref(props.filters?.q ?? '');
+const searching = ref(false);
 
-async function handleSearch() {
-    loading.value = true;
-    searchedWord.value = searchQuery.value;
+let searchTimer = null;
+
+const givenSummary = computed(() => props.summary?.given ?? {});
+const receivedSummary = computed(() => props.summary?.received ?? {});
+
+const statCards = computed(() => [
+    {
+        key: 'given-total',
+        label: 'Total otorgado',
+        value: formatCurrency(givenSummary.value.total),
+        hint: `${givenSummary.value.count ?? 0} préstamo(s) · ${givenSummary.value.active_count ?? 0} en curso`,
+        icon: Upload,
+        tone: 'primary',
+    },
+    {
+        key: 'given-remaining',
+        label: 'Por cobrar',
+        value: formatCurrency(givenSummary.value.remaining),
+        hint: `${givenSummary.value.progress ?? 0}% del capital recuperado`,
+        icon: TrendCharts,
+        tone: 'success',
+    },
+    {
+        key: 'received-total',
+        label: 'Total recibido',
+        value: formatCurrency(receivedSummary.value.total),
+        hint: `${receivedSummary.value.count ?? 0} préstamo(s) · ${receivedSummary.value.active_count ?? 0} en curso`,
+        icon: Download,
+        tone: 'info',
+    },
+    {
+        key: 'received-remaining',
+        label: 'Por pagar',
+        value: formatCurrency(receivedSummary.value.remaining),
+        hint: `${receivedSummary.value.progress ?? 0}% del capital liquidado`,
+        icon: Clock,
+        tone: 'warning',
+    },
+]);
+
+function applySearch(term) {
+    const params = { page: 1 };
+
+    if (term) params.q = term;
+    if (props.filters?.per_page) params.per_page = props.filters.per_page;
+
+    router.get(route('loans.index'), params, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+        onStart: () => {
+            searching.value = true;
+        },
+        onFinish: () => {
+            searching.value = false;
+        },
+    });
+}
+
+function onSearchInput() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => applySearch(searchQuery.value?.trim() ?? ''), 450);
+}
+
+function handleSearch() {
+    clearTimeout(searchTimer);
+    applySearch(searchQuery.value?.trim() ?? '');
+}
+
+function clearSearch() {
     searchQuery.value = '';
-    try {
-        if (!searchedWord.value) {
-            filteredLoansForMe.value = props.loans_for_me;
-            filteredLoansGiven.value = props.loans_given;
-        } else {
-            const response = await axios.post(route('loans.get-matches', { query: searchedWord.value }));
-            if (response.status === 200) {
-                if (activeTab.value === '1') filteredLoansGiven.value = response.data.items;
-                else filteredLoansForMe.value = response.data.items;
-            }
-        }
-    } catch (error) { console.error(error); ElMessage.error('Error al buscar'); }
-    finally { loading.value = false; }
+    applySearch('');
 }
 
-function closeTag() {
-    searchedWord.value = null;
-    filteredLoansForMe.value = props.loans_for_me;
-    filteredLoansGiven.value = props.loans_given;
-}
+function handleTabChange(nameOrPane) {
+    const tabName = typeof nameOrPane === 'object' ? nameOrPane?.props?.name : nameOrPane;
 
-function handleTabChange(tab) {
+    if (!tabName) return;
+
     const url = new URL(window.location.href);
-    url.searchParams.set('currentTab', tab.props.name);
-    const p = url.searchParams.get('page');
+    url.searchParams.set('currentTab', tabName);
+    const paginationURL = url.searchParams.get('page');
     url.searchParams.delete('page');
     window.history.replaceState({}, document.title, url.href);
-    if (p) location.reload();
-    closeTag();
+    if (paginationURL) location.reload();
 }
 
 const currentURL = new URL(window.location.href);
@@ -57,31 +111,90 @@ if (currentTabFromURL) activeTab.value = currentTabFromURL;
 </script>
 
 <template>
-    <AppLayout title="Prestamos">
-        <main class="py-6 px-4 md:px-8 max-w-7xl mx-auto">
-            <h1 class="page-header">Prestamos</h1>
-            <section class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div class="flex items-center gap-3 sm:w-1/3 w-full">
-                    <!-- Form: en moviles la tecla "Buscar/Ir" del teclado virtual dispara submit (keydown.enter no es fiable con teclados IME) -->
-                    <form @submit.prevent="handleSearch" class="flex-1 min-w-0" role="search">
-                        <el-input v-model="searchQuery" placeholder="Buscar..." :prefix-icon="Search" clearable enterkeyhint="search" class="search-bar w-full" @clear="closeTag" />
-                        <button type="submit" class="hidden" tabindex="-1" aria-hidden="true"></button>
-                    </form>
-                    <el-tag v-if="searchedWord" closable type="warning" @close="closeTag">{{ searchedWord }}</el-tag>
+    <AppLayout title="Préstamos">
+        <main class="page-shell">
+            <!-- Heading -->
+            <header class="page-heading">
+                <div class="page-heading__text">
+                    <p class="page-heading__eyebrow">Finanzas · Préstamos</p>
+                    <h1 class="page-heading__title">Préstamos</h1>
+                    <p class="page-heading__subtitle">
+                        Lleva el control del dinero que prestas y del que te deben, con sus abonos e intereses.
+                    </p>
                 </div>
-                <el-button type="warning" :icon="Plus" @click="router.get(route('loans.create'))">Nuevo prestamo</el-button>
+
+                <div class="page-heading__actions loan-heading__actions">
+                    <form class="page-search" role="search" @submit.prevent="handleSearch">
+                        <el-input
+                            v-model="searchQuery"
+                            placeholder="Buscar préstamo…"
+                            :prefix-icon="Search"
+                            clearable
+                            enterkeyhint="search"
+                            @input="onSearchInput"
+                            @clear="clearSearch"
+                        />
+                    </form>
+
+                    <el-button type="primary" :icon="Plus" @click="router.get(route('loans.create'))">
+                        Nuevo préstamo
+                    </el-button>
+                </div>
+            </header>
+
+            <!-- Stat cards -->
+            <section class="stat-grid loan-stat-grid">
+                <article
+                    v-for="card in statCards"
+                    :key="card.key"
+                    class="stat-card"
+                    :class="`stat-card--${card.tone}`"
+                >
+                    <div class="stat-card__head">
+                        <span class="stat-card__icon">
+                            <el-icon :size="16"><component :is="card.icon" /></el-icon>
+                        </span>
+                    </div>
+                    <p class="stat-card__label">{{ card.label }}</p>
+                    <p class="stat-card__value">{{ card.value }}</p>
+                    <p class="stat-card__hint">{{ card.hint }}</p>
+                </article>
             </section>
-            <div v-if="loading" class="space-y-4"><el-skeleton animated :rows="8" /></div>
-            <el-tabs v-else v-model="activeTab" class="income-tabs" @tab-change="handleTabChange">
-                <el-tab-pane label="Otorgados" name="1">
-                    <template #label><span class="flex items-center gap-1.5"><el-icon :size="14"><Upload /></el-icon>Otorgados</span></template>
-                    <LoansGiven :loans="filteredLoansGiven" />
-                </el-tab-pane>
-                <el-tab-pane label="Recibidos" name="2">
-                    <template #label><span class="flex items-center gap-1.5"><el-icon :size="14"><Download /></el-icon>Recibidos</span></template>
-                    <LoansForMe :loans="filteredLoansForMe" />
-                </el-tab-pane>
-            </el-tabs>
+
+            <!-- Active search chip -->
+            <div v-if="filters.q" class="search-chip-row">
+                <span class="search-chip">
+                    Búsqueda: <strong>{{ filters.q }}</strong>
+                    <button type="button" class="search-chip__close" @click="clearSearch">×</button>
+                </span>
+            </div>
+
+            <!-- Tabs -->
+            <div v-loading="searching" element-loading-text="Buscando préstamos…" class="loan-tabs-wrap">
+                <el-tabs v-model="activeTab" class="income-tabs" @tab-change="handleTabChange">
+                    <el-tab-pane name="1">
+                        <template #label>
+                            <span class="tab-label">
+                                <el-icon :size="14"><Upload /></el-icon>
+                                Otorgados
+                                <span class="tab-count">{{ loans_given?.total ?? 0 }}</span>
+                            </span>
+                        </template>
+                        <LoansGiven :loans="loans_given" :summary="givenSummary" />
+                    </el-tab-pane>
+
+                    <el-tab-pane name="2">
+                        <template #label>
+                            <span class="tab-label">
+                                <el-icon :size="14"><Download /></el-icon>
+                                Recibidos
+                                <span class="tab-count">{{ loans_for_me?.total ?? 0 }}</span>
+                            </span>
+                        </template>
+                        <LoansForMe :loans="loans_for_me" :summary="receivedSummary" />
+                    </el-tab-pane>
+                </el-tabs>
+            </div>
         </main>
     </AppLayout>
 </template>

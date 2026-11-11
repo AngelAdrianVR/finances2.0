@@ -4,11 +4,10 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ElMessage } from 'element-plus';
 import { EditPen } from '@element-plus/icons-vue';
+import MenuIcon from '@/Layouts/Partials/MenuIcon.vue';
 
-const props = defineProps({
-    size: { type: String, default: 'default' },
+defineProps({
     showActions: { type: Boolean, default: true },
-    dark: { type: Boolean, default: false },
 });
 
 const page = usePage();
@@ -21,7 +20,9 @@ const totalGlobal = computed(() => {
 });
 
 function formatMoney(val) {
-    return val?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return Number(val || 0)
+        .toFixed(2)
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 function logout() {
@@ -71,95 +72,74 @@ async function saveAvailableMoney() {
 </script>
 
 <template>
-    <div class="text-sm">
-        <!-- User info -->
-        <div class="flex items-center space-x-3 mb-3">
-            <img
-                class="size-12 rounded-full object-cover"
-                :src="$page.props.auth.user.profile_photo_url"
-                :alt="$page.props.auth.user.name"
-            />
-            <div>
-                <p :class="dark ? 'text-white font-medium' : 'font-semibold text-gray-800 dark:text-gray-800'">
-                    {{ $page.props.auth.user.name }}
-                </p>
-                <p :class="dark ? 'text-[#9CACAC]' : 'text-xs text-gray-500 dark:text-gray-500'">
-                    {{ $page.props.auth.user.email }}
-                </p>
-            </div>
+    <div class="profile-summary">
+        <!-- Identity -->
+        <div class="profile-summary__head">
+            <Link :href="route('profile.show')" class="profile-summary__identity" title="Ver mi perfil">
+                <img
+                    class="profile-summary__avatar"
+                    :src="user.profile_photo_url"
+                    :alt="user.name"
+                />
+                <span class="profile-summary__meta">
+                    <span class="profile-summary__name">{{ user.name }}</span>
+                    <span class="profile-summary__mail">{{ user.email }}</span>
+                </span>
+            </Link>
         </div>
 
         <!-- Financial summary -->
-        <div v-if="!dark" class="space-y-1.5 text-xs text-gray-600 border-t border-gray-100 dark:border-gray-200 pt-3">
-            <div class="flex justify-between items-center group/edit">
-                <span class="text-gray-500 dark:text-gray-400">Disponible</span>
-                <span class="flex items-center gap-1">
-                    <span class="font-mono font-semibold" style="color: #2F9E5B;">
-                        ${{ formatMoney($page.props.auth.user?.total_money) }}
-                    </span>
-                    <button
-                        type="button"
-                        title="Editar monto disponible"
-                        aria-label="Editar monto disponible"
-                        class="text-gray-300 hover:text-primary rounded p-0.5"
-                        @click="openEditAvailableMoney"
-                    >
-                        <el-icon :size="12"><EditPen /></el-icon>
-                    </button>
+        <div class="profile-summary__stats">
+            <div class="profile-summary__row">
+                <span class="profile-summary__label">
+                    <span class="profile-summary__dot profile-summary__dot--success" aria-hidden="true" />
+                    Disponible
+                </span>
+                <span class="profile-summary__value profile-summary__value--success">
+                    ${{ formatMoney(user.total_money) }}
+                </span>
+                <button
+                    type="button"
+                    class="profile-summary__icon-btn"
+                    title="Editar monto disponible"
+                    aria-label="Editar monto disponible"
+                    @click="openEditAvailableMoney"
+                >
+                    <el-icon :size="12"><EditPen /></el-icon>
+                </button>
+            </div>
+
+            <div class="profile-summary__row">
+                <span class="profile-summary__label">
+                    <span class="profile-summary__dot profile-summary__dot--warning" aria-hidden="true" />
+                    Prestado
+                </span>
+                <span class="profile-summary__value profile-summary__value--warning">
+                    ${{ formatMoney(user.total_loan) }}
                 </span>
             </div>
-            <div class="flex justify-between">
-                <span class="text-gray-500 dark:text-gray-400">Prestado</span>
-                <span class="font-mono font-semibold" style="color: #D99A2B;">
-                    ${{ formatMoney($page.props.auth.user?.total_loan) }}
+
+            <div class="profile-summary__row profile-summary__row--total">
+                <span class="profile-summary__label profile-summary__label--total">Total</span>
+                <span class="profile-summary__value profile-summary__value--total">
+                    ${{ formatMoney(totalGlobal) }}
                 </span>
-            </div>
-            <div class="flex justify-between border-t border-gray-100 dark:border-gray-200 pt-1.5 mt-1.5">
-                <span class="text-gray-700 dark:text-gray-300 font-medium">Total</span>
-                <span class="font-mono font-semibold text-gray-900 dark:text-gray-100">${{ formatMoney(totalGlobal) }}</span>
             </div>
         </div>
 
-        <!-- Financial summary (dark mode) -->
-        <div v-else class="space-y-1.5 text-xs text-[#9CACAC]">
-            <div class="flex justify-between items-center group/edit">
-                <span class="text-[#9CACAC]">Disponible</span>
-                <span class="flex items-center gap-1">
-                    <span class="font-mono font-semibold" style="color: #2F9E5B;">
-                        ${{ formatMoney($page.props.auth.user?.total_money) }}
-                    </span>
-                    <button
-                        type="button"
-                        title="Editar monto disponible"
-                        aria-label="Editar monto disponible"
-                        class="text-[#4F6F70] hover:text-white rounded p-0.5"
-                        @click="openEditAvailableMoney"
-                    >
-                        <el-icon :size="12"><EditPen /></el-icon>
-                    </button>
-                </span>
-            </div>
-            <div class="flex justify-between">
-                <span class="text-[#9CACAC]">Prestado</span>
-                <span class="font-mono font-semibold" style="color: #D99A2B;">
-                    ${{ formatMoney($page.props.auth.user?.total_loan) }}
-                </span>
-            </div>
-            <div class="flex justify-between border-t border-[#1A3A3B] pt-1.5 mt-1.5">
-                <span class="text-gray-200 font-medium">Total</span>
-                <span class="font-mono font-semibold text-white">${{ formatMoney(totalGlobal) }}</span>
-            </div>
-        </div>
-
-        <!-- Actions -->
-        <div v-if="showActions" class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-200 space-y-1">
-            <Link :href="route('profile.show')"
-                class="block text-sm text-gray-700 dark:text-gray-300 hover:text-primary rounded px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-100 transition-colors">
-                Editar perfil
+        <!-- Quick actions -->
+        <div v-if="showActions" class="profile-summary__actions">
+            <Link :href="route('profile.show')" class="profile-summary__action">
+                <MenuIcon name="settings" :size="15" />
+                <span>Editar perfil</span>
             </Link>
-            <button @click="logout"
-                class="w-full text-left text-sm text-red-500 hover:text-red-600 rounded px-2 py-1.5 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
-                Cerrar sesion
+            <button
+                type="button"
+                class="profile-summary__action profile-summary__action--danger"
+                @click="logout"
+            >
+                <MenuIcon name="logout" :size="15" />
+                <span>Cerrar sesión</span>
             </button>
         </div>
 
@@ -172,8 +152,8 @@ async function saveAvailableMoney() {
             :close-on-click-modal="false"
             destroy-on-close
         >
-            <div class="space-y-4">
-                <p class="text-xs text-gray-500 dark:text-gray-400">
+            <div class="profile-summary__dialog">
+                <p class="profile-summary__dialog-text">
                     Ingresa el nuevo monto que tienes disponible. Solo se modificará el campo «Disponible».
                 </p>
                 <el-input-number
@@ -185,7 +165,7 @@ async function saveAvailableMoney() {
                     class="!w-full font-mono"
                     placeholder="Monto disponible"
                 />
-                <div class="flex justify-end space-x-2">
+                <div class="profile-summary__dialog-actions">
                     <el-button :disabled="savingAvailableMoney" @click="editDialogVisible = false">Cancelar</el-button>
                     <el-button type="primary" :loading="savingAvailableMoney" @click="saveAvailableMoney">Guardar</el-button>
                 </div>

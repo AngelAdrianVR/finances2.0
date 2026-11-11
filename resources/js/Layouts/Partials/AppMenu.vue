@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
-import { ArrowRightBold } from '@element-plus/icons-vue';
+import { ArrowDown } from '@element-plus/icons-vue';
 import MenuIcon from '@/Layouts/Partials/MenuIcon.vue';
 import SidebarNav from '@/Layouts/Partials/SidebarNav.vue';
 import UserProfileCard from '@/Layouts/Partials/UserProfileCard.vue';
@@ -11,12 +11,15 @@ const props = defineProps({
 });
 const emit = defineEmits(['update:mobileOpen']);
 
-const collapsed = ref(false);
+function readCollapsedState() {
+    try {
+        return JSON.parse(localStorage.getItem('app_menu_collapsed')) === true;
+    } catch {
+        return false;
+    }
+}
 
-onMounted(() => {
-    const stored = localStorage.getItem('app_menu_collapsed');
-    if (stored !== null) collapsed.value = JSON.parse(stored);
-});
+const collapsed = ref(readCollapsedState());
 
 function toggleCollapsed() {
     collapsed.value = !collapsed.value;
@@ -101,6 +104,41 @@ const drawerVisible = computed({
             </button>
         </div>
 
+        <!-- User summary (opens the financial card on click) -->
+        <div class="app-sidebar__summary">
+            <el-popover
+                placement="right-start"
+                :width="264"
+                trigger="click"
+                :offset="12"
+                popper-class="sidebar-profile-popover"
+            >
+                <template #reference>
+                    <button
+                        type="button"
+                        class="app-sidebar__identity-btn"
+                        :class="{ 'is-compact': collapsed }"
+                        title="Mi resumen financiero"
+                    >
+                        <img
+                            class="app-sidebar__avatar"
+                            :src="$page.props.auth.user.profile_photo_url"
+                            :alt="$page.props.auth.user.name"
+                        />
+                        <span v-if="!collapsed" class="app-sidebar__identity-text">
+                            <span class="app-sidebar__identity-name">{{ $page.props.auth.user.name }}</span>
+                            <span class="app-sidebar__identity-mail">{{ $page.props.auth.user.email }}</span>
+                        </span>
+                        <el-icon v-if="!collapsed" class="app-sidebar__identity-chevron" :size="12">
+                            <ArrowDown />
+                        </el-icon>
+                    </button>
+                </template>
+
+                <UserProfileCard />
+            </el-popover>
+        </div>
+
         <!-- Navigation -->
         <div class="app-sidebar__nav">
             <SidebarNav
@@ -110,58 +148,16 @@ const drawerVisible = computed({
             />
         </div>
 
-        <!-- Footer -->
-        <div class="app-sidebar__footer">
-            <el-popover
-                v-if="$page.props.jetstream.managesProfilePhotos"
-                placement="right-end"
-                :width="248"
-                trigger="click"
-                :offset="10"
-                popper-class="sidebar-profile-popover"
-            >
-                <template #reference>
-                    <button
-                        type="button"
-                        class="app-sidebar__profile"
-                        :class="{ 'is-compact': collapsed }"
-                    >
-                        <img
-                            class="app-sidebar__avatar"
-                            :src="$page.props.auth.user.profile_photo_url"
-                            :alt="$page.props.auth.user.name"
-                        />
-                        <span v-if="!collapsed" class="app-sidebar__profile-text">
-                            <span class="app-sidebar__profile-name">{{ $page.props.auth.user.name }}</span>
-                            <span class="app-sidebar__profile-mail">{{ $page.props.auth.user.email }}</span>
-                        </span>
-                        <el-icon v-if="!collapsed" class="app-sidebar__profile-arrow" :size="12">
-                            <ArrowRightBold />
-                        </el-icon>
-                    </button>
-                </template>
-
-                <UserProfileCard />
-            </el-popover>
-
-            <div class="app-sidebar__actions" :class="{ 'is-stacked': collapsed }">
+        <!-- Footer (only needed while collapsed) -->
+        <div v-if="collapsed" class="app-sidebar__footer">
+            <div class="app-sidebar__actions is-stacked">
                 <button
-                    v-if="collapsed"
                     type="button"
                     class="app-sidebar__icon-btn"
                     title="Expandir menú"
                     @click="toggleCollapsed"
                 >
                     <MenuIcon name="collapse" :size="18" />
-                </button>
-
-                <button
-                    type="button"
-                    class="app-sidebar__icon-btn app-sidebar__icon-btn--danger"
-                    title="Cerrar sesión"
-                    @click="logout"
-                >
-                    <MenuIcon name="logout" :size="18" />
                 </button>
             </div>
         </div>
@@ -182,7 +178,32 @@ const drawerVisible = computed({
             </div>
 
             <div class="sidebar-drawer__profile">
-                <UserProfileCard :show-actions="false" dark />
+                <el-popover
+                    placement="bottom-start"
+                    :width="264"
+                    trigger="click"
+                    :offset="10"
+                    popper-class="sidebar-profile-popover"
+                >
+                    <template #reference>
+                        <button type="button" class="app-sidebar__identity-btn" title="Mi resumen financiero">
+                            <img
+                                class="app-sidebar__avatar"
+                                :src="$page.props.auth.user.profile_photo_url"
+                                :alt="$page.props.auth.user.name"
+                            />
+                            <span class="app-sidebar__identity-text">
+                                <span class="app-sidebar__identity-name">{{ $page.props.auth.user.name }}</span>
+                                <span class="app-sidebar__identity-mail">{{ $page.props.auth.user.email }}</span>
+                            </span>
+                            <el-icon class="app-sidebar__identity-chevron" :size="12">
+                                <ArrowDown />
+                            </el-icon>
+                        </button>
+                    </template>
+
+                    <UserProfileCard />
+                </el-popover>
             </div>
 
             <div class="sidebar-drawer__nav">

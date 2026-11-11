@@ -2,10 +2,7 @@
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import ActionMessage from '@/Components/ActionMessage.vue';
-import FormSection from '@/Components/FormSection.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import TextInput from '@/Components/TextInput.vue';
+import ProfileSection from '@/Components/MyComponents/ProfileSection.vue';
 
 const passwordInput = ref(null);
 const currentPasswordInput = ref(null);
@@ -37,61 +34,60 @@ const updatePassword = () => {
 </script>
 
 <template>
-    <FormSection @submitted="updatePassword">
-        <template #title>
-            Actualizar contraseña
-        </template>
-
-        <template #description>
-            Asegúrese de que su cuenta utilice una contraseña larga y aleatoria para mantenerla segura.
-        </template>
-
-        <template #form>
-            <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="current_password" value="Contraseña actual" />
-                <TextInput
+    <ProfileSection
+        title="Actualizar contraseña"
+        description="Usa una contraseña larga y única para mantener tu cuenta protegida."
+    >
+        <form class="profile-form" @submit.prevent="updatePassword">
+            <div class="profile-form__row">
+                <label class="profile-label" for="current_password">Contraseña actual</label>
+                <el-input
                     id="current_password"
                     ref="currentPasswordInput"
                     v-model="form.current_password"
                     type="password"
-                    class="mt-1 block w-full"
+                    size="large"
+                    show-password
                     autocomplete="current-password"
-                    :errorMessage="form.errors.current_password"
                 />
-                <!-- <InputError :message="form.errors.current_password" class="mt-2" /> -->
+                <p v-if="form.errors.current_password" class="profile-error">{{ form.errors.current_password }}</p>
             </div>
 
-            <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="password" value="Nueva contraseña" />
-                <TextInput
+            <div class="profile-form__row">
+                <label class="profile-label" for="password">Nueva contraseña</label>
+                <el-input
                     id="password"
                     ref="passwordInput"
                     v-model="form.password"
                     type="password"
-                    class="mt-1 block w-full"
+                    size="large"
+                    show-password
                     autocomplete="new-password"
-                    :errorMessage="form.errors.password"
                 />
-                <!-- <InputError :message="form.errors.password" class="mt-2" /> -->
+                <p v-if="form.errors.password" class="profile-error">{{ form.errors.password }}</p>
             </div>
 
-            <div class="col-span-6 sm:col-span-4">
-                <InputLabel for="password_confirmation" value="Confirma contraseña" />
-                <TextInput
+            <div class="profile-form__row">
+                <label class="profile-label" for="password_confirmation">Confirmar contraseña</label>
+                <el-input
                     id="password_confirmation"
                     v-model="form.password_confirmation"
                     type="password"
-                    class="mt-1 block w-full"
+                    size="large"
+                    show-password
                     autocomplete="new-password"
-                    :errorMessage="form.errors.password_confirmation"
                 />
-                <!-- <InputError :message="form.errors.password_confirmation" class="mt-2" /> -->
+                <p v-if="form.errors.password_confirmation" class="profile-error">
+                    {{ form.errors.password_confirmation }}
+                </p>
             </div>
-        </template>
+        </form>
 
         <template #actions>
-            <ActionMessage :on="form.recentlySuccessful" class="me-3">Guardado.</ActionMessage>
-            <el-button type="primary" :loading="form.processing" @click="updatePassword">Guardar</el-button>
+            <ActionMessage :on="form.recentlySuccessful" class="profile-saved">Guardado.</ActionMessage>
+            <el-button type="primary" :loading="form.processing" @click="updatePassword">
+                Guardar contraseña
+            </el-button>
         </template>
-    </FormSection>
+    </ProfileSection>
 </template>

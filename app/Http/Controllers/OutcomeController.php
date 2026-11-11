@@ -11,7 +11,9 @@ use App\Http\Requests\Outcomes\StoreOutcomeRequest;
 use App\Http\Requests\Outcomes\UpdateOutcomeRequest;
 use App\Models\Outcome;
 use App\Models\RecurringOutcome;
+use App\Services\Outcomes\OutcomeSummaryService;
 use App\Services\SearchService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,24 +27,74 @@ class OutcomeController extends Controller
         private readonly DeleteOutcomeAction $deleteOutcomeAction,
         private readonly MassUpdateOutcomeAction $massUpdateOutcomeAction,
         private readonly SearchService $searchService,
+        private readonly OutcomeSummaryService $outcomeSummaryService,
     ) {}
 
     // ========================
     // Views
     // ========================
 
-    public function index(): InertiaResponse
+    public function index(Request $request): InertiaResponse
     {
         // Tamaño de página configurable (10, 20, 50 o 100).
-        $perPage = request()->integer('per_page', 50);
+        $perPage = $request->integer('per_page', 50);
         if (! in_array($perPage, [10, 20, 50, 100], true)) {
             $perPage = 50;
         }
 
-        $outcomes = Outcome::forUser()->latest('id')->paginate($perPage)->withQueryString();
-        $recurring_outcomes = RecurringOutcome::forUser()->latest('id')->paginate(50);
+        $filters = [
+            'q' => trim($request->string('q')->toString()),
+            'category' => $request->string('category')->toString() ?: null,
+            'payment_method' => $request->string('payment_method')->toString() ?: null,
+            'type' => $request->string('type')->toString() ?: null,
+        ];
 
-        return inertia('Outcome/Index', compact('outcomes', 'recurring_outcomes'));
+        $outcomesQuery = $this->applyFilters(Outcome::forUser(), $filters);
+
+        $filtered = [
+            'count' => (clone $outcomesQuery)->count(),
+            'total' => round((float) (clone $outcomesQuery)->sum('amount'), 2),
+        ];
+
+        $outcomes = $outcomesQuery->latest('id')->paginate($perPage)->withQueryString();
+        $outcomes->through(fn (Outcome $outcome) => $outcome->append('split_total_amount'));
+
+        $recurring_outcomes = RecurringOutcome::forUser()
+            ->when($filters['q'] !== '', function ($query) use ($filters) {
+                $like = '%'.$filters['q'].'%';
+
+                return $query->where(function ($inner) use ($like) {
+                    $inner->where('concept', 'like', $like)
+                        ->orWhere('description', 'like', $like);
+                });
+            })
+            ->latest('id')
+            ->paginate(50)
+            ->withQueryString();
+
+        $summary = $this->outcomeSummaryService->build($request->user());
+
+        return inertia('Outcome/Index', compact('outcomes', 'recurring_outcomes', 'summary', 'filters', 'filtered'));
+    }
+
+    /**
+     * Applies the search and filter criteria shared by the index queries.
+     */
+    private function applyFilters(Builder $query, array $filters): Builder
+    {
+        return $query
+            ->when($filters['q'] !== '', function (Builder $inner) use ($filters) {
+                $like = '%'.$filters['q'].'%';
+
+                return $inner->where(function (Builder $nested) use ($like) {
+                    $nested->where('concept', 'like', $like)
+                        ->orWhere('description', 'like', $like);
+                });
+            })
+            ->when($filters['category'], fn (Builder $inner) => $inner->where('category', $filters['category']))
+            ->when($filters['payment_method'], fn (Builder $inner) => $inner->where('payment_method', $filters['payment_method']))
+            ->when($filters['type'] === 'credit', fn (Builder $inner) => $inner->where('is_credit', true))
+            ->when($filters['type'] === 'cash', fn (Builder $inner) => $inner->where('is_credit', false));
     }
 
     public function create(): InertiaResponse
