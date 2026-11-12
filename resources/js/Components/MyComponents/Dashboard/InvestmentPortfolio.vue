@@ -2,21 +2,19 @@
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus, Delete, Edit, Check, Close } from '@element-plus/icons-vue';
+import { Plus, Delete, Edit, Check, Close, Coin, TrendCharts } from '@element-plus/icons-vue';
 
 const emit = defineEmits(['changed']);
 
 const investments = ref([]);
 const loading = ref(true);
 
-// Formulario de nueva inversión
 const form = ref({
     name: '',
-    amount: 0,
+    amount: null,
     annual_rate: 0,
 });
 
-// Edición inline
 const editingId = ref(null);
 const editForm = ref({
     name: '',
@@ -25,20 +23,23 @@ const editForm = ref({
 });
 
 const totalInvested = computed(() =>
-    investments.value.reduce((sum, inv) => sum + Number(inv.amount || 0), 0)
+    investments.value.reduce((sum, investment) => sum + Number(investment.amount || 0), 0)
 );
 
 const weightedRate = computed(() => {
     if (totalInvested.value === 0) return 0;
     const weighted = investments.value.reduce(
-        (sum, inv) => sum + Number(inv.amount || 0) * Number(inv.annual_rate || 0),
+        (sum, investment) =>
+            sum + Number(investment.amount || 0) * Number(investment.annual_rate || 0),
         0
     );
     return weighted / totalInvested.value;
 });
 
-function formatMoney(val) {
-    return Number(val || 0).toLocaleString('en-US', {
+const expectedYearlyReturn = computed(() => (totalInvested.value * weightedRate.value) / 100);
+
+function formatMoney(value) {
+    return Number(value || 0).toLocaleString('en-US', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     });
@@ -75,7 +76,7 @@ async function addInvestment() {
         });
         if (response.status === 200 || response.status === 201) {
             ElMessage.success(response.data.message || 'Inversión registrada.');
-            form.value = { name: '', amount: 0, annual_rate: 0 };
+            form.value = { name: '', amount: null, annual_rate: 0 };
             await fetchInvestments();
             emit('changed');
         }
@@ -85,12 +86,12 @@ async function addInvestment() {
     }
 }
 
-function startEdit(inv) {
-    editingId.value = inv.id;
+function startEdit(investment) {
+    editingId.value = investment.id;
     editForm.value = {
-        name: inv.name || '',
-        amount: inv.amount,
-        annual_rate: inv.annual_rate,
+        name: investment.name || '',
+        amount: investment.amount,
+        annual_rate: investment.annual_rate,
     };
 }
 
@@ -99,9 +100,9 @@ function cancelEdit() {
     editForm.value = { name: '', amount: 0, annual_rate: 0 };
 }
 
-async function saveEdit(inv) {
+async function saveEdit(investment) {
     try {
-        const response = await axios.put(route('investments.update', inv.id), {
+        const response = await axios.put(route('investments.update', investment.id), {
             name: editForm.value.name || null,
             amount: editForm.value.amount,
             annual_rate: editForm.value.annual_rate,
@@ -118,14 +119,14 @@ async function saveEdit(inv) {
     }
 }
 
-async function removeInvestment(inv) {
+async function removeInvestment(investment) {
     try {
         await ElMessageBox.confirm(
             '¿Estás seguro de eliminar esta inversión?',
             'Confirmar eliminación',
             { confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar', type: 'warning' }
         );
-        const response = await axios.delete(route('investments.destroy', inv.id));
+        const response = await axios.delete(route('investments.destroy', investment.id));
         if (response.status === 200) {
             ElMessage.success(response.data.message || 'Inversión eliminada.');
             await fetchInvestments();
@@ -141,26 +142,41 @@ onMounted(fetchInvestments);
 
 <template>
     <div class="dashboard-card">
-        <h2 class="dashboard-card-title">Portafolio de Inversiones</h2>
+        <div class="dashboard-card__head">
+            <div>
+                <h2 class="dashboard-card__title">Portafolio de inversiones</h2>
+                <p class="dashboard-card__subtitle">
+                    Registra cada instrumento con su monto y tasa anual para conocer tu capital total,
+                    la tasa promedio ponderada y el rendimiento que puedes esperar cada año.
+                </p>
+            </div>
+            <span class="dashboard-chip">
+                {{ investments.length }} {{ investments.length === 1 ? 'instrumento' : 'instrumentos' }}
+            </span>
+        </div>
 
-        <!-- Formulario para agregar -->
-        <div class="bg-gray-50 dark:bg-[#252C2C] rounded-lg p-4 mb-4 space-y-3">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <el-input
-                    v-model="form.name"
-                    placeholder="Nombre (opcional), ej. CETES, Nu, GBM"
-                    clearable
-                />
-                <div class="grid grid-cols-2 gap-2">
+        <el-form label-position="top" class="investment-form" @submit.prevent="addInvestment">
+            <div class="investment-form__grid">
+                <el-form-item label="Nombre del instrumento">
+                    <el-input
+                        v-model="form.name"
+                        placeholder="Ej. CETES, Nu, GBM"
+                        clearable
+                    />
+                </el-form-item>
+
+                <el-form-item label="Monto invertido (MXN)">
                     <el-input-number
                         v-model="form.amount"
                         :min="0.01"
                         :step="100"
                         :precision="2"
                         controls-position="right"
-                        placeholder="Monto"
                         class="!w-full"
                     />
+                </el-form-item>
+
+                <el-form-item label="Tasa anual (%)">
                     <el-input-number
                         v-model="form.annual_rate"
                         :min="0"
@@ -168,62 +184,72 @@ onMounted(fetchInvestments);
                         :step="0.5"
                         :precision="2"
                         controls-position="right"
-                        placeholder="Tasa %"
                         class="!w-full"
                     />
+                </el-form-item>
+
+                <div class="investment-form__action">
+                    <el-button type="primary" :icon="Plus" native-type="submit" class="!w-full">
+                        Agregar
+                    </el-button>
                 </div>
             </div>
-            <div class="flex items-center justify-between">
-                <p class="text-xs text-gray-500 dark:text-[#9AA8A8]">
-                    Agrega cada inversión con su monto y tasa anual (%).
-                </p>
-                <el-button type="primary" :icon="Plus" @click="addInvestment">
-                    Agregar
-                </el-button>
+        </el-form>
+
+        <div class="investment-summary">
+            <div class="investment-summary__item">
+                <span class="investment-summary__icon investment-summary__icon--primary">
+                    <el-icon :size="18"><Coin /></el-icon>
+                </span>
+                <div class="min-w-0">
+                    <p class="investment-summary__label">Total invertido</p>
+                    <p class="investment-summary__value">${{ formatMoney(totalInvested) }}</p>
+                </div>
+            </div>
+
+            <div class="investment-summary__item">
+                <span class="investment-summary__icon investment-summary__icon--info">
+                    <el-icon :size="18"><TrendCharts /></el-icon>
+                </span>
+                <div class="min-w-0">
+                    <p class="investment-summary__label">Tasa anual ponderada</p>
+                    <p class="investment-summary__value">{{ weightedRate.toFixed(2) }}%</p>
+                </div>
+            </div>
+
+            <div class="investment-summary__item">
+                <span class="investment-summary__icon investment-summary__icon--success">
+                    <el-icon :size="18"><Coin /></el-icon>
+                </span>
+                <div class="min-w-0">
+                    <p class="investment-summary__label">Rendimiento anual estimado</p>
+                    <p class="investment-summary__value investment-summary__value--income">
+                        ${{ formatMoney(expectedYearlyReturn) }}
+                    </p>
+                </div>
             </div>
         </div>
 
-        <!-- Resumen -->
-        <div class="grid grid-cols-2 gap-3 mb-4">
-            <div class="bg-gray-50 dark:bg-[#252C2C] rounded-lg p-3">
-                <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-1">Total invertido</p>
-                <p class="font-mono text-lg font-bold text-[#296A6B] dark:text-[#7FD3D4]">
-                    ${{ formatMoney(totalInvested) }}
-                </p>
-            </div>
-            <div class="bg-gray-50 dark:bg-[#252C2C] rounded-lg p-3">
-                <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-1">Tasa anual ponderada</p>
-                <p class="font-mono text-lg font-bold text-[#296A6B] dark:text-[#7FD3D4]">
-                    {{ weightedRate.toFixed(2) }}%
-                </p>
-            </div>
-        </div>
-
-        <!-- Lista / tabla -->
         <div v-if="loading" class="space-y-2">
             <el-skeleton animated :count="2">
                 <template #template>
-                    <el-skeleton-item variant="rect" style="width: 100%; height: 48px; border-radius: 8px;" />
+                    <el-skeleton-item variant="rect" style="width: 100%; height: 56px; border-radius: 8px;" />
                 </template>
             </el-skeleton>
         </div>
 
         <div v-else-if="investments.length === 0" class="empty-state py-6">
+            <el-icon :size="32" class="empty-state-icon"><Coin /></el-icon>
             <p class="empty-state-title">Aún no tienes inversiones</p>
-            <p class="empty-state-text text-center">
-                Registra tu primera inversión para ver tu proyección a largo plazo.
+            <p class="empty-state-text">
+                Registra tu primera inversión para ver tu capital y la proyección de rendimientos.
             </p>
         </div>
 
-        <div v-else class="space-y-2">
-            <div
-                v-for="inv in investments"
-                :key="inv.id"
-                class="border border-grayD9 dark:border-[#3F4949] rounded-lg p-3 flex items-center justify-between gap-3 hover:shadow-sm transition"
-            >
-                <!-- Modo edición -->
-                <template v-if="editingId === inv.id">
-                    <div class="flex-1 grid grid-cols-1 sm:grid-cols-[1fr_110px_110px_auto] gap-2 items-center">
+        <ul v-else class="investment-list">
+            <li v-for="investment in investments" :key="investment.id" class="investment-item">
+                <template v-if="editingId === investment.id">
+                    <div class="investment-item__edit">
                         <el-input v-model="editForm.name" placeholder="Nombre" size="small" />
                         <el-input-number
                             v-model="editForm.amount"
@@ -243,31 +269,41 @@ onMounted(fetchInvestments);
                             class="!w-full"
                         />
                         <div class="flex gap-1">
-                            <el-button size="small" type="success" :icon="Check" circle @click="saveEdit(inv)" />
+                            <el-button size="small" type="success" :icon="Check" circle @click="saveEdit(investment)" />
                             <el-button size="small" :icon="Close" circle @click="cancelEdit" />
                         </div>
                     </div>
                 </template>
 
-                <!-- Modo lectura -->
                 <template v-else>
-                    <div class="flex-1 min-w-0">
-                        <p class="font-medium text-sm text-gray-800 dark:text-[#EDF1F1] truncate">
-                            {{ inv.name || 'Inversión' }}
-                        </p>
-                        <p class="text-xs text-gray-500 dark:text-[#9AA8A8]">
-                            {{ Number(inv.annual_rate).toFixed(2) }}% anual
-                        </p>
+                    <div class="investment-item__main">
+                        <span class="investment-item__icon">
+                            <el-icon :size="17"><Coin /></el-icon>
+                        </span>
+                        <div class="min-w-0">
+                            <p class="investment-item__name">{{ investment.name || 'Inversión' }}</p>
+                            <span class="investment-item__chip">
+                                {{ Number(investment.annual_rate).toFixed(2) }}% anual
+                            </span>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <p class="font-mono font-semibold text-gray-800 dark:text-[#EDF1F1]">
-                            ${{ formatMoney(inv.amount) }}
-                        </p>
-                        <el-button size="small" :icon="Edit" circle plain @click="startEdit(inv)" />
-                        <el-button size="small" :icon="Delete" circle plain type="danger" @click="removeInvestment(inv)" />
+
+                    <div class="investment-item__side">
+                        <p class="investment-item__amount">${{ formatMoney(investment.amount) }}</p>
+                        <div class="flex gap-1">
+                            <el-button size="small" :icon="Edit" circle plain @click="startEdit(investment)" />
+                            <el-button
+                                size="small"
+                                :icon="Delete"
+                                circle
+                                plain
+                                type="danger"
+                                @click="removeInvestment(investment)"
+                            />
+                        </div>
                     </div>
                 </template>
-            </div>
-        </div>
+            </li>
+        </ul>
     </div>
 </template>

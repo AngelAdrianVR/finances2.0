@@ -202,41 +202,104 @@
     background: #2B3232;
 }
 
+/* --- EzyVentas cross-promo chip --- */
 .app-topbar__promo {
     display: none;
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 640px) {
     .app-topbar__promo {
+        position: relative;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        height: 34px;
-        padding: 0 12px 0 6px;
+        gap: 9px;
+        height: 38px;
+        padding: 4px 10px 4px 4px;
         border: 1px solid var(--color-gray-200, #DCE3E3);
         border-radius: 9999px;
         background: var(--color-white, #FFFFFF);
         text-decoration: none;
-        transition: border-color 150ms ease, box-shadow 150ms ease;
+        transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
     }
 
     .app-topbar__promo:hover {
-        border-color: var(--color-gray-300, #C2CDCD);
-        box-shadow: var(--shadow-xs);
+        border-color: var(--color-accent-400, #E8946B);
+        background: linear-gradient(135deg, #FFFFFF 35%, #FBE9DE 100%);
+        box-shadow: 0 8px 18px -10px rgba(217, 116, 63, 0.65);
+    }
+
+    .app-topbar__promo:focus-visible {
+        outline: none;
+        border-color: var(--color-accent-400, #E8946B);
+        box-shadow: 0 0 0 3px rgba(217, 116, 63, 0.22);
     }
 }
 
-.app-topbar__promo img {
-    width: 22px;
-    height: 22px;
+.app-topbar__promo-mark {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #FFF3E4, #FFDFBC);
+    box-shadow: inset 0 0 0 1px rgba(217, 116, 63, 0.16);
+}
+
+.app-topbar__promo-mark img {
+    width: 19px;
+    height: 19px;
     object-fit: contain;
 }
 
-.app-topbar__promo span {
-    font-size: 11.5px;
+.app-topbar__promo-copy {
+    display: none;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    line-height: 1.15;
+}
+
+.app-topbar__promo-name {
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--color-gray-800, #2B3232);
+}
+
+.app-topbar__promo-tagline {
+    display: none;
+    font-size: 10px;
     font-weight: 500;
     color: var(--color-gray-500, #728282);
     white-space: nowrap;
+}
+
+.app-topbar__promo .app-topbar__promo-arrow {
+    display: none;
+    color: var(--color-gray-400, #9AA8A8);
+    transition: transform 160ms ease, color 160ms ease;
+}
+
+.app-topbar__promo:hover .app-topbar__promo-arrow {
+    color: var(--color-accent-600, #D9743F);
+    transform: translate(1px, -1px);
+}
+
+@media (min-width: 1024px) {
+    .app-topbar__promo-copy {
+        display: flex;
+    }
+
+    .app-topbar__promo .app-topbar__promo-arrow {
+        display: inline-flex;
+    }
+}
+
+@media (min-width: 1280px) {
+    .app-topbar__promo-tagline {
+        display: block;
+    }
 }
 
 .dark .app-topbar__promo {
@@ -244,31 +307,31 @@
     border-color: #2B3232;
 }
 
-.dark .app-topbar__promo span {
+.dark .app-topbar__promo:hover {
+    border-color: rgba(232, 148, 107, 0.55);
+    background: linear-gradient(135deg, #1E2424 35%, #2A211B 100%);
+    box-shadow: 0 8px 20px -10px rgba(232, 148, 107, 0.55);
+}
+
+.dark .app-topbar__promo-mark {
+    background: linear-gradient(145deg, rgba(232, 148, 107, 0.26), rgba(217, 116, 63, 0.12));
+    box-shadow: inset 0 0 0 1px rgba(232, 148, 107, 0.3);
+}
+
+.dark .app-topbar__promo-name {
+    color: #EDF1F1;
+}
+
+.dark .app-topbar__promo-tagline {
     color: #9AA8A8;
 }
 
-.app-topbar__avatar {
-    display: inline-flex;
-    flex-shrink: 0;
-    border-radius: 50%;
+.dark .app-topbar__promo-arrow {
+    color: #728282;
 }
 
-.app-topbar__avatar img {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    object-fit: cover;
-    box-shadow: 0 0 0 2px var(--color-white, #FFFFFF), 0 0 0 3.5px var(--color-primary-200, #B0D1D1);
-    transition: box-shadow 150ms ease;
-}
-
-.app-topbar__avatar:hover img {
-    box-shadow: 0 0 0 2px var(--color-white, #FFFFFF), 0 0 0 3.5px var(--color-primary-400, #5B9C9D);
-}
-
-.dark .app-topbar__avatar img {
-    box-shadow: 0 0 0 2px #1E2424, 0 0 0 3.5px #357F80;
+.dark .app-topbar__promo:hover .app-topbar__promo-arrow {
+    color: #E8946B;
 }
 
 /* ============================================

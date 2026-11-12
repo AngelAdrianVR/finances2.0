@@ -1,5 +1,5 @@
 <template>
-    <apexchart type="radialBar" height="150" :width="width" :options="chartOptions" :series="series" />
+    <apexchart type="radialBar" :height="height" :width="width" :options="chartOptions" :series="series" />
 </template>
 
 <script>
@@ -7,6 +7,7 @@ export default {
     props: {
         series: { type: Array, default: () => [0] },
         width: { type: String, default: undefined },
+        height: { type: [String, Number], default: 150 },
     },
     data() {
         return {
@@ -40,7 +41,7 @@ export default {
         chartOptions() {
             return {
                 chart: {
-                    height: 150,
+                    height: this.height,
                     type: 'radialBar',
                     background: 'transparent',
                 },

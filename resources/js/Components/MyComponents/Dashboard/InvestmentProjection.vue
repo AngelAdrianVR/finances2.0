@@ -141,8 +141,8 @@ watch(() => props.refreshKey, () => {
             <div v-if="data?.yearly_projection?.length" class="border-t border-gray-200 dark:border-[#3F4949] pt-4">
                 <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-3">Proyección anual (capital y rendimientos)</p>
 
-                <div class="max-h-72 overflow-y-auto rounded-lg border border-grayD9 dark:border-[#3F4949]">
-                    <table class="w-full text-sm">
+                <div class="max-h-72 overflow-auto rounded-lg border border-grayD9 dark:border-[#3F4949]">
+                    <table class="projection-table w-full min-w-[380px] text-sm">
                         <thead class="sticky top-0 bg-gray-100 dark:bg-[#252C2C] text-gray-600 dark:text-[#DCE3E3] text-xs uppercase">
                             <tr>
                                 <th class="text-left px-3 py-2 font-medium">Año</th>

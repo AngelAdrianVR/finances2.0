@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Menu, Moon, Sunny, Calendar } from '@element-plus/icons-vue';
+import { Menu, Moon, Sunny, Calendar, TopRight } from '@element-plus/icons-vue';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ApplicationMark from '@/Components/ApplicationMark.vue';
@@ -83,14 +83,18 @@ function onNotificationsUpdate(value) {
                     target="_blank"
                     rel="noopener noreferrer"
                     class="app-topbar__promo"
+                    title="EzyVentas · Punto de venta para tu negocio"
+                    aria-label="Abrir EzyVentas, punto de venta para tu negocio"
                 >
-                    <img src="@/../../public/images/isologoEzy.png" alt="EzyVentas" />
-                    <span>Punto de venta para tu negocio</span>
+                    <span class="app-topbar__promo-mark">
+                        <img src="/images/ezyventas-isologo.png" alt="EzyVentas" />
+                    </span>
+                    <span class="app-topbar__promo-copy">
+                        <span class="app-topbar__promo-name">EzyVentas</span>
+                        <span class="app-topbar__promo-tagline">Punto de venta para tu negocio</span>
+                    </span>
+                    <el-icon class="app-topbar__promo-arrow" :size="12"><TopRight /></el-icon>
                 </a>
-
-                <Link :href="route('profile.show')" class="app-topbar__avatar" title="Mi perfil">
-                    <img :src="user.profile_photo_url" :alt="user.name" />
-                </Link>
             </div>
         </div>
     </header>

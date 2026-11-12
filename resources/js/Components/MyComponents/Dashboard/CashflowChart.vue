@@ -33,6 +33,14 @@ const series = computed(() => [
 
 const isDense = computed(() => (props.trend?.labels ?? []).length > 12);
 
+const labels = computed(() => props.trend?.labels ?? []);
+
+const labelStep = computed(() => Math.max(1, Math.ceil(labels.value.length / 8)));
+
+const displayLabels = computed(() =>
+    labels.value.map((label, index) => (index % labelStep.value === 0 ? label : ''))
+);
+
 const options = computed(() => {
     const gridColor = isDark.value ? 'rgba(255, 255, 255, 0.08)' : '#EDF1F1';
     const labelColor = isDark.value ? '#9AA8A8' : '#728282';
@@ -71,12 +79,11 @@ const options = computed(() => {
         },
         markers: { size: 0, hover: { size: 5 } },
         xaxis: {
-            categories: props.trend?.labels ?? [],
+            categories: displayLabels.value,
             labels: {
                 style: { colors: labelColor, fontSize: '11px' },
                 rotate: isDense.value ? -45 : 0,
                 rotateAlways: isDense.value,
-                tickAmount: isDense.value ? 12 : undefined,
                 hideOverlappingLabels: true,
             },
             axisBorder: { show: false },
@@ -107,6 +114,9 @@ const options = computed(() => {
             theme: isDark.value ? 'dark' : 'light',
             shared: true,
             intersect: false,
+            x: {
+                formatter: (value, options) => labels.value[options?.dataPointIndex] ?? value,
+            },
             y: { formatter: (value) => currency.format(value) },
         },
         states: {

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
-import { ArrowDown } from '@element-plus/icons-vue';
+import { ArrowDown, TopRight } from '@element-plus/icons-vue';
 import MenuIcon from '@/Layouts/Partials/MenuIcon.vue';
 import SidebarNav from '@/Layouts/Partials/SidebarNav.vue';
 import UserProfileCard from '@/Layouts/Partials/UserProfileCard.vue';
@@ -215,6 +215,22 @@ const drawerVisible = computed({
             </div>
 
             <div class="sidebar-drawer__footer">
+                <a
+                    href="https://ezyventas.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="sidebar-drawer__promo"
+                >
+                    <span class="sidebar-drawer__promo-mark">
+                        <img src="/images/ezyventas-isologo.png" alt="EzyVentas" />
+                    </span>
+                    <span class="sidebar-drawer__promo-copy">
+                        <span class="sidebar-drawer__promo-name">EzyVentas</span>
+                        <span class="sidebar-drawer__promo-tagline">Punto de venta para tu negocio</span>
+                    </span>
+                    <el-icon class="sidebar-drawer__promo-arrow" :size="12"><TopRight /></el-icon>
+                </a>
+
                 <Link :href="route('profile.show')" class="sidebar-drawer__link">
                     <MenuIcon name="settings" :size="16" />
                     <span>Editar perfil</span>

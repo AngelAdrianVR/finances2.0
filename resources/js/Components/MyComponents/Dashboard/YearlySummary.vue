@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { TrendCharts, Coin, Wallet } from '@element-plus/icons-vue';
 import axios from 'axios';
 
 const props = defineProps({
@@ -45,8 +44,11 @@ const outcomeVsAverage = computed(() => {
     return ((currentMonthOutcome.value - avgMonthlyOutcome.value) / avgMonthlyOutcome.value * 100).toFixed(1);
 });
 
-function formatMoney(val) {
-    return val?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+function formatMoney(value) {
+    return Number(value || 0).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
 }
 
 async function fetchData() {
@@ -98,110 +100,101 @@ fetchData();
 
     <!-- Loaded content -->
     <div v-else class="dashboard-card">
-        <div class="flex items-center gap-2 mb-5">
-            <el-icon :size="18" color="#296A6B"><TrendCharts /></el-icon>
-            <h2 class="text-lg font-semibold text-gray-800 dark:text-[#EDF1F1]">Resumen del año {{ selectedYear }}</h2>
+        <div class="dashboard-card__head">
+            <div>
+                <h2 class="dashboard-card__title">Resumen del año {{ selectedYear }}</h2>
+                <p class="dashboard-card__subtitle">Promedios, balance y comparativa del mes en curso</p>
+            </div>
+            <span class="dashboard-chip">{{ monthsElapsed }} meses</span>
         </div>
 
-        <div class="space-y-4">
-            <!-- Monthly averages row -->
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-gray-50 dark:bg-[#252C2C] rounded-lg p-3">
-                    <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-1">Promedio mensual de ingresos</p>
-                    <p class="font-mono text-lg font-bold text-[#2F9E5B]">
-                        ${{ formatMoney(avgMonthlyIncome) }}
-                    </p>
-                </div>
-                <div class="bg-gray-50 dark:bg-[#252C2C] rounded-lg p-3">
-                    <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-1">Promedio mensual de gastos</p>
-                    <p class="font-mono text-lg font-bold text-[#D64545]">
-                        ${{ formatMoney(avgMonthlyOutcome) }}
-                    </p>
-                </div>
+        <div class="summary-metrics">
+            <div class="summary-metric">
+                <p class="summary-metric__label">Promedio mensual de ingresos</p>
+                <p class="summary-metric__value summary-metric__value--income">
+                    ${{ formatMoney(avgMonthlyIncome) }}
+                </p>
             </div>
-
-            <!-- Net balance for the year -->
-            <div class="bg-gray-50 dark:bg-[#252C2C] rounded-lg p-3">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-1">Balance neto del año</p>
-                        <p
-                            class="font-mono text-lg font-bold"
-                            :class="yearNet >= 0 ? 'text-[#2F9E5B]' : 'text-[#D64545]'"
-                        >
-                            {{ yearNet >= 0 ? '+' : '' }}${{ formatMoney(yearNet) }}
-                        </p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-1">Tasa de ahorro</p>
-                        <p
-                            class="font-mono font-bold"
-                            :class="parseFloat(savingsRate) >= 0 ? 'text-[#2F9E5B]' : 'text-[#D64545]'"
-                        >
-                            {{ savingsRate }}%
-                        </p>
-                    </div>
-                </div>
+            <div class="summary-metric">
+                <p class="summary-metric__label">Promedio mensual de gastos</p>
+                <p class="summary-metric__value summary-metric__value--expense">
+                    ${{ formatMoney(avgMonthlyOutcome) }}
+                </p>
             </div>
+            <div class="summary-metric">
+                <p class="summary-metric__label">Balance neto del año</p>
+                <p
+                    class="summary-metric__value"
+                    :class="yearNet >= 0 ? 'summary-metric__value--income' : 'summary-metric__value--expense'"
+                >
+                    {{ yearNet >= 0 ? '+' : '' }}${{ formatMoney(yearNet) }}
+                </p>
+            </div>
+            <div class="summary-metric">
+                <p class="summary-metric__label">Tasa de ahorro</p>
+                <p
+                    class="summary-metric__value"
+                    :class="parseFloat(savingsRate) >= 0 ? 'summary-metric__value--income' : 'summary-metric__value--expense'"
+                >
+                    {{ savingsRate }}%
+                </p>
+            </div>
+        </div>
 
-            <!-- Current month vs average -->
-            <div class="border-t border-gray-200 dark:border-[#3F4949] pt-4">
-                <p class="text-xs text-gray-500 dark:text-[#9AA8A8] mb-3">Este mes vs promedio mensual</p>
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Income comparison -->
-                    <div>
-                        <p class="text-xs text-gray-400 dark:text-[#9AA8A8] mb-0.5">Ingresos</p>
-                        <p class="font-mono text-sm font-semibold text-gray-800 dark:text-[#EDF1F1]">
-                            ${{ formatMoney(currentMonthIncome) }}
-                        </p>
-                        <div class="flex items-center gap-1 mt-1">
+        <div class="summary-columns">
+            <section class="summary-block">
+                <p class="summary-block__title">Este mes vs promedio mensual</p>
+                <div class="summary-compare">
+                    <div class="summary-compare__item">
+                        <div class="summary-compare__head">
+                            <span class="summary-compare__label">Ingresos</span>
                             <span
-                                class="text-xs px-2 py-0.5 rounded-full font-medium"
-                                :class="parseFloat(incomeVsAverage) >= 0
-                                    ? 'bg-[#EAF7EF] text-[#247A47]'
-                                    : 'bg-[#FCEAEA] text-[#B23636]'"
+                                class="summary-compare__badge"
+                                :class="parseFloat(incomeVsAverage) >= 0 ? 'is-up' : 'is-down'"
                             >
                                 {{ parseFloat(incomeVsAverage) >= 0 ? '+' : '' }}{{ incomeVsAverage }}%
                             </span>
-                            <span class="text-xs text-gray-400">vs promedio</span>
                         </div>
+                        <p class="summary-compare__value">${{ formatMoney(currentMonthIncome) }}</p>
+                        <p class="summary-compare__hint">Promedio ${{ formatMoney(avgMonthlyIncome) }}</p>
                     </div>
-                    <!-- Outcome comparison -->
-                    <div>
-                        <p class="text-xs text-gray-400 dark:text-[#9AA8A8] mb-0.5">Gastos</p>
-                        <p class="font-mono text-sm font-semibold text-gray-800 dark:text-[#EDF1F1]">
-                            ${{ formatMoney(currentMonthOutcome) }}
-                        </p>
-                        <div class="flex items-center gap-1 mt-1">
+
+                    <div class="summary-compare__item">
+                        <div class="summary-compare__head">
+                            <span class="summary-compare__label">Gastos</span>
                             <span
-                                class="text-xs px-2 py-0.5 rounded-full font-medium"
-                                :class="parseFloat(outcomeVsAverage) <= 0
-                                    ? 'bg-[#EAF7EF] text-[#247A47]'
-                                    : 'bg-[#FCEAEA] text-[#B23636]'"
+                                class="summary-compare__badge"
+                                :class="parseFloat(outcomeVsAverage) <= 0 ? 'is-up' : 'is-down'"
                             >
                                 {{ parseFloat(outcomeVsAverage) >= 0 ? '+' : '' }}{{ outcomeVsAverage }}%
                             </span>
-                            <span class="text-xs text-gray-400">vs promedio</span>
                         </div>
+                        <p class="summary-compare__value">${{ formatMoney(currentMonthOutcome) }}</p>
+                        <p class="summary-compare__hint">Promedio ${{ formatMoney(avgMonthlyOutcome) }}</p>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Totals row -->
-            <div class="border-t border-gray-200 dark:border-[#3F4949] pt-4 grid grid-cols-2 gap-4">
-                <div>
-                    <p class="text-xs text-gray-400 dark:text-[#9AA8A8] mb-0.5">Total ingresos del año</p>
-                    <p class="font-mono text-sm font-bold text-gray-800 dark:text-[#EDF1F1]">
-                        ${{ formatMoney(yearTotalIncome) }}
-                    </p>
+            <section class="summary-block">
+                <p class="summary-block__title">Acumulado del año</p>
+                <div class="summary-compare">
+                    <div class="summary-compare__item">
+                        <span class="summary-compare__label">Total de ingresos</span>
+                        <p class="summary-compare__value summary-compare__value--income">
+                            ${{ formatMoney(yearTotalIncome) }}
+                        </p>
+                        <p class="summary-compare__hint">{{ monthsElapsed }} meses transcurridos</p>
+                    </div>
+
+                    <div class="summary-compare__item">
+                        <span class="summary-compare__label">Total de gastos</span>
+                        <p class="summary-compare__value summary-compare__value--expense">
+                            ${{ formatMoney(yearTotalOutcome) }}
+                        </p>
+                        <p class="summary-compare__hint">{{ monthsElapsed }} meses transcurridos</p>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-xs text-gray-400 dark:text-[#9AA8A8] mb-0.5">Total gastos del año</p>
-                    <p class="font-mono text-sm font-semibold text-gray-800 dark:text-[#EDF1F1]">
-                        ${{ formatMoney(yearTotalOutcome) }}
-                    </p>
-                </div>
-            </div>
+            </section>
         </div>
     </div>
 </template>
