@@ -1,149 +1,178 @@
+<script setup>
+import { computed, onMounted, ref } from 'vue';
+import axios from 'axios';
+import { ElMessage } from 'element-plus';
+import { Bell, Check } from '@element-plus/icons-vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
+import NotificationCard from '@/Components/MyComponents/NotificationCard.vue';
+
+const notifications = ref([]);
+const loading = ref(true);
+
+const unread = computed(() => notifications.value.filter((item) => item.read_at === null));
+
+const todayNotifications = computed(() => {
+    const today = new Date().toISOString().split('T')[0];
+
+    return notifications.value.filter((notification) => notification.created_at.startsWith(today));
+});
+
+const yesterdayNotifications = computed(() => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    return notifications.value.filter((notification) => notification.created_at.startsWith(yesterdayStr));
+});
+
+const monthNotifications = computed(() => {
+    const today = new Date();
+    const month = today.getMonth() + 1;
+    const year = today.getFullYear();
+    const monthStr = `${year}-${month.toString().padStart(2, '0')}`;
+    const todayStr = today.toISOString().split('T')[0];
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    return notifications.value.filter((notification) => {
+        const createdAt = notification.created_at.split('T')[0];
+
+        return createdAt.startsWith(monthStr) && createdAt !== todayStr && createdAt !== yesterdayStr;
+    });
+});
+
+const groups = computed(() => [
+    { key: 'today', label: 'Hoy', items: todayNotifications.value },
+    { key: 'yesterday', label: 'Ayer', items: yesterdayNotifications.value },
+    { key: 'month', label: 'Este mes', items: monthNotifications.value },
+]);
+
+async function fetchNotifications() {
+    try {
+        loading.value = true;
+        const response = await axios.get(route('users.get-notifications'));
+
+        if (response.status === 200) {
+            notifications.value = response.data.items || [];
+        }
+    } catch (error) {
+        console.error(error);
+        ElMessage.error('No se pudieron cargar las notificaciones. Recarga la página.');
+    } finally {
+        loading.value = false;
+    }
+}
+
+async function markAllRead() {
+    if (!unread.value.length) return;
+
+    try {
+        await axios.post(route('users.read-user-notifications'));
+        const now = new Date().toISOString();
+        notifications.value = notifications.value.map((item) =>
+            item.read_at ? item : { ...item, read_at: now }
+        );
+        ElMessage.success('Todas las notificaciones se marcaron como leídas.');
+    } catch (error) {
+        console.error(error);
+        ElMessage.error('No se pudieron marcar las notificaciones como leídas.');
+    }
+}
+
+onMounted(fetchNotifications);
+</script>
+
 <template>
     <AppLayout title="Notificaciones">
-        <LoadingLogo v-if="loading" class="my-20" />
-        <div v-else class="w-[90%] border rounded-t-[10px] border-grayD9 dark:border-gray-600 dark:bg-[#1E2424] mx-auto mt-4">
-            <h1 class="text-gray66 dark:text-gray-300 text-center text-sm my-2">
-                Notificaciones
-                <span class="text-primary">({{ notifications.length }})</span>
-            </h1>
-            <div class="px-4 py-2 h-[400px] overflow-y-auto">
-                <h1 class="text-sm px-1 dark:text-gray-200">
-                    Notificaciones
-                </h1>
-                <!-- HOY -->
-                <section class="mt-3">
-                    <h2 class="text-xs px-1 flex items-center space-x-1">
-                        <span class="text-[#575757] dark:text-gray-400">Hoy</span>
-                        <span class="border-grayD9 dark:border-gray-600 bg-grayF2 dark:bg-gray-800 rounded-[5px] px-[5px] py-[2px] dark:text-gray-300">
-                            {{ todayNotifications.length }}</span>
-                    </h2>
-                    <!-- notificacion de hoy -->
-                    <article class="space-y-2 mt-3">
-                        <!-- notificaciones cuya propiedad created_at es de hoy -->
-                        <NotificationCard v-for="(item, index) in todayNotifications" :key="index" :delete-at-hover="false"
-                            @notification-deleted="fetchNotifications" :notification="item" />
-                        <p v-if="!todayNotifications.length" class="text-[10px] text-center dark:text-gray-400">No hay notificaciones para
-                            mostrar</p>
-                    </article>
-                </section>
-                <!-- Ayer -->
-                <section class="mt-3">
-                    <h2 class="text-xs px-1 flex items-center space-x-1">
-                        <span class="text-[#575757] dark:text-gray-400">Ayer</span>
-                        <span class="border-grayD9 dark:border-gray-600 bg-grayF2 dark:bg-gray-800 rounded-[5px] px-[5px] py-[2px] dark:text-gray-300">
-                            {{ yesterdayNotifications.length }}</span>
-                    </h2>
-                    <!-- notificacion -->
-                    <article class="space-y-2 mt-3">
-                        <NotificationCard v-for="(item, index) in yesterdayNotifications" :key="index" :delete-at-hover="false"
-                            @notification-deleted="fetchNotifications" :notification="item" />
-                        <p v-if="!yesterdayNotifications.length" class="text-[10px] text-center dark:text-gray-400">No hay notificaciones
-                            para mostrar</p>
-                    </article>
-                </section>
-                <!-- Este mes -->
-                <section class="mt-3">
-                    <h2 class="text-xs px-1 flex items-center space-x-1">
-                        <span class="text-[#575757] dark:text-gray-400">Este mes</span>
-                        <span class="border-grayD9 dark:border-gray-600 bg-grayF2 dark:bg-gray-800 rounded-[5px] px-[5px] py-[2px] dark:text-gray-300">
-                            {{ monthNotifications.length }}</span>
-                    </h2>
-                    <!-- notificacion -->
-                    <article class="space-y-2 mt-3">
-                        <NotificationCard v-for="(item, index) in monthNotifications" :key="index" :delete-at-hover="false"
-                            @notification-deleted="fetchNotifications" :notification="item" />
-                        <p v-if="!monthNotifications.length" class="text-[10px] text-center dark:text-gray-400">
-                            No hay notificaciones para mostrar
+        <div class="page-shell">
+            <header class="page-heading">
+                <div>
+                    <p class="page-heading__eyebrow">Centro de actividad</p>
+                    <h1 class="page-heading__title">Notificaciones</h1>
+                    <p class="page-heading__subtitle">
+                        Revisa los movimientos, recordatorios y avisos de tu cuenta.
+                    </p>
+                </div>
+
+                <div class="page-heading__actions">
+                    <el-button v-if="unread.length" @click="markAllRead">
+                        <el-icon class="mr-1"><Check /></el-icon>
+                        Marcar todas como leídas
+                    </el-button>
+                </div>
+            </header>
+
+            <div class="notifications-page">
+                <div class="notifications-page__summary">
+                    <div class="notifications-page__stat">
+                        <span class="notifications-page__stat-icon notifications-page__stat-icon--primary">
+                            <el-icon :size="16"><Bell /></el-icon>
+                        </span>
+                        <div>
+                            <p class="notifications-page__stat-label">Sin leer</p>
+                            <p class="notifications-page__stat-value">{{ unread.length }}</p>
+                        </div>
+                    </div>
+
+                    <div class="notifications-page__stat">
+                        <span class="notifications-page__stat-icon notifications-page__stat-icon--success">
+                            <el-icon :size="16"><Check /></el-icon>
+                        </span>
+                        <div>
+                            <p class="notifications-page__stat-label">Hoy</p>
+                            <p class="notifications-page__stat-value">{{ todayNotifications.length }}</p>
+                        </div>
+                    </div>
+
+                    <div class="notifications-page__stat">
+                        <span class="notifications-page__stat-icon notifications-page__stat-icon--neutral">
+                            <el-icon :size="16"><Bell /></el-icon>
+                        </span>
+                        <div>
+                            <p class="notifications-page__stat-label">Total</p>
+                            <p class="notifications-page__stat-value">{{ notifications.length }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <section class="notifications-page__card">
+                    <div v-if="loading" class="notifications-page__loading">
+                        <el-skeleton animated :rows="5" />
+                    </div>
+
+                    <div v-else-if="!notifications.length" class="notifications-page__empty">
+                        <span class="notifications-page__empty-icon">
+                            <el-icon :size="26"><Bell /></el-icon>
+                        </span>
+                        <p class="notifications-page__empty-title">No tienes notificaciones</p>
+                        <p class="notifications-page__empty-text">
+                            Cuando registres movimientos o tengas recordatorios próximos, aparecerán aquí.
                         </p>
-                    </article>
+                    </div>
+
+                    <div v-else class="notifications-page__list">
+                        <section
+                            v-for="group in groups"
+                            v-show="group.items.length"
+                            :key="group.key"
+                            class="notification-group"
+                        >
+                            <div class="notification-group__head">
+                                <span>{{ group.label }}</span>
+                                <span class="notification-group__count">{{ group.items.length }}</span>
+                            </div>
+
+                            <NotificationCard
+                                v-for="item in group.items"
+                                :key="item.id"
+                                :notification="item"
+                                @notification-deleted="fetchNotifications"
+                            />
+                        </section>
+                    </div>
                 </section>
             </div>
         </div>
     </AppLayout>
 </template>
-<script>
-import LoadingLogo from '@/Components/MyComponents/LoadingLogo.vue';
-import AppLayout from '@/Layouts/AppLayout.vue';
-import axios from "axios";
-import NotificationCard from '@/Components/MyComponents/NotificationCard.vue';
-
-export default {
-    data() {
-        return {
-            notifications: [],
-            loading: false,
-        }
-    },
-    props: {
-    },
-    components: {
-        AppLayout,
-        NotificationCard,
-        LoadingLogo,
-    },
-    methods: {
-        async fetchNotifications() {
-            this.loading = true;
-            try {
-                const response = await axios.get(route('users.get-notifications'));
-
-                if (response.status === 200) {
-                    this.notifications = response.data.items;
-                }
-            } catch (error) {
-                console.log(error);
-                this.$notify({
-                    title: "No se pudo completar la solicitud",
-                    message: "El servidor no pudo procesar la petición para obtener las notificaciones. Recarga la página",
-                    type: "error",
-                });
-            } finally {
-                this.loading = false;
-            }
-        },
-        async readNotifications() {
-            try {
-                const response = await axios.post(route("users.read-user-notifications"));
-
-                // if (response.data.unread) {
-                //     this.fetchNotifications();
-                // }
-            } catch (error) {
-                console.log(error);
-            }
-        },
-    },
-    computed: {
-        getUnreadMessages() {
-            return this.notifications?.filter(item => item.read_at === null);
-        },
-        todayNotifications() {
-            const today = new Date().toISOString().split('T')[0];
-            return this.notifications.filter(notification => notification.created_at.startsWith(today));
-        },
-        yesterdayNotifications() {
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayStr = yesterday.toISOString().split('T')[0];
-            return this.notifications.filter(notification => notification.created_at.startsWith(yesterdayStr));
-        },
-        monthNotifications() {
-            const today = new Date();
-            const month = today.getMonth() + 1;
-            const year = today.getFullYear();
-            const monthStr = `${year}-${month.toString().padStart(2, '0')}`;
-            const todayStr = today.toISOString().split('T')[0];
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayStr = yesterday.toISOString().split('T')[0];
-            return this.notifications.filter(notification => {
-                const createdAt = notification.created_at.split('T')[0];
-                return createdAt.startsWith(monthStr) && createdAt !== todayStr && createdAt !== yesterdayStr;
-            });
-        },
-    },
-    mounted() {
-        this.fetchNotifications();
-    },
-}
-</script>

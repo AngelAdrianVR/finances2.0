@@ -128,6 +128,7 @@ function changeClass(value) {
                 v-if="cumulativeSeries.length"
                 type="area"
                 height="150"
+                width="100%"
                 :options="sparklineOptions"
                 :series="[{ name: 'Acumulado', data: cumulativeSeries }]"
             />

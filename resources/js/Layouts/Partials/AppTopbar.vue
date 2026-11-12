@@ -1,16 +1,24 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
-import { Menu, Moon, Sunny } from '@element-plus/icons-vue';
+import { computed } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { Menu, Moon, Sunny, Calendar, TopRight } from '@element-plus/icons-vue';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import ApplicationMark from '@/Components/ApplicationMark.vue';
 import NotificationsCenter from '@/Components/MyComponents/NotificationsCenter.vue';
 import { useDarkMode } from '@/composables/useDarkMode';
 
-defineProps({
-    notifications: { type: Number, default: 0 },
-});
-
 const emit = defineEmits(['update:notifications', 'openMobileMenu']);
 const { isDark, toggleDark } = useDarkMode();
+
+const page = usePage();
+const user = computed(() => page.props.auth?.user || {});
+const firstName = computed(() => (user.value.name || '').split(' ')[0]);
+const todayLabel = computed(() => {
+    const label = format(new Date(), "EEEE d 'de' MMMM", { locale: es });
+
+    return label.charAt(0).toUpperCase() + label.slice(1);
+});
 
 function onNotificationsUpdate(value) {
     emit('update:notifications', value);
@@ -18,72 +26,74 @@ function onNotificationsUpdate(value) {
 </script>
 
 <template>
-    <header class="h-14 bg-white/95 dark:bg-[#1E2424] backdrop-blur border-b border-gray-200 dark:border-[#2B3232] flex items-center shrink-0 transition-colors duration-200">
-        <div class="w-full max-w-full mx-auto px-4 sm:px-6 flex items-center justify-between">
-            <!-- Left -->
-            <div class="flex items-center space-x-2">
-                <!-- Hamburger -->
+    <header class="app-topbar">
+        <div class="app-topbar__inner">
+            <!-- Left: mobile menu + context -->
+            <div class="app-topbar__left">
                 <button
-                    class="md:hidden size-9 flex items-center justify-center rounded-lg text-gray-600 dark:text-[#C2CDCD] hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                    type="button"
+                    class="app-topbar__icon-btn app-topbar__menu-btn"
+                    title="Abrir menú"
                     @click="emit('openMobileMenu')"
                 >
                     <el-icon :size="20"><Menu /></el-icon>
                 </button>
 
-                <!-- Mobile logo -->
-                <Link :href="route('dashboard')" class="md:hidden shrink-0 flex items-center">
-                    <ApplicationMark class="block h-9 w-auto" />
+                <Link :href="route('dashboard')" class="app-topbar__logo">
+                    <ApplicationMark class="h-8 w-auto" />
                 </Link>
 
-                <!-- Notifications -->
-                <div class="hidden md:flex items-center">
-                    <NotificationsCenter @notifications="onNotificationsUpdate" />
+                <div class="app-topbar__greeting">
+                    <p class="app-topbar__greeting-hello">Hola, {{ firstName }}</p>
+                    <p class="app-topbar__greeting-date">{{ todayLabel }}</p>
                 </div>
-
-                <!-- Calendar -->
-                <Link :href="route('calendars.index')" class="flex items-center group relative">
-                    <button
-                        class="rounded-full size-9 flex items-center justify-center transition-colors duration-200"
-                        :class="route().current('calendars.*')
-                            ? 'bg-[#EAF7EF] dark:bg-[#1a3a3b] text-[#2F9E5B] dark:text-[#3BB970]'
-                            : 'text-gray-500 dark:text-[#9AA8A8] hover:bg-gray-100 dark:hover:bg-white/10'"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="size-5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z" />
-                        </svg>
-                    </button>
-                    <span
-                        class="absolute -bottom-9 left-1/2 -translate-x-1/2 z-50 origin-bottom scale-0
-                        px-3 py-1.5 rounded-md border border-gray-200 bg-white dark:bg-[#2B3232] dark:border-[#3F4949] text-xs font-medium
-                        text-gray-700 dark:text-[#DCE3E3] shadow-sm transition-all duration-200 ease-in-out
-                        group-hover:scale-100 whitespace-nowrap pointer-events-none"
-                    >Calendario</span>
-                </Link>
             </div>
 
-            <!-- Right -->
-            <div class="flex items-center gap-2">
-                <!-- Dark mode toggle -->
-                <button
-                    @click="toggleDark"
-                    class="size-9 flex items-center justify-center rounded-full border border-transparent text-gray-500 dark:text-[#9AA8A8] hover:bg-gray-100 dark:hover:bg-white/10 hover:border-gray-200 dark:hover:border-[#3F4949] transition-colors"
-                    :title="isDark ? 'Modo claro' : 'Modo oscuro'"
-                >
-                    <el-icon :size="18">
-                        <Sunny v-if="isDark" />
-                        <Moon v-else />
-                    </el-icon>
-                </button>
+            <!-- Right: utilities -->
+            <div class="app-topbar__right">
+                <div class="app-topbar__utilities">
+                    <NotificationsCenter @notifications="onNotificationsUpdate" />
 
-                <!-- Ezyventas promo -->
-                <a href="https://ezyventas.com" target="_blank"
-                    class="hidden sm:flex items-center space-x-2 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10
-                    border border-transparent dark:border-[#2B3232] px-3 py-1.5 rounded-full transition-colors duration-200"
+                    <Link
+                        :href="route('calendars.index')"
+                        class="app-topbar__icon-btn"
+                        :class="{ 'is-active': route().current('calendars.*') }"
+                        title="Calendario"
+                    >
+                        <el-icon :size="18"><Calendar /></el-icon>
+                    </Link>
+
+                    <button
+                        type="button"
+                        class="app-topbar__icon-btn"
+                        :title="isDark ? 'Modo claro' : 'Modo oscuro'"
+                        @click="toggleDark"
+                    >
+                        <el-icon :size="18">
+                            <Sunny v-if="isDark" />
+                            <Moon v-else />
+                        </el-icon>
+                    </button>
+                </div>
+
+                <span class="app-topbar__divider" aria-hidden="true" />
+
+                <a
+                    href="https://ezyventas.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="app-topbar__promo"
+                    title="EzyVentas · Punto de venta para tu negocio"
+                    aria-label="Abrir EzyVentas, punto de venta para tu negocio"
                 >
-                    <img class="w-6 object-contain opacity-70" src="@/../../public/images/isologoEzy.png" alt="EzyVentas">
-                    <span class="text-xs text-gray-500 dark:text-[#9AA8A8]">Punto de venta para tu negocio</span>
+                    <span class="app-topbar__promo-mark">
+                        <img src="/images/ezyventas-isologo.png" alt="EzyVentas" />
+                    </span>
+                    <span class="app-topbar__promo-copy">
+                        <span class="app-topbar__promo-name">EzyVentas</span>
+                        <span class="app-topbar__promo-tagline">Punto de venta para tu negocio</span>
+                    </span>
+                    <el-icon class="app-topbar__promo-arrow" :size="12"><TopRight /></el-icon>
                 </a>
             </div>
         </div>

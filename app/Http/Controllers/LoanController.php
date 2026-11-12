@@ -8,7 +8,9 @@ use App\Actions\Loans\UpdateLoanAction;
 use App\Http\Requests\Loans\StoreLoanRequest;
 use App\Http\Requests\Loans\UpdateLoanRequest;
 use App\Models\Loan;
+use App\Services\Loans\LoanSummaryService;
 use App\Services\SearchService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,27 +23,44 @@ class LoanController extends Controller
         private readonly UpdateLoanAction $updateLoanAction,
         private readonly DeleteLoanAction $deleteLoanAction,
         private readonly SearchService $searchService,
+        private readonly LoanSummaryService $loanSummaryService,
     ) {}
 
     // ========================
     // Views
     // ========================
 
-    public function index(): InertiaResponse
+    public function index(Request $request): InertiaResponse
     {
-        $loans_for_me = Loan::with('payments')
-            ->forUser()
-            ->byType('Recibido')
-            ->latest('id')
-            ->paginate(50);
+        $filters = [
+            'q'        => trim((string) $request->query('q', '')),
+            'per_page' => (int) $request->query('per_page', 50),
+        ];
 
-        $loans_given = Loan::with('payments')
-            ->forUser()
-            ->byType('Otorgado')
-            ->latest('id')
-            ->paginate(50);
+        $perPage = in_array($filters['per_page'], [10, 20, 50, 100], true) ? $filters['per_page'] : 50;
 
-        return inertia('Loan/Index', compact('loans_for_me', 'loans_given'));
+        $loans_for_me = $this->filteredLoans('Recibido', $filters['q'])->paginate($perPage)->withQueryString();
+        $loans_given = $this->filteredLoans('Otorgado', $filters['q'])->paginate($perPage)->withQueryString();
+        $summary = $this->loanSummaryService->forUser();
+
+        return inertia('Loan/Index', compact('loans_for_me', 'loans_given', 'summary', 'filters'));
+    }
+
+    private function filteredLoans(string $type, string $search): Builder
+    {
+        return Loan::with('payments')
+            ->forUser()
+            ->byType($type)
+            ->when($search !== '', function (Builder $query) use ($search) {
+                $term = '%'.$search.'%';
+
+                $query->where(function (Builder $nested) use ($term) {
+                    $nested->where('beneficiary_name', 'like', $term)
+                        ->orWhere('lender_name', 'like', $term)
+                        ->orWhere('description', 'like', $term);
+                });
+            })
+            ->latest('id');
     }
 
     public function create(): InertiaResponse
@@ -85,7 +104,7 @@ class LoanController extends Controller
     {
         $this->updateLoanAction->execute($loan, $request->validated());
 
-        return to_route('loans.index');
+        return to_route('loans.show', $loan->id);
     }
 
     public function destroy(Loan $loan): RedirectResponse

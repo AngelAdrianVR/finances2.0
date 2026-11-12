@@ -2,10 +2,10 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { Edit, Delete, MoreFilled, Refresh, VideoPause, VideoPlay } from '@element-plus/icons-vue';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import PaginationWithNoMeta from '@/Components/MyComponents/PaginationWithNoMeta.vue';
+import RecurringDetailDialog from '@/Components/MyComponents/Recurring/RecurringDetailDialog.vue';
+import { formatCalendarDate } from '@/utils/date';
 import axios from 'axios';
 
 const props = defineProps({
@@ -20,8 +20,7 @@ const showDetail = ref(false);
 const itemToShow = ref(null);
 
 function formatDate(date) {
-    if (!date) return '';
-    return format(new Date(date), 'dd MMMM yyyy', { locale: es });
+    return formatCalendarDate(date, 'dd MMMM yyyy');
 }
 
 function formatMoney(val) {
@@ -62,6 +61,14 @@ async function toggleStatus(rowId) {
     } catch (error) {
         ElMessage.error('Error al cambiar estatus.');
         console.error(error);
+    }
+}
+
+function onDetailToggled({ id, isActive }) {
+    const index = props.recurring_incomes.data.findIndex((item) => item.id === id);
+
+    if (index !== -1) {
+        props.recurring_incomes.data[index].is_active = isActive;
     }
 }
 
@@ -185,32 +192,10 @@ function tableRowClassName({ row }) {
     </section>
 
     <!-- Detail dialog -->
-    <el-dialog v-model="showDetail" title="Detalles del ingreso recurrente" width="500px" destroy-on-close>
-        <template v-if="itemToShow">
-            <div class="space-y-2">
-                <div class="detail-row"><span class="detail-label">Concepto</span><span class="detail-value">{{ itemToShow.concept }}</span></div>
-                <div class="detail-row"><span class="detail-label">Fecha de creacion</span><span class="detail-value">{{ formatDate(itemToShow.created_at) }}</span></div>
-                <div class="detail-row"><span class="detail-label">Monto</span><span class="detail-value font-mono font-semibold" style="color: #2F9E5B;">${{ formatMoney(itemToShow.amount) }}</span></div>
-                <div class="detail-row"><span class="detail-label">Recurrencia</span><span class="detail-value">{{ itemToShow.periodicity }}</span></div>
-                <div class="detail-row"><span class="detail-label">Categoria</span><span class="detail-value">{{ itemToShow.category }}</span></div>
-                <div class="detail-row"><span class="detail-label">Metodo de pago</span><span class="detail-value">{{ itemToShow.payment_method }}</span></div>
-                <div class="detail-row"><span class="detail-label">Descripcion</span><span class="detail-value">{{ itemToShow.description ?? '-' }}</span></div>
-                <div class="detail-row">
-                    <span class="detail-label">Estado</span>
-                    <span
-                        class="text-xs px-2 py-0.5 rounded-full font-medium"
-                        :class="itemToShow.is_active
-                            ? 'bg-[#EAF7EF] text-[#247A47]'
-                            : 'bg-[#FCEAEA] text-[#B23636]'"
-                    >
-                        {{ itemToShow.is_active ? 'Activo' : 'Inactivo' }}
-                    </span>
-                </div>
-            </div>
-        </template>
-        <template #footer>
-            <el-button @click="router.get(route('recurring-incomes.edit', itemToShow?.id))" v-if="itemToShow">Editar</el-button>
-            <el-button @click="showDetail = false">Cerrar</el-button>
-        </template>
-    </el-dialog>
+    <RecurringDetailDialog
+        v-model="showDetail"
+        :record="itemToShow"
+        type="income"
+        @toggled="onDetailToggled"
+    />
 </template>

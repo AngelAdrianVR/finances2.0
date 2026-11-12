@@ -1,10 +1,10 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Edit, Delete, Calendar as CalendarIcon, Refresh, Checked, Plus } from '@element-plus/icons-vue';
+import { Edit, Delete, Calendar as CalendarIcon, Refresh, Checked, Plus, ArrowLeft, ArrowRight } from '@element-plus/icons-vue';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import axios from 'axios';
 
@@ -19,6 +19,8 @@ const reminderSelected = ref(null);
 const showDeleteConfirmation = ref(false);
 const deleteOption = ref(null);
 const loadingDeleted = ref(false);
+
+const weekdays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 // Calendar grid
 const weeks = computed(() => {
@@ -40,12 +42,42 @@ const weeks = computed(() => {
     return grid;
 });
 
+const flatDays = computed(() => weeks.value.flat());
+
 const currentMonthLabel = computed(() =>
     currentMonth.value.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase()
 );
 
-function formatDate(date) { return date ? format(new Date(date), 'EEE, dd MMM yyyy', { locale: es }) : ''; }
-function formatMoney(val) { return val?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+const incomeReminders = computed(() => (reminders.value || []).filter((item) => item.type === 'Ingreso recurrente'));
+const outcomeReminders = computed(() => (reminders.value || []).filter((item) => item.type === 'Gasto fijo'));
+
+const incomeTotal = computed(() => incomeReminders.value.reduce((sum, item) => sum + Number(item.amount || 0), 0));
+const outcomeTotal = computed(() => outcomeReminders.value.reduce((sum, item) => sum + Number(item.amount || 0), 0));
+
+const monthSummary = computed(() => {
+    const total = reminders.value?.length || 0;
+
+    if (!total) return 'Sin recordatorios programados este mes';
+
+    return `${total} ${total === 1 ? 'recordatorio programado' : 'recordatorios programados'}`;
+});
+
+function toCalendarDate(value) {
+    if (!value) return null;
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return null;
+
+    // The API sends UTC midnights; keep the calendar day exactly as stored.
+    return new Date(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate());
+}
+
+function formatDate(date) {
+    const parsed = toCalendarDate(date);
+
+    return parsed ? format(parsed, 'EEE, dd MMM yyyy', { locale: es }) : '';
+}
+function formatMoney(val) { return Number(val || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 
 function changeMonth(offset) { currentMonth.value = new Date(currentMonth.value.getFullYear(), currentMonth.value.getMonth() + offset, 1); fetchMonthReminders(); }
 function goToToday() { currentMonth.value = new Date(); buttonSelected.value = 'Hoy'; fetchMonthReminders(); }
@@ -57,14 +89,17 @@ function isToday(day) {
 
 function isRemindDay(remind, day) {
     if (!day) return false;
-    const rd = new Date(remind.date);
+    const rd = toCalendarDate(remind.date);
     const cd = new Date(currentMonth.value.getFullYear(), currentMonth.value.getMonth(), day);
+    if (!rd) return false;
     return rd.getFullYear() === cd.getFullYear() && rd.getMonth() === cd.getMonth() && rd.getDate() === cd.getDate();
 }
 
 function getRemindersForDay(day) { return (reminders.value || []).filter(r => isRemindDay(r, day)); }
 
 function handleShowReminderDetails(reminder) { reminderSelected.value = reminder; drawer.value = true; }
+
+function isIncomeReminder(reminder) { return reminder?.type === 'Ingreso recurrente'; }
 
 function updateDrawerSize() {
     const w = window.innerWidth;
@@ -96,11 +131,11 @@ async function handleDelete() {
     try {
         loadingDeleted.value = true;
         await axios.delete(route('calendars.destroy', target.id), { params: { deleteOption: mode } });
-        ElMessage.success('Eliminacion exitosa');
+        ElMessage.success('Eliminación exitosa.');
     } catch (error) {
         if (error?.response?.status === 404) {
             // La ocurrencia ya no existia (lista desactualizada): se sincroniza sin mostrar error.
-            ElMessage.info('El recordatorio ya no existia.');
+            ElMessage.info('El recordatorio ya no existía.');
         } else {
             reminders.value = backup; // restaura si fue un fallo real
             console.error(error);
@@ -131,27 +166,97 @@ onUnmounted(() => window.removeEventListener('resize', updateDrawerSize));
 
 <template>
     <AppLayout title="Calendario">
-        <main class="py-6 px-4 md:px-8 max-w-7xl mx-auto">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <h1 class="page-header !mb-0">Calendario</h1>
-                <el-dropdown split-button type="primary" @click="router.get(route('calendars.create', { type: 'Ingreso recurrente' }))">
-                    <el-icon :size="14" class="mr-1"><Plus /></el-icon>Agregar ingreso recurrente
-                    <template #dropdown>
-                        <el-dropdown-menu>
-                            <el-dropdown-item @click="router.get(route('calendars.create', { type: 'Gasto fijo' }))">Agregar gasto recurrente</el-dropdown-item>
-                        </el-dropdown-menu>
-                    </template>
-                </el-dropdown>
-            </div>
+        <div class="page-shell">
+            <header class="page-heading">
+                <div>
+                    <p class="page-heading__eyebrow">Planificación</p>
+                    <h1 class="page-heading__title">Calendario</h1>
+                    <p class="page-heading__subtitle">
+                        Visualiza tus ingresos y gastos recurrentes y anticípate a cada pago.
+                    </p>
+                </div>
 
-            <div class="bg-white dark:bg-[#1E2424] border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 md:p-8">
-                <!-- Month navigation -->
-                <div class="flex flex-col md:flex-row justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-5 gap-4">
-                    <p class="text-xl font-bold text-gray-800 dark:text-gray-200">{{ currentMonthLabel }}</p>
-                    <div class="flex items-center text-sm">
-                        <button @click="changeMonth(-1); buttonSelected = 'Mes anterior'" class="px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-l-lg transition-colors" :class="buttonSelected === 'Mes anterior' ? 'bg-gray-100 dark:bg-gray-700 text-[#296A6B] dark:text-primary-400 font-medium' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'">Mes anterior</button>
-                        <button @click="goToToday(); buttonSelected = 'Hoy'" class="px-3 py-1.5 border-t border-b border-gray-200 dark:border-gray-600 transition-colors" :class="buttonSelected === 'Hoy' ? 'bg-gray-100 dark:bg-gray-700 text-[#296A6B] dark:text-primary-400 font-medium' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'">Hoy</button>
-                        <button @click="changeMonth(1); buttonSelected = 'Mes siguiente'" class="px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-r-lg transition-colors" :class="buttonSelected === 'Mes siguiente' ? 'bg-gray-100 dark:bg-gray-700 text-[#296A6B] dark:text-primary-400 font-medium' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'">Mes siguiente</button>
+                <div class="page-heading__actions">
+                    <el-dropdown
+                        split-button
+                        type="primary"
+                        @click="router.get(route('recurring-incomes.create'))"
+                    >
+                        <el-icon :size="14" class="mr-1"><Plus /></el-icon>
+                        Agregar ingreso recurrente
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item @click="router.get(route('recurring-outcomes.create'))">
+                                    Agregar gasto recurrente
+                                </el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                </div>
+            </header>
+
+            <section class="calendar-card">
+                <!-- Toolbar -->
+                <div class="calendar-toolbar">
+                    <div>
+                        <p class="calendar-toolbar__label">{{ currentMonthLabel }}</p>
+                        <p class="calendar-toolbar__meta">{{ monthSummary }}</p>
+                    </div>
+
+                    <div class="calendar-toolbar__nav">
+                        <button type="button" class="calendar-nav-btn" title="Mes anterior" @click="changeMonth(-1); buttonSelected = 'Mes anterior'">
+                            <el-icon :size="16"><ArrowLeft /></el-icon>
+                        </button>
+                        <button
+                            type="button"
+                            class="calendar-today-btn"
+                            :class="{ 'is-active': buttonSelected === 'Hoy' }"
+                            @click="goToToday(); buttonSelected = 'Hoy'"
+                        >
+                            Hoy
+                        </button>
+                        <button type="button" class="calendar-nav-btn" title="Mes siguiente" @click="changeMonth(1); buttonSelected = 'Mes siguiente'">
+                            <el-icon :size="16"><ArrowRight /></el-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="calendar-summary">
+                    <div class="calendar-summary__card">
+                        <span class="calendar-summary__icon calendar-summary__icon--neutral">
+                            <el-icon :size="16"><CalendarIcon /></el-icon>
+                        </span>
+                        <div>
+                            <p class="calendar-summary__label">Recordatorios</p>
+                            <p class="calendar-summary__value">{{ reminders?.length || 0 }}</p>
+                        </div>
+                    </div>
+
+                    <div class="calendar-summary__card">
+                        <span class="calendar-summary__icon calendar-summary__icon--income">
+                            <el-icon :size="16"><Refresh /></el-icon>
+                        </span>
+                        <div>
+                            <p class="calendar-summary__label">Ingresos recurrentes</p>
+                            <p class="calendar-summary__value">
+                                {{ incomeReminders.length }}
+                                <span class="calendar-summary__amount calendar-summary__amount--income">${{ formatMoney(incomeTotal) }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="calendar-summary__card">
+                        <span class="calendar-summary__icon calendar-summary__icon--outcome">
+                            <el-icon :size="16"><Refresh /></el-icon>
+                        </span>
+                        <div>
+                            <p class="calendar-summary__label">Gastos fijos</p>
+                            <p class="calendar-summary__value">
+                                {{ outcomeReminders.length }}
+                                <span class="calendar-summary__amount calendar-summary__amount--outcome">${{ formatMoney(outcomeTotal) }}</span>
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -159,80 +264,147 @@ onUnmounted(() => window.removeEventListener('resize', updateDrawerSize));
                 <div v-if="loading" class="py-12"><el-skeleton animated :rows="6" /></div>
 
                 <!-- Calendar grid -->
-                <table v-else class="w-full mt-8 border-collapse">
-                    <thead>
-                        <tr class="text-center *:py-2 *:w-[14.28%] *:text-xs md:*:text-sm *:text-gray-500 dark:*:text-gray-400 *:font-medium">
-                            <th>Dom</th><th>Lun</th><th>Mar</th><th>Mie</th><th>Jue</th><th>Vie</th><th>Sab</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(week, wi) in weeks" :key="wi" class="text-sm">
-                            <td v-for="(day, di) in week" :key="di" class="h-28 md:h-32 align-top border border-gray-100 dark:border-gray-700 p-1 relative" :class="{ 'bg-gray-50/50 dark:bg-gray-800/30': !day }">
-                                <span v-if="day" class="absolute top-1 left-1 rounded-md size-6 flex items-center justify-center text-center text-xs font-bold"
-                                    :class="isToday(day) ? 'bg-[#296A6B] text-white' : 'text-gray-600 dark:text-gray-300'">{{ day }}</span>
-                                <div v-if="day" class="mt-7 space-y-0.5">
-                                    <div v-for="reminder in getRemindersForDay(day)" :key="reminder.id"
-                                        @click.stop="handleShowReminderDetails(reminder)"
-                                        class="text-[10px] md:text-xs px-1.5 py-0.5 rounded-full cursor-pointer truncate flex items-center gap-1 transition-colors hover:opacity-80"
-                                        :class="{
-                                            'line-through opacity-50': reminder.status === 'Registrado',
-                                            'bg-[#E2FFD5] text-[#2E8A14]': reminder.type === 'Ingreso recurrente',
-                                            'bg-[#CBEAF8] text-[#1023A1]': reminder.type === 'Gasto fijo',
-                                        }">
-                                        <el-icon :size="12"><Checked v-if="reminder.status === 'Registrado'" /><Refresh v-else /></el-icon>
-                                        <span class="hidden md:inline truncate">{{ reminder.title }}</span>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </main>
+                <div v-else class="calendar-grid">
+                    <div class="calendar-grid__weekdays">
+                        <span v-for="label in weekdays" :key="label">{{ label }}</span>
+                    </div>
+
+                    <div class="calendar-grid__days">
+                        <div
+                            v-for="(day, index) in flatDays"
+                            :key="index"
+                            class="calendar-day"
+                            :class="{ 'is-empty': !day, 'is-today': isToday(day) }"
+                        >
+                            <span v-if="day" class="calendar-day__number">{{ day }}</span>
+
+                            <div v-if="day && getRemindersForDay(day).length" class="calendar-day__events">
+                                <button
+                                    v-for="reminder in getRemindersForDay(day)"
+                                    :key="reminder.id"
+                                    type="button"
+                                    class="calendar-event"
+                                    :class="[
+                                        isIncomeReminder(reminder) ? 'calendar-event--income' : 'calendar-event--outcome',
+                                        { 'is-registered': reminder.status === 'Registrado' },
+                                    ]"
+                                    :title="reminder.title"
+                                    @click.stop="handleShowReminderDetails(reminder)"
+                                >
+                                    <el-icon :size="12">
+                                        <Checked v-if="reminder.status === 'Registrado'" />
+                                        <Refresh v-else />
+                                    </el-icon>
+                                    <span class="calendar-event__title">{{ reminder.title }}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <footer class="calendar-legend">
+                    <span class="calendar-legend__item">
+                        <span class="calendar-legend__dot calendar-legend__dot--income" />
+                        Ingreso recurrente
+                    </span>
+                    <span class="calendar-legend__item">
+                        <span class="calendar-legend__dot calendar-legend__dot--outcome" />
+                        Gasto fijo
+                    </span>
+                    <span class="calendar-legend__item">
+                        <span class="calendar-legend__dot calendar-legend__dot--registered" />
+                        Registrado
+                    </span>
+                </footer>
+            </section>
+        </div>
 
         <!-- Drawer -->
-        <el-drawer v-model="drawer" :size="drawerSize" direction="rtl">
+        <el-drawer v-model="drawer" :size="drawerSize" direction="rtl" class="calendar-drawer">
             <template #header>
-                <span class="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full font-medium"
-                    :class="reminderSelected?.type === 'Ingreso recurrente' ? 'bg-[#EAF7EF] text-[#247A47]' : 'bg-[#EAF1FB] text-[#2E63AD]'">
-                    <el-icon :size="14"><Refresh /></el-icon>
-                    {{ reminderSelected?.type }}
-                </span>
+                <div class="calendar-drawer__header">
+                    <span
+                        class="calendar-type-badge"
+                        :class="isIncomeReminder(reminderSelected) ? 'calendar-type-badge--income' : 'calendar-type-badge--outcome'"
+                    >
+                        <el-icon :size="14"><Refresh /></el-icon>
+                        {{ reminderSelected?.type }}
+                    </span>
+                </div>
             </template>
-            <div v-if="reminderSelected">
-                <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-3 mb-4">
-                    <h2 class="text-base font-bold text-gray-800 dark:text-gray-200">{{ reminderSelected.title }}</h2>
-                    <span class="text-xs px-3 py-1 rounded-full font-medium"
-                        :class="reminderSelected.status === 'Registrado' ? 'bg-[#EAF7EF] text-[#247A47]' : 'bg-[#FBF3E2] text-[#B47F1F]'">{{ reminderSelected.status }}</span>
+
+            <div v-if="reminderSelected" class="calendar-drawer__body">
+                <h2 class="calendar-drawer__title">{{ reminderSelected.title }}</h2>
+
+                <p
+                    class="calendar-drawer__amount"
+                    :class="isIncomeReminder(reminderSelected) ? 'is-income' : 'is-outcome'"
+                >
+                    ${{ formatMoney(reminderSelected.amount) }}
+                </p>
+
+                <div class="calendar-drawer__meta">
+                    <span
+                        class="calendar-status"
+                        :class="reminderSelected.status === 'Registrado' ? 'calendar-status--done' : 'calendar-status--pending'"
+                    >
+                        {{ reminderSelected.status }}
+                    </span>
+                    <span class="calendar-drawer__date">{{ formatDate(reminderSelected.date) }}</span>
                 </div>
-                <div class="space-y-2 text-sm">
-                    <div class="flex"><span class="text-gray-500 dark:text-gray-400 w-32">Fecha:</span><span class="dark:text-gray-300">{{ formatDate(reminderSelected.date) }}</span></div>
-                    <div class="flex"><span class="text-gray-500 dark:text-gray-400 w-32">Monto:</span><span class="font-mono font-semibold dark:text-gray-200">${{ formatMoney(reminderSelected.amount) }}</span></div>
-                    <div class="flex"><span class="text-gray-500 dark:text-gray-400 w-32">Categoria:</span><span class="dark:text-gray-300">{{ reminderSelected.category ?? '-' }}</span></div>
-                    <div class="flex"><span class="text-gray-500 dark:text-gray-400 w-32">Metodo de pago:</span><span class="dark:text-gray-300">{{ reminderSelected.payment_method ?? '-' }}</span></div>
-                    <div class="flex"><span class="text-gray-500 dark:text-gray-400 w-32">Frecuencia:</span><span class="dark:text-gray-300">{{ reminderSelected.periodicity ?? '-' }}</span></div>
-                    <div class="flex"><span class="text-gray-500 dark:text-gray-400 w-32">Descripcion:</span><span class="dark:text-gray-300">{{ reminderSelected.description ?? '-' }}</span></div>
-                </div>
+
+                <dl class="calendar-detail">
+                    <div class="calendar-detail__row">
+                        <dt>Categoría</dt>
+                        <dd>{{ reminderSelected.category ?? '—' }}</dd>
+                    </div>
+                    <div class="calendar-detail__row">
+                        <dt>Método de pago</dt>
+                        <dd>{{ reminderSelected.payment_method ?? '—' }}</dd>
+                    </div>
+                    <div class="calendar-detail__row">
+                        <dt>Frecuencia</dt>
+                        <dd>{{ reminderSelected.periodicity ?? '—' }}</dd>
+                    </div>
+                    <div class="calendar-detail__row">
+                        <dt>Descripción</dt>
+                        <dd>{{ reminderSelected.description ?? '—' }}</dd>
+                    </div>
+                </dl>
             </div>
+
             <template #footer>
-                <div class="flex justify-end gap-2">
-                    <el-button @click="router.get(route('calendars.edit', reminderSelected?.id))" :icon="Edit">Editar</el-button>
-                    <el-button type="danger" :icon="Delete" @click="showDeleteConfirmation = true" />
+                <div class="calendar-drawer__footer">
+                    <el-button @click="router.get(route('calendars.edit', reminderSelected?.id))" :icon="Edit">
+                        Editar
+                    </el-button>
+                    <el-button type="danger" plain :icon="Delete" @click="showDeleteConfirmation = true">
+                        Eliminar
+                    </el-button>
                 </div>
             </template>
         </el-drawer>
 
         <!-- Delete confirmation dialog -->
-        <el-dialog v-model="showDeleteConfirmation" title="Eliminar recordatorio" width="460px">
-            <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Deseas eliminar el {{ reminderSelected?.type }}?</p>
-            <el-radio-group v-model="deleteOption" class="flex flex-col gap-2">
-                <el-radio value="Este">Este {{ reminderSelected?.type === 'Ingreso recurrente' ? 'ingreso' : 'gasto' }}</el-radio>
+        <el-dialog v-model="showDeleteConfirmation" title="Eliminar recordatorio" width="460px" append-to-body>
+            <p class="calendar-dialog__text">
+                ¿Deseas eliminar este {{ reminderSelected?.type === 'Ingreso recurrente' ? 'ingreso' : 'gasto' }}?
+            </p>
+            <el-radio-group v-model="deleteOption" class="calendar-dialog__options">
+                <el-radio value="Este">
+                    Este {{ reminderSelected?.type === 'Ingreso recurrente' ? 'ingreso' : 'gasto' }}
+                </el-radio>
                 <el-radio value="Este y los siguientes">Este y los siguientes</el-radio>
-                <el-radio value="Todos">Todos los {{ reminderSelected?.type === 'Ingreso recurrente' ? 'ingresos' : 'gastos' }}</el-radio>
+                <el-radio value="Todos">
+                    Todos los {{ reminderSelected?.type === 'Ingreso recurrente' ? 'ingresos' : 'gastos' }}
+                </el-radio>
             </el-radio-group>
             <template #footer>
                 <el-button @click="showDeleteConfirmation = false; deleteOption = null">Cancelar</el-button>
-                <el-button type="danger" :disabled="!deleteOption" :loading="loadingDeleted" @click="handleDelete">Eliminar</el-button>
+                <el-button type="danger" :disabled="!deleteOption" :loading="loadingDeleted" @click="handleDelete">
+                    Eliminar
+                </el-button>
             </template>
         </el-dialog>
     </AppLayout>

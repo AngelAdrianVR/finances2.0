@@ -1,7 +1,16 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Plus } from '@element-plus/icons-vue';
+import {
+    Plus,
+    Sell,
+    TrendCharts,
+    Wallet,
+    Tools,
+    Medal,
+    House,
+    MoreFilled,
+} from '@element-plus/icons-vue';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -10,138 +19,191 @@ const props = defineProps({
 });
 
 const categoryDefs = [
-    { key: 'Ventas', label: 'Ventas', bgClass: 'bg-green-100', color: '#147D85' },
-    { key: 'Intereses', label: 'Intereses', bgClass: 'bg-sky-100', color: '#0EA5E9' },
-    { key: 'Nómina', label: 'Nómina', bgClass: 'bg-slate-200', color: '#475569' },
-    { key: 'Prestación de servicios', label: 'Servicios', bgClass: 'bg-stone-200', color: '#57534E' },
-    { key: 'Comisión', label: 'Comisión', bgClass: 'bg-pink-100', color: '#EC4899' },
-    { key: 'Renta', label: 'Renta', bgClass: 'bg-indigo-100', color: '#4F46E5' },
-    { key: 'Otro', label: 'Otros', bgClass: 'bg-[#F3C9C9]', color: '#851414' },
+    { key: 'Ventas', label: 'Ventas', tone: 'emerald', icon: Sell },
+    { key: 'Intereses', label: 'Intereses', tone: 'sky', icon: TrendCharts },
+    { key: 'Nómina', label: 'Nómina', tone: 'mint', icon: Wallet },
+    { key: 'Prestación de servicios', label: 'Servicios', tone: 'jade', icon: Tools },
+    { key: 'Comisión', label: 'Comisión', tone: 'cyan', icon: Medal },
+    { key: 'Renta', label: 'Renta', tone: 'indigo', icon: House },
+    { key: 'Otro', label: 'Otros', tone: 'neutral', icon: MoreFilled },
 ];
 
 const categoryTotals = ref({});
-watch(() => props.incomes, (val) => {
-    const totals = {};
-    val?.forEach((inc) => {
-        const cat = categoryDefs.find(d => d.key === inc.category) ? inc.category : 'Otro';
-        totals[cat] = (totals[cat] || 0) + inc.amount;
-    });
-    categoryTotals.value = totals;
-}, { immediate: true });
+
+watch(
+    () => props.incomes,
+    (value) => {
+        const totals = {};
+        value?.forEach((income) => {
+            const category = categoryDefs.some((definition) => definition.key === income.category)
+                ? income.category
+                : 'Otro';
+            totals[category] = (totals[category] || 0) + Number(income.amount || 0);
+        });
+        categoryTotals.value = totals;
+    },
+    { immediate: true }
+);
 
 const totalIncomes = computed(() =>
-    Object.values(categoryTotals.value).reduce((s, v) => s + v, 0)
+    Object.values(categoryTotals.value).reduce((sum, amount) => sum + amount, 0)
 );
 
 const showDetail = ref(false);
 const selectedCategory = ref('');
 
-function openDetail(cat) {
-    selectedCategory.value = cat;
+const selectedDefinition = computed(
+    () =>
+        categoryDefs.find((definition) => definition.key === selectedCategory.value) ??
+        categoryDefs[categoryDefs.length - 1]
+);
+
+const categoryIncomes = computed(() =>
+    (props.incomes || [])
+        .filter((income) => {
+            const definition = categoryDefs.find((item) => item.key === income.category);
+            return (definition ? definition.key : 'Otro') === selectedCategory.value;
+        })
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+);
+
+const selectedTotal = computed(() => categoryTotals.value[selectedCategory.value] || 0);
+
+const selectedAverage = computed(() =>
+    categoryIncomes.value.length > 0 ? selectedTotal.value / categoryIncomes.value.length : 0
+);
+
+function openDetail(category) {
+    selectedCategory.value = category;
     showDetail.value = true;
 }
 
-const filteredIncomes = computed(() =>
-    (props.incomes || []).filter(inc => {
-        const found = categoryDefs.find(d => d.key === inc.category);
-        return (found ? found.key : 'Otro') === selectedCategory.value;
-    })
-);
+function categoryTotal(category) {
+    return categoryTotals.value[category] || 0;
+}
+
+function shareOfTotal(category) {
+    if (totalIncomes.value === 0) return 0;
+    return (categoryTotal(category) / totalIncomes.value) * 100;
+}
 
 function formatDate(date) {
     if (!date) return '';
     return format(new Date(date), 'dd MMM yyyy', { locale: es });
 }
 
-function formatMoney(val) {
-    return val?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+function formatMoney(value) {
+    return Number(value || 0).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
 }
-
-function getCatTotal(key) {
-    return categoryTotals.value[key] || 0;
-}
-
-const catIcons = {
-    'Ventas': '💰',
-    'Intereses': '📈',
-    'Nómina': '💳',
-    'Prestación de servicios': '🔧',
-    'Comisión': '📋',
-    'Renta': '🏢',
-    'Otro': '📌',
-};
 </script>
 
 <template>
     <div class="dashboard-card">
-        <div class="flex items-center justify-between mb-5">
-            <h2 class="dashboard-card-title !mb-0 !pb-0 !border-0">
-                Ingresos
-                <span class="font-mono text-[#2F9E5B] ml-2">${{ formatMoney(totalIncomes) }}</span>
-            </h2>
-            <el-button :icon="Plus" size="small" circle @click="router.get(route('incomes.create'))" />
+        <div class="dashboard-card__head">
+            <div>
+                <h2 class="dashboard-card__title">Ingresos</h2>
+                <p class="dashboard-card__subtitle">Toca una categoría para ver sus movimientos</p>
+            </div>
+            <div class="category-header__actions">
+                <span class="category-total category-total--income">${{ formatMoney(totalIncomes) }}</span>
+                <el-tooltip content="Registrar ingreso" placement="top">
+                    <el-button :icon="Plus" size="small" circle @click="router.get(route('incomes.create'))" />
+                </el-tooltip>
+            </div>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            <div
-                v-for="cat in categoryDefs"
-                :key="cat.key"
+        <div class="category-grid">
+            <button
+                v-for="category in categoryDefs"
+                :key="category.key"
+                type="button"
                 class="category-card"
-                @click="openDetail(cat.key)"
+                @click="openDetail(category.key)"
             >
-                <div class="category-icon" :class="cat.bgClass">
-                    <span class="text-lg">{{ catIcons[cat.key] }}</span>
-                </div>
-                <div class="min-w-0">
-                    <p class="category-label truncate">{{ cat.label }}</p>
-                    <p class="category-amount" style="color: #2F9E5B;">
-                        ${{ formatMoney(getCatTotal(cat.key)) }}
-                    </p>
-                </div>
-            </div>
+                <span class="category-icon" :class="`category-icon--${category.tone}`">
+                    <el-icon :size="18"><component :is="category.icon" /></el-icon>
+                </span>
+                <span class="category-card__body">
+                    <span class="category-label">{{ category.label }}</span>
+                    <span class="category-amount category-amount--income">
+                        ${{ formatMoney(categoryTotal(category.key)) }}
+                    </span>
+                    <span class="category-card__track">
+                        <span
+                            class="category-card__bar category-card__bar--income"
+                            :style="{ width: `${Math.max(shareOfTotal(category.key), 2)}%` }"
+                        />
+                    </span>
+                </span>
+            </button>
         </div>
     </div>
 
     <el-dialog
         v-model="showDetail"
-        :title="'Ingresos de ' + selectedCategory"
-        width="95%"
+        width="92%"
         class="category-dialog"
-        :close-on-click-modal="true"
+        align-center
         destroy-on-close
     >
-        <div v-if="filteredIncomes.length" class="max-h-80 overflow-auto">
-            <table class="detail-table">
-                <thead>
-                    <tr>
-                        <th>Concepto</th>
-                        <th>Monto</th>
-                        <th>Fecha</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(item, i) in filteredIncomes" :key="i">
-                        <td class="max-w-[200px] truncate">{{ item.concept }}</td>
-                        <td class="amount-income monetary-amount">$ {{ formatMoney(item.amount) }}</td>
-                        <td class="text-gray-500 dark:text-[#9AA8A8] text-sm">{{ formatDate(item.created_at) }}</td>
-                    </tr>
-                </tbody>
-            </table>
+        <template #header>
+            <div class="detail-dialog__head">
+                <span class="category-icon" :class="`category-icon--${selectedDefinition.tone}`">
+                    <el-icon :size="20"><component :is="selectedDefinition.icon" /></el-icon>
+                </span>
+                <div class="min-w-0">
+                    <p class="detail-dialog__eyebrow">Ingresos por categoría</p>
+                    <h3 class="detail-dialog__title">{{ selectedDefinition.label }}</h3>
+                </div>
+            </div>
+        </template>
+
+        <div class="detail-stats">
+            <div class="detail-stat">
+                <p class="detail-stat__label">Total</p>
+                <p class="detail-stat__value detail-stat__value--income">${{ formatMoney(selectedTotal) }}</p>
+            </div>
+            <div class="detail-stat">
+                <p class="detail-stat__label">Movimientos</p>
+                <p class="detail-stat__value">{{ categoryIncomes.length }}</p>
+            </div>
+            <div class="detail-stat">
+                <p class="detail-stat__label">Promedio</p>
+                <p class="detail-stat__value">${{ formatMoney(selectedAverage) }}</p>
+            </div>
         </div>
-        <div v-else class="empty-state">
-            <p class="empty-state-title">No hay registros</p>
-            <p class="empty-state-text">No hay ingresos en esta categoria para el periodo seleccionado.</p>
+
+        <div v-if="categoryIncomes.length" class="detail-table-wrap">
+            <el-table :data="categoryIncomes" max-height="340" class="category-detail-table">
+                <el-table-column prop="concept" label="Concepto" min-width="110" show-overflow-tooltip>
+                    <template #default="{ row }">
+                        <span class="detail-concept">{{ row.concept }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="Fecha" width="92">
+                    <template #default="{ row }">
+                        <span class="detail-date">{{ formatDate(row.created_at) }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="Monto" width="102" align="right">
+                    <template #default="{ row }">
+                        <span class="monetary-amount amount-income">+ ${{ formatMoney(row.amount) }}</span>
+                    </template>
+                </el-table-column>
+            </el-table>
         </div>
+
+        <div v-else class="empty-state py-6">
+            <el-icon :size="30" class="empty-state-icon"><component :is="selectedDefinition.icon" /></el-icon>
+            <p class="empty-state-title">Sin movimientos</p>
+            <p class="empty-state-text">No hay ingresos en esta categoría para el periodo seleccionado.</p>
+        </div>
+
         <template #footer>
             <el-button @click="showDetail = false">Cerrar</el-button>
         </template>
     </el-dialog>
 </template>
-
-<style>
-@media (min-width: 640px) {
-    .category-dialog {
-        max-width: 560px !important;
-    }
-}
-</style>

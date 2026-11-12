@@ -61,18 +61,26 @@ function hasActiveChild(item) {
             <ul class="sidebar-list">
                 <li v-for="item in section.items" :key="item.index" class="sidebar-list__item">
                     <!-- Direct link -->
-                    <Link
+                    <el-tooltip
                         v-if="!item.children?.length"
-                        :href="route(item.routeName)"
-                        class="sidebar-link"
-                        :class="{ 'is-active': isActive(item) }"
-                        :data-label="item.label"
+                        :content="item.label"
+                        placement="right"
+                        effect="dark"
+                        :offset="10"
+                        :disabled="!collapsed"
+                        popper-class="sidebar-tooltip"
                     >
-                        <span class="sidebar-link__icon">
-                            <MenuIcon :name="item.icon" />
-                        </span>
-                        <span v-if="!collapsed" class="sidebar-link__label">{{ item.label }}</span>
-                    </Link>
+                        <Link
+                            :href="route(item.routeName)"
+                            class="sidebar-link"
+                            :class="{ 'is-active': isActive(item) }"
+                        >
+                            <span class="sidebar-link__icon">
+                                <MenuIcon :name="item.icon" />
+                            </span>
+                            <span v-if="!collapsed" class="sidebar-link__label">{{ item.label }}</span>
+                        </Link>
+                    </el-tooltip>
 
                     <!-- Group (expanded sidebar) -->
                     <template v-else-if="!collapsed">
@@ -105,20 +113,30 @@ function hasActiveChild(item) {
                         </ul>
                     </template>
 
-                    <!-- Group (collapsed sidebar → flyout) -->
-                    <div v-else class="sidebar-flyout-wrap">
-                        <button
-                            type="button"
-                            class="sidebar-link"
-                            :class="{ 'is-parent-active': hasActiveChild(item) }"
-                            :data-label="item.label"
-                        >
-                            <span class="sidebar-link__icon">
-                                <MenuIcon :name="item.icon" />
-                            </span>
-                        </button>
+                    <!-- Group (collapsed sidebar → flyout popover) -->
+                    <el-popover
+                        v-else
+                        placement="right-start"
+                        :width="200"
+                        :offset="12"
+                        trigger="hover"
+                        :show-arrow="false"
+                        popper-class="sidebar-flyout-popover"
+                    >
+                        <template #reference>
+                            <button
+                                type="button"
+                                class="sidebar-link"
+                                :class="{ 'is-parent-active': hasActiveChild(item) }"
+                                :title="item.label"
+                            >
+                                <span class="sidebar-link__icon">
+                                    <MenuIcon :name="item.icon" />
+                                </span>
+                            </button>
+                        </template>
 
-                        <div class="sidebar-flyout">
+                        <div class="sidebar-flyout-panel">
                             <p class="sidebar-flyout__title">{{ item.label }}</p>
                             <Link
                                 v-for="child in item.children"
@@ -130,7 +148,7 @@ function hasActiveChild(item) {
                                 {{ child.label }}
                             </Link>
                         </div>
-                    </div>
+                    </el-popover>
                 </li>
             </ul>
         </div>

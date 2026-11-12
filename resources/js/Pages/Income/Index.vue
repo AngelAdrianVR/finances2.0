@@ -16,6 +16,7 @@ const props = defineProps({
 
 const activeTab = ref('1');
 const searchQuery = ref(props.filters?.q ?? '');
+const showStats = ref(false);
 
 let searchTimer = null;
 
@@ -110,11 +111,18 @@ function handleCreate() {
     }
 }
 
-function handleTabChange(tab) {
+function handleTabChange(nameOrPane) {
+    const tabName = typeof nameOrPane === 'object' ? nameOrPane?.props?.name : nameOrPane;
+
+    if (!tabName) return;
+
     const url = new URL(window.location.href);
-    url.searchParams.set('currentTab', tab.props.name);
+    url.searchParams.set('currentTab', tabName);
+    const paginationURL = url.searchParams.get('page');
     url.searchParams.delete('page');
     window.history.replaceState({}, document.title, url.href);
+    if (paginationURL) location.reload();
+    closeTag();
 }
 
 const currentURL = new URL(window.location.href);
@@ -154,8 +162,30 @@ if (currentTabFromURL) activeTab.value = currentTabFromURL;
                 </div>
             </header>
 
+            <!-- Compact summary (mobile): tap to reveal every stat -->
+            <button
+                type="button"
+                class="stat-summary-mobile"
+                :class="{ 'is-open': showStats }"
+                :aria-expanded="showStats"
+                @click="showStats = !showStats"
+            >
+                <span class="stat-summary-mobile__icon" :class="`stat-summary-mobile__icon--${statCards[0].tone}`">
+                    <el-icon :size="18"><component :is="statCards[0].icon" /></el-icon>
+                </span>
+                <span class="stat-summary-mobile__body">
+                    <span class="stat-summary-mobile__label">{{ statCards[0].label }}</span>
+                    <span class="stat-summary-mobile__value">{{ statCards[0].value }}</span>
+                    <span class="stat-summary-mobile__hint">{{ statCards[0].hint }}</span>
+                </span>
+                <span class="stat-summary-mobile__toggle">
+                    {{ showStats ? 'Ocultar' : 'Resumen' }}
+                    <el-icon :size="14" class="stat-summary-mobile__chevron"><ArrowDown /></el-icon>
+                </span>
+            </button>
+
             <!-- Stat cards -->
-            <section class="stat-grid">
+            <section class="stat-grid" :class="{ 'is-open': showStats }">
                 <article
                     v-for="card in statCards"
                     :key="card.key"

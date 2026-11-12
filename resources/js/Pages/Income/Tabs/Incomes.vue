@@ -1,11 +1,15 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
-import { Edit, Delete, MoreFilled, Refresh, CircleClose, ArrowDown } from '@element-plus/icons-vue';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { Edit, Delete, MoreFilled, Refresh, CircleClose, ArrowDown, Tickets } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import PaginationWithNoMeta from '@/Components/MyComponents/PaginationWithNoMeta.vue';
+import IncomeDetailDialog from '@/Components/MyComponents/Income/IncomeDetailDialog.vue';
+import { formatCalendarDate } from '@/utils/date';
+import {
+    INCOME_CATEGORY_VALUES,
+    INCOME_PAYMENT_METHOD_VALUES,
+} from '@/config/finance';
 import axios from 'axios';
 
 const props = defineProps({
@@ -28,8 +32,8 @@ const form = useForm({
     selections: [],
 });
 
-const categories = ['Ventas', 'Intereses', 'Nomina', 'Prestacion de servicios', 'Comision', 'Renta', 'Otro'];
-const paymentMethods = ['Efectivo', 'Transferencia', 'Deposito', 'Cheque', 'Pago con tarjeta'];
+const categories = INCOME_CATEGORY_VALUES;
+const paymentMethods = INCOME_PAYMENT_METHOD_VALUES;
 const perPageOptions = [10, 20, 50, 100];
 
 // Filtros aplicados en servidor (query params)
@@ -44,6 +48,10 @@ const hasActiveFilters = computed(() => Boolean(filters.value.category || filter
 
 const totalShown = computed(() => Number(props.filtered?.total ?? 0));
 const filteredCount = computed(() => Number(props.filtered?.count ?? 0));
+
+const selectedTotal = computed(() =>
+    selectedRows.value.reduce((sum, row) => sum + (Number(row.amount) || 0), 0)
+);
 
 const currentPerPage = computed(() => props.incomes?.per_page || 50);
 
@@ -93,8 +101,7 @@ function changePerPage(size) {
 }
 
 function formatDate(date) {
-    if (!date) return '';
-    return format(new Date(date), 'dd MMM yyyy', { locale: es });
+    return formatCalendarDate(date);
 }
 
 function formatMoney(val) {
@@ -121,6 +128,12 @@ function categoryTone(category) {
 function handleSelectionChange(val) {
     selectedRows.value = val;
     disableMassiveActions.value = !val.length;
+}
+
+function clearSelection() {
+    tableRef.value?.clearSelection();
+    selectedRows.value = [];
+    disableMassiveActions.value = true;
 }
 
 function handleRowClick(row) {
@@ -322,13 +335,33 @@ async function deleteSelections() {
 
         <!-- Footer -->
         <footer class="data-card__footer">
-            <div class="selection-actions">
+            <div class="bulk-bar" :class="{ 'is-active': selectedRows.length }">
                 <template v-if="selectedRows.length">
-                    <span class="selection-chip">{{ selectedRows.length }} seleccionados</span>
-                    <el-button size="small" :icon="Edit" @click="openMassiveEdit">Editar</el-button>
-                    <el-button size="small" type="danger" plain :icon="Delete" @click="deleteSelections">Eliminar</el-button>
+                    <span class="bulk-bar__summary">
+                        <span class="bulk-bar__count">{{ selectedRows.length }}</span>
+                        {{ selectedRows.length === 1 ? 'seleccionado' : 'seleccionados' }}
+                        <span class="bulk-bar__amount">${{ formatMoney(selectedTotal) }}</span>
+                    </span>
+
+                    <div class="bulk-bar__actions">
+                        <button type="button" class="bulk-bar__action" @click="openMassiveEdit">
+                            <el-icon :size="14"><Edit /></el-icon>
+                            Editar
+                        </button>
+                        <button type="button" class="bulk-bar__action bulk-bar__action--danger" @click="deleteSelections">
+                            <el-icon :size="14"><Delete /></el-icon>
+                            Eliminar
+                        </button>
+                        <button type="button" class="bulk-bar__clear" @click="clearSelection">
+                            Limpiar
+                        </button>
+                    </div>
                 </template>
-                <span v-else class="selection-hint">Selecciona filas para acciones masivas</span>
+
+                <span v-else class="bulk-bar__hint">
+                    <el-icon :size="13"><Tickets /></el-icon>
+                    Selecciona filas para editar o eliminar en bloque
+                </span>
             </div>
 
             <PaginationWithNoMeta :pagination="incomes" />
@@ -336,28 +369,7 @@ async function deleteSelections() {
     </section>
 
     <!-- Detail dialog -->
-    <el-dialog v-model="showDetail" title="Detalles del ingreso" width="500px" destroy-on-close>
-        <template v-if="itemToShow">
-            <div class="space-y-2">
-                <div class="detail-row"><span class="detail-label">Concepto</span><span class="detail-value">{{ itemToShow.concept }}</span></div>
-                <div class="detail-row"><span class="detail-label">Fecha</span><span class="detail-value">{{ formatDate(itemToShow.created_at) }}</span></div>
-                <div class="detail-row"><span class="detail-label">Monto</span><span class="detail-value font-mono font-semibold" style="color: #2F9E5B;">${{ formatMoney(itemToShow.amount) }}</span></div>
-                <div class="detail-row"><span class="detail-label">Categoría</span><span class="detail-value">{{ itemToShow.category }}</span></div>
-                <div class="detail-row"><span class="detail-label">Método de pago</span><span class="detail-value">{{ itemToShow.payment_method }}</span></div>
-                <div class="detail-row"><span class="detail-label">Descripción</span><span class="detail-value">{{ itemToShow.description ?? '-' }}</span></div>
-            </div>
-            <div v-if="itemToShow.automatically_created" class="mt-3">
-                <span class="recurring-badge">
-                    <el-icon :size="12"><Refresh /></el-icon>
-                    Ingreso recurrente
-                </span>
-            </div>
-        </template>
-        <template #footer>
-            <el-button v-if="itemToShow" @click="router.get(route('incomes.edit', itemToShow?.id))">Editar</el-button>
-            <el-button @click="showDetail = false">Cerrar</el-button>
-        </template>
-    </el-dialog>
+    <IncomeDetailDialog v-model="showDetail" :income="itemToShow" />
 
     <!-- Massive edit dialog -->
     <el-dialog v-model="showMassiveEdit" title="Editar ingresos masivamente" width="480px" destroy-on-close>
