@@ -87,7 +87,7 @@ function onNotificationsUpdate(value) {
                     aria-label="Abrir EzyVentas, punto de venta para tu negocio"
                 >
                     <span class="app-topbar__promo-mark">
-                        <img src="/images/ezyventas-isologo.png" alt="EzyVentas" />
+                        <img src="@/../../public/images/ezyventas-isologo.png" alt="EzyVentas" />
                     </span>
                     <span class="app-topbar__promo-copy">
                         <span class="app-topbar__promo-name">EzyVentas</span>

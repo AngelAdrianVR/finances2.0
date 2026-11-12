@@ -22,23 +22,49 @@ const props = defineProps({
 const periodicity = ref('Mensual');
 const period = ref(new Date());
 const loading = ref(true);
+const refreshing = ref(false);
 const overview = ref(null);
 const investmentRefreshKey = ref(0);
 
+let activeRequest = null;
+
 const firstName = computed(() => (props.userName ?? '').split(' ')[0] || 'Bienvenido');
 
-async function fetchOverview() {
-    try {
+async function fetchOverview(payload = null) {
+    activeRequest?.abort();
+
+    const requestBody = payload?.periodicity
+        ? payload
+        : {
+              periodicity: periodicity.value,
+              period: period.value,
+          };
+
+    const controller = new AbortController();
+    activeRequest = controller;
+
+    if (overview.value) {
+        refreshing.value = true;
+    } else {
         loading.value = true;
-        const { data } = await axios.post(route('dashboard.fetch-overview'), {
-            periodicity: periodicity.value,
-            period: period.value,
+    }
+
+    try {
+        const { data } = await axios.post(route('dashboard.fetch-overview'), requestBody, {
+            signal: controller.signal,
         });
+
         overview.value = data;
     } catch (error) {
-        console.error(error);
+        if (!axios.isCancel(error)) {
+            console.error(error);
+        }
     } finally {
-        loading.value = false;
+        if (activeRequest === controller) {
+            activeRequest = null;
+            loading.value = false;
+            refreshing.value = false;
+        }
     }
 }
 
@@ -65,13 +91,21 @@ fetchOverview();
                     v-model:periodicity="periodicity"
                     v-model:period="period"
                     class="dashboard-heading__toolbar"
+                    :loading="refreshing"
                     @change="fetchOverview"
                 />
             </header>
 
-            <BalanceHero :overview="overview" />
+            <BalanceHero v-if="!overview" :overview="null" />
 
-            <template v-if="overview">
+            <div
+                v-if="overview"
+                class="dashboard-body"
+                :class="{ 'is-refreshing': refreshing }"
+                :aria-busy="refreshing"
+            >
+                <BalanceHero :overview="overview" />
+
                 <KpiStrip :overview="overview" />
 
                 <div class="dashboard-grid">
@@ -98,7 +132,7 @@ fetchOverview();
                 <InvestmentPortfolio @changed="onInvestmentsChanged" />
 
                 <YearlySummary :periodicity="periodicity" :period="period" />
-            </template>
+            </div>
 
             <div v-else-if="loading" class="dashboard-grid">
                 <div class="dashboard-card dashboard-span-2">

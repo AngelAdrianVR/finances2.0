@@ -222,7 +222,7 @@ const drawerVisible = computed({
                     class="sidebar-drawer__promo"
                 >
                     <span class="sidebar-drawer__promo-mark">
-                        <img src="/images/ezyventas-isologo.png" alt="EzyVentas" />
+                        <img src="@/../../public/images/ezyventas-isologo.png" alt="EzyVentas" />
                     </span>
                     <span class="sidebar-drawer__promo-copy">
                         <span class="sidebar-drawer__promo-name">EzyVentas</span>
