@@ -1,10 +1,11 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { ArrowLeft, ArrowRight, Calendar } from '@element-plus/icons-vue';
+import { ArrowLeft, ArrowRight, Calendar, Loading } from '@element-plus/icons-vue';
 
 const props = defineProps({
     periodicity: { type: String, default: 'Mensual' },
     period: { type: [Date, String, null], default: null },
+    loading: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update:periodicity', 'update:period', 'change']);
@@ -19,38 +20,44 @@ const options = [
 const localPeriodicity = ref(props.periodicity);
 const localPeriod = ref(props.period ? new Date(props.period) : new Date());
 
+const DAY_PERIODICITY = 'Por día';
+
 const current = computed(
     () => options.find((option) => option.value === localPeriodicity.value) ?? options[2]
 );
 
-const isCurrentPeriod = computed(() => {
+const isTodayView = computed(() => {
+    if (localPeriodicity.value !== DAY_PERIODICITY) return false;
+
     const now = new Date();
     const date = new Date(localPeriod.value);
 
-    return matchUnit(now, current.value) === matchUnit(date, current.value);
+    return (
+        now.getFullYear() === date.getFullYear() &&
+        now.getMonth() === date.getMonth() &&
+        now.getDate() === date.getDate()
+    );
 });
-
-function matchUnit(date, option) {
-    if (option.unit === 'year') return date.getFullYear();
-
-    const normalized = new Date(date);
-    normalized.setHours(0, 0, 0, 0);
-
-    if (option.unit === 'month') {
-        return `${normalized.getFullYear()}-${normalized.getMonth()}`;
-    }
-
-    return normalized.toISOString().slice(0, 10);
-}
 
 function shift(direction) {
     const updated = new Date(localPeriod.value);
-    updated.setDate(updated.getDate() + current.value.step * direction);
+
+    if (current.value.unit === 'year') {
+        updated.setFullYear(updated.getFullYear() + current.value.step * direction);
+    } else if (current.value.unit === 'month') {
+        // Anchor to day 1 so month length differences never skip a period
+        updated.setDate(1);
+        updated.setMonth(updated.getMonth() + current.value.step * direction);
+    } else {
+        updated.setDate(updated.getDate() + current.value.step * direction);
+    }
+
     localPeriod.value = updated;
 }
 
 function goToToday() {
     localPeriod.value = new Date();
+    localPeriodicity.value = DAY_PERIODICITY;
 }
 
 function selectPeriodicity(value) {
@@ -64,12 +71,16 @@ watch(localPeriod, (value) => emit('update:period', value));
 
 watch(
     () => [localPeriodicity.value, localPeriod.value],
-    () => emit('change')
+    () =>
+        emit('change', {
+            periodicity: localPeriodicity.value,
+            period: localPeriod.value,
+        })
 );
 </script>
 
 <template>
-    <div class="dashboard-toolbar">
+    <div class="dashboard-toolbar" :aria-busy="loading">
         <div class="dashboard-toolbar__group">
             <button
                 v-for="option in options"
@@ -84,6 +95,11 @@ watch(
         </div>
 
         <div class="dashboard-toolbar__nav">
+            <span v-if="loading" class="dashboard-toolbar__loading" role="status" aria-live="polite">
+                <el-icon class="is-loading" :size="14"><Loading /></el-icon>
+                <span class="dashboard-toolbar__loading-text">Actualizando…</span>
+            </span>
+
             <el-button circle size="small" :icon="ArrowLeft" aria-label="Periodo anterior" @click="shift(-1)" />
             <el-date-picker
                 v-model="localPeriod"
@@ -99,7 +115,8 @@ watch(
             <el-button
                 size="small"
                 class="dashboard-today-button"
-                :disabled="isCurrentPeriod"
+                :disabled="isTodayView"
+                title="Ver el día de hoy"
                 @click="goToToday"
             >
                 Hoy
